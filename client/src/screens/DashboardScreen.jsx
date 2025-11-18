@@ -1,5 +1,7 @@
 import React, { useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
+import axios from 'axios';
 import useAuthStore from '../store';
 
 const DashboardScreen = () => {
@@ -11,6 +13,15 @@ const DashboardScreen = () => {
       navigate('/login');
     }
   }, [navigate, userInfo]);
+
+  const { data: stats } = useQuery({
+    queryKey: ['stats'],
+    queryFn: async () => {
+      const res = await axios.get('/api/users/stats');
+      return res.data;
+    },
+    enabled: !!userInfo
+  });
 
   const renderRoleBasedContent = () => {
     // Debug line to show current role
@@ -277,10 +288,41 @@ const DashboardScreen = () => {
               </span>
             </h1>
 
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
               Manage your healthcare operations with comprehensive tools and real-time insights.
             </p>
           </div>
+
+          {/* Dashboard Statistics */}
+          {(stats && (userInfo.role === 'admin' || userInfo.role === 'pharmacist')) && (
+            <div className="mb-12 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+              <div className="bg-white/90 backdrop-blur-sm p-6 rounded-2xl shadow-xl border border-white/20 text-center">
+                <div className="text-3xl mb-2">💊</div>
+                <div className="text-2xl font-bold text-gray-900">{stats.totalProducts}</div>
+                <p className="text-sm text-gray-600">Total Products</p>
+              </div>
+              <div className="bg-white/90 backdrop-blur-sm p-6 rounded-2xl shadow-xl border border-white/20 text-center">
+                <div className="text-3xl mb-2">✅</div>
+                <div className="text-2xl font-bold text-green-600">{stats.validProducts}</div>
+                <p className="text-sm text-gray-600">Valid Products</p>
+              </div>
+              <div className="bg-white/90 backdrop-blur-sm p-6 rounded-2xl shadow-xl border border-white/20 text-center">
+                <div className="text-3xl mb-2">⚠️</div>
+                <div className="text-2xl font-bold text-red-600">{stats.expiredProducts}</div>
+                <p className="text-sm text-gray-600">Expired Products</p>
+              </div>
+              <div className="bg-white/90 backdrop-blur-sm p-6 rounded-2xl shadow-xl border border-white/20 text-center">
+                <div className="text-3xl mb-2">🚨</div>
+                <div className="text-2xl font-bold text-orange-600">{stats.totalReports}</div>
+                <p className="text-sm text-gray-600">Total Reports</p>
+              </div>
+              <div className="bg-white/90 backdrop-blur-sm p-6 rounded-2xl shadow-xl border border-white/20 text-center">
+                <div className="text-3xl mb-2">⏳</div>
+                <div className="text-2xl font-bold text-purple-600">{stats.pendingReports}</div>
+                <p className="text-sm text-gray-600">Pending Reports</p>
+              </div>
+            </div>
+          )}
 
           {/* Role-based Content */}
           {renderRoleBasedContent()}

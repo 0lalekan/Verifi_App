@@ -1,6 +1,8 @@
 import asyncHandler from 'express-async-handler';
 import crypto from 'crypto';
 import User from '../models/userModel.js';
+import ProductBatch from '../models/productBatchModel.js';
+import Report from '../models/ReportModel.js';
 import generateToken from '../utils/generateToken.js';
 
 // @desc    Register a new user
@@ -124,4 +126,31 @@ const resetPassword = asyncHandler(async (req, res) => {
   res.status(200).json({ message: 'Password reset successful' });
 });
 
-export { registerUser, authUser, getUserProfile, forgotPassword, resetPassword };
+// @desc    Get dashboard stats
+// @route   GET /api/users/stats
+// @access  Private
+const getDashboardStats = asyncHandler(async (req, res) => {
+  const totalProducts = await ProductBatch.countDocuments();
+  const validProducts = await ProductBatch.countDocuments({
+    $or: [
+      { status: { $exists: false } },
+      { status: 'In-Transit' },
+      { status: 'At-Pharmacy' },
+      { status: 'Dispensed' }
+    ]
+  }); // Assuming these are valid statuses
+  const expiredProducts = await ProductBatch.countDocuments({ expiryDate: { $lt: new Date() } });
+
+  const totalReports = await Report.countDocuments();
+  const pendingReports = await Report.countDocuments({ status: 'Pending' });
+
+  res.json({
+    totalProducts,
+    validProducts,
+    expiredProducts,
+    totalReports,
+    pendingReports,
+  });
+});
+
+export { registerUser, authUser, getUserProfile, forgotPassword, resetPassword, getDashboardStats };

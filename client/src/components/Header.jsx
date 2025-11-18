@@ -12,42 +12,77 @@ const Header = () => {
     navigate('/login');
   };
 
+  const getRoleBasedLinks = () => {
+    if (!userInfo) return [];
+
+    const links = [];
+
+    if (userInfo.role === 'patient') {
+      links.push({ to: '/', label: 'Dashboard' });
+      links.push({ to: '/verify-product', label: 'Verify Product' });
+      links.push({ to: '/report', label: 'Report Issue' });
+    } else if (userInfo.role === 'pharmacist' || userInfo.role === 'admin') {
+      links.push({ to: '/', label: 'Dashboard' });
+      links.push({ to: '/register-batch', label: 'Register Batch' });
+      links.push({ to: '/bulk-upload', label: 'Bulk Upload' });
+    } else {
+      links.push({ to: '/', label: 'Dashboard' });
+    }
+
+    return links;
+  };
+
+  const roleLinks = getRoleBasedLinks();
+
   return (
-    <header className="bg-slate-900 text-white shadow-lg">
+    <header className="bg-gradient-to-r from-blue-600 via-purple-600 to-blue-800 text-white shadow-xl">
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16 items-center">
-          {/* Left side - Logo and Dashboard Link */}
-          <div className="flex items-center space-x-6">
-          <Link to="/" className="text-xl font-bold hover:text-slate-300 transition-colors">
-            Verifi
-          </Link>
-            {userInfo && (
-              <Link to="/dashboard" className="text-sm hover:text-slate-300 transition-colors">
-                Dashboard
+        <div className="flex justify-between h-18 items-center py-2">
+          {/* Left side - Logo and Navigation */}
+          <div className="flex items-center space-x-8">
+            <Link to="/" className="text-2xl font-bold hover:text-blue-200 transition-colors flex items-center">
+              <span className="mr-2">🛡️</span>
+              Verifi
+            </Link>
+
+            {/* Navigation Links */}
+            {roleLinks.map((link) => (
+              <Link
+                key={link.to}
+                to={link.to}
+                className="text-sm font-medium hover:text-blue-200 transition-colors duration-200 hover:bg-white/10 px-3 py-2 rounded-md"
+              >
+                {link.label}
               </Link>
-            )}
+            ))}
           </div>
 
-          {/* Right side - Auth */}
+          {/* Right side - User Info and Auth */}
           <div className="flex items-center space-x-4">
             {userInfo ? (
               <>
-                <span className="text-sm">
-                  Welcome, <Link to="/profile" className="text-blue-400 hover:text-blue-300 underline">{userInfo.firstName || 'User'}</Link> ({userProfile?.points || 0} pts)
-                </span>
+                <div className="flex items-center space-x-4 bg-black/20 px-4 py-2 rounded-lg">
+                  <span className="text-sm font-medium">
+                    Welcome, <Link to="/profile" className="text-yellow-300 hover:text-yellow-200 underline font-semibold">{userInfo.firstName || 'User'}</Link>
+                  </span>
+                  <div className="flex items-center space-x-1 text-yellow-300">
+                    <span className="text-lg">🏆</span>
+                    <span className="font-medium">{userProfile?.points || 0} pts</span>
+                  </div>
+                </div>
                 <button
                   onClick={logoutHandler}
-                  className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-md transition-colors"
+                  className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-xl font-medium transition-colors duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
                 >
-                  Logout
+                  🚪 Logout
                 </button>
               </>
             ) : (
               <Link
                 to="/login"
-                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors"
+                className="px-6 py-2 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white rounded-xl font-medium transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
               >
-                Sign In
+                🚀 Sign In
               </Link>
             )}
           </div>
