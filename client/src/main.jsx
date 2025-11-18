@@ -15,6 +15,7 @@ import DashboardScreen from './screens/DashboardScreen.jsx'
 import ProfileScreen from './screens/ProfileScreen.jsx'
 import ProductVerifyScreen from './screens/ProductVerifyScreen.jsx'
 import BatchUploadScreen from './screens/BatchUploadScreen.jsx'
+import RegisterBatchScreen from './screens/RegisterBatchScreen.jsx'
 import AdminDashboardScreen from './screens/AdminDashboardScreen.jsx'
 import RegulatorDashboardScreen from './screens/RegulatorDashboardScreen.jsx'
 import ReportScreen from './screens/ReportScreen.jsx'
@@ -36,6 +37,7 @@ const router = createBrowserRouter(
       <Route path="/profile" element={<ProfileScreen />} />
       <Route path="/verify-product" element={<ProductVerifyScreen />} />
       <Route path="/bulk-upload" element={<BatchUploadScreen />} />
+      <Route path="/register-batch" element={<RegisterBatchScreen />} />
       <Route path="/report" element={<ReportScreen />} />
       <Route path="/admin/reports" element={<AdminReportsScreen />} />
       <Route path="/admin-dashboard" element={<AdminDashboardScreen />} />

@@ -195,12 +195,14 @@ const DashboardScreen = () => {
                   <h3 className="text-xl font-bold text-gray-900">Register New Batch</h3>
                 </div>
                 <p className="text-gray-600 mb-8 leading-relaxed">Add new product batches to the verification system with complete traceability and compliance tracking.</p>
-                <button className="w-full bg-gradient-to-r from-teal-600 to-cyan-700 text-white py-3 px-6 rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300">
-                  <span>Add New Batch</span>
-                  <svg className="ml-2 w-5 h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
-                  </svg>
-                </button>
+                <Link to="/register-batch">
+                  <button className="w-full bg-gradient-to-r from-teal-600 to-cyan-700 text-white py-3 px-6 rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300">
+                    <span>Add New Batch</span>
+                    <svg className="ml-2 w-5 h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                    </svg>
+                  </button>
+                </Link>
               </div>
               <div className="bg-white/90 backdrop-blur-sm shadow-xl p-8 rounded-2xl border border-emerald-200 hover:shadow-2xl transform hover:-translate-y-2 transition-all duration-300 group">
                 <div className="flex items-center mb-6">
