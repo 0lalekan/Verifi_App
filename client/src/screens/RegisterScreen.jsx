@@ -20,7 +20,7 @@ const RegisterScreen = () => {
     <div className="space-y-6">
       <div className="text-center">
         <h2 className="text-2xl font-bold text-slate-800">Create an Account</h2>
-        <p className="text-slate-500">Join OgaMed and streamline your healthcare workflows.</p>
+        <p className="text-slate-500">Join Verifi and streamline your healthcare workflows.</p>
       </div>
 
       <form onSubmit={submitHandler} className="space-y-4">

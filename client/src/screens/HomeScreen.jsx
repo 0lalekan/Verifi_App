@@ -46,7 +46,7 @@ const HomeScreen = () => {
 
           {/* Subtitle */}
           <p className="text-lg sm:text-xl text-slate-600 max-w-3xl mx-auto mb-12 leading-relaxed">
-            Streamline clinic operations with OgaMed's intelligent platform for patient management,
+            Streamline clinic operations with Verifi's intelligent platform for patient management,
             medication tracking, and tele-diagnostic excellence.
           </p>
 
@@ -146,7 +146,7 @@ const HomeScreen = () => {
             Ready to Transform Your Practice?
           </h2>
           <p className="text-lg text-slate-600 mb-8 max-w-2xl mx-auto">
-            Join thousands of healthcare providers already using OgaMed to streamline operations
+            Join thousands of healthcare providers already using Verifi to streamline operations
             and deliver exceptional patient care.
           </p>
           <Link

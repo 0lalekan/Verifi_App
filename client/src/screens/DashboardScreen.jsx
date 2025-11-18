@@ -211,7 +211,7 @@ const DashboardScreen = () => {
           <div className="text-center mb-16">
             <div className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white text-sm font-medium rounded-full mb-6 shadow-lg">
               <span className="w-2 h-2 bg-white rounded-full mr-2 animate-pulse"></span>
-              Welcome to OgaMed Dashboard
+              Welcome to Verifi Dashboard
             </div>
 
             <h1 className="text-4xl lg:text-5xl font-extrabold text-gray-900 mb-4">

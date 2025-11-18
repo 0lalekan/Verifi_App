@@ -19,7 +19,7 @@ const Header = () => {
           {/* Left side - Logo and Dashboard Link */}
           <div className="flex items-center space-x-6">
           <Link to="/" className="text-xl font-bold hover:text-slate-300 transition-colors">
-            OgaMed
+            Verifi
           </Link>
             {userInfo && (
               <Link to="/dashboard" className="text-sm hover:text-slate-300 transition-colors">
