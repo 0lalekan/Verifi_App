@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 
 const { Schema } = mongoose;
 
-const drugBatchSchema = new Schema(
+const productBatchSchema = new Schema(
   {
     batchNumber: {
       type: String,
@@ -11,9 +11,9 @@ const drugBatchSchema = new Schema(
       index: true,
       trim: true,
     },
-    drugName: {
+    productName: {
       type: String,
-      required: [true, 'A drug name is required.'],
+      required: [true, 'A product name is required.'],
     },
     // This will link to a User with role 'admin' or a future 'Organization' model
     manufacturer: {
@@ -67,6 +67,6 @@ const drugBatchSchema = new Schema(
   }
 );
 
-const DrugBatch = mongoose.models.DrugBatch || mongoose.model('DrugBatch', drugBatchSchema);
+const ProductBatch = mongoose.models.ProductBatch || mongoose.model('ProductBatch', productBatchSchema);
 
-export default DrugBatch;
+export default ProductBatch;

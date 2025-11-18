@@ -38,6 +38,8 @@ const userSchema = new Schema(
     },
     isActive: { type: Boolean, default: true },
     points: { type: Number, default: 0 },
+    resetPasswordToken: { type: String },
+    resetPasswordExpire: { type: Date },
     specialistDetails: specialistDetailsSchema,
   },
   { timestamps: true }

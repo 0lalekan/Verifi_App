@@ -1,42 +1,67 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { useMutation } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
+import axios from 'axios';
+import { toast } from 'react-toastify';
 
 const ForgotPasswordScreen = () => {
+  const [email, setEmail] = useState('');
+
+  const mutation = useMutation({
+    mutationFn: async (userData) => {
+      const response = await axios.post('/api/users/forgot-password', userData);
+      return response.data;
+    },
+    onSuccess: () => {
+      toast.success('Password reset email sent!');
+      setEmail('');
+    },
+    onError: (error) => {
+      toast.error(error?.response?.data?.message || error.message);
+    },
+  });
+
+  const submitHandler = (e) => {
+    e.preventDefault();
+    mutation.mutate({ email });
+  };
+
   return (
-    <div className="space-y-6 text-center">
-      <h2 className="text-2xl font-bold text-slate-800">Forgot Password</h2>
-      <p className="text-slate-500">Enter your email address to reset your password.</p>
-      <form className="space-y-4">
-        <div>
-          <label htmlFor="email" className="block text-sm font-medium text-slate-700 text-left">
-            Email address
-          </label>
-          <div className="mt-1">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 via-purple-50 to-indigo-100 flex items-center justify-center py-12 px-4">
+      <div className="max-w-md w-full bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-8">
+        <h1 className="text-3xl font-bold text-center text-gray-900 mb-8">Forgot Password</h1>
+        <form onSubmit={submitHandler} className="space-y-6">
+          <div>
+            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+              Email Address
+            </label>
             <input
               id="email"
-              name="email"
               type="email"
-              autoComplete="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300"
+              placeholder="Enter your email"
               required
-              className="appearance-none block w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
             />
           </div>
-        </div>
-        <div>
+
           <button
             type="submit"
-            className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            disabled={mutation.isPending}
+            className="w-full bg-gradient-to-r from-blue-600 to-purple-700 text-white py-3 px-6 rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Reset Password
+            {mutation.isPending ? 'Sending...' : 'Send Reset Email'}
           </button>
-        </div>
-      </form>
-      <p className="text-center text-sm text-slate-600">
-        Remember your password?{' '}
-        <Link to="/" className="font-medium text-indigo-600 hover:text-indigo-500">
-          Sign in
-        </Link>
-      </p>
+        </form>
+
+        <p className="text-center text-sm text-slate-600 mt-6">
+          Remember your password?{' '}
+          <Link to="/" className="font-medium text-indigo-600 hover:text-indigo-500">
+            Sign in
+          </Link>
+        </p>
+      </div>
     </div>
   );
 };

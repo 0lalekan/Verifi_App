@@ -6,12 +6,16 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import cookieParser from 'cookie-parser';
 import userRoutes from './routes/userRoutes.js'
-import drugBatchRoutes from './routes/drugBatchRoutes.js';
+import productRoutes from './routes/productRoutes.js';
 import teleDiagCaseRoutes from './routes/teleDiagCaseRoutes.js';
 import logRoutes from './routes/logRoutes.js';
-import cookieParser from 'cookie-parser';
+import reportRoutes from './routes/reportRoutes.js';
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // Load environment variables
 dotenv.config();
@@ -40,11 +44,15 @@ app.use(express.urlencoded({ extended: false }));
 app.use(morgan('dev'));
 app.use(cookieParser());
 
+// Serve static files from uploads directory
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
 // Routes
 app.use('/api/users', userRoutes);
-app.use('/api/drugs', drugBatchRoutes);
+app.use('/api/products', productRoutes);
 app.use('/api/cases', teleDiagCaseRoutes);
 app.use('/api/logs', logRoutes);
+app.use('/api/reports', reportRoutes);
 
 
 // Create HTTP server

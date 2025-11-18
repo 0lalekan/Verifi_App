@@ -84,7 +84,7 @@ const LoginScreen = () => {
             <label htmlFor="remember_me" className="ml-2 block text-slate-800">Keep me signed in</label>
           </div>
 
-          <div >
+          <div>
             <Link to="/forgot-password" className="font-medium text-indigo-600 hover:text-indigo-500">Forgot password?</Link>
           </div>
         </div>
@@ -101,9 +101,9 @@ const LoginScreen = () => {
       </form>
 
       <p className="text-center text-sm text-slate-600">
-        Not a member?{' '}
+        Don't have an account?{' '}
         <Link to="/register" className="font-medium text-indigo-600 hover:text-indigo-500">
-          Create an account
+          Register Here.
         </Link>
       </p>
     </div>

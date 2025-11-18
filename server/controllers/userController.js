@@ -1,4 +1,5 @@
 import asyncHandler from 'express-async-handler';
+import crypto from 'crypto';
 import User from '../models/userModel.js';
 import generateToken from '../utils/generateToken.js';
 
@@ -66,4 +67,61 @@ const getUserProfile = asyncHandler(async (req, res) => {
   }
 });
 
-export { registerUser, authUser, getUserProfile };
+// @desc    Forgot password - send reset email
+// @route   POST /api/users/forgot-password
+// @access  Public
+const forgotPassword = asyncHandler(async (req, res) => {
+  const { email } = req.body;
+
+  const user = await User.findOne({ email });
+  if (!user) {
+    res.status(404);
+    throw new Error('User not found');
+  }
+
+  // Generate reset token
+  const resetToken = crypto.randomBytes(20).toString('hex');
+
+  // Hash token and set expiry
+  user.resetPasswordToken = crypto.createHash('sha256').update(resetToken).digest('hex');
+  user.resetPasswordExpire = Date.now() + 10 * 60 * 1000; // 10 minutes
+
+  await user.save();
+
+  // Placeholder: send email (log for now)
+  console.log(`Password reset email sent to ${email}. Reset token: ${resetToken} (unhashed for testing)`);
+
+  res.status(200).json({ message: 'Password reset email sent' });
+});
+
+// @desc    Reset password with token
+// @route   POST /api/users/reset-password/:token
+// @access  Public
+const resetPassword = asyncHandler(async (req, res) => {
+  const { token } = req.params;
+  const { newPassword } = req.body;
+
+  // Hash token to match with DB
+  const resetPasswordToken = crypto.createHash('sha256').update(token).digest('hex');
+
+  const user = await User.findOne({
+    resetPasswordToken,
+    resetPasswordExpire: { $gt: Date.now() }
+  });
+
+  if (!user) {
+    res.status(400);
+    throw new Error('Invalid or expired token');
+  }
+
+  // Update password and clear reset fields
+  user.password = newPassword;
+  user.resetPasswordToken = undefined;
+  user.resetPasswordExpire = undefined;
+
+  await user.save();
+
+  res.status(200).json({ message: 'Password reset successful' });
+});
+
+export { registerUser, authUser, getUserProfile, forgotPassword, resetPassword };

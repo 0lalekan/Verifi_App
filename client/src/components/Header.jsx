@@ -33,7 +33,7 @@ const Header = () => {
             {userInfo ? (
               <>
                 <span className="text-sm">
-                  Welcome, {userInfo.firstName || 'User'} ({userProfile?.points || 0} pts)
+                  Welcome, <Link to="/profile" className="text-blue-400 hover:text-blue-300 underline">{userInfo.firstName || 'User'}</Link> ({userProfile?.points || 0} pts)
                 </span>
                 <button
                   onClick={logoutHandler}

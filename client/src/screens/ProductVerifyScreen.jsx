@@ -5,7 +5,7 @@ import { toast } from 'react-toastify';
 import Tesseract from 'tesseract.js';
 import useAuthStore from '../store';
 
-const DrugVerifyScreen = () => {
+const ProductVerifyScreen = () => {
   const [batchNumber, setBatchNumber] = useState('');
   const [verificationResult, setVerificationResult] = useState(null);
   const [isScanning, setIsScanning] = useState(false);
@@ -15,7 +15,7 @@ const DrugVerifyScreen = () => {
 
   const mutation = useMutation({
     mutationFn: async ({ batchNumber, latitude, longitude, accuracy }) => {
-      const response = await axios.post('/api/drugs/verify', {
+      const response = await axios.post('/api/products/verify', {
         batchNumber,
         latitude,
         longitude,
@@ -99,7 +99,7 @@ const DrugVerifyScreen = () => {
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
       <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
-        <h2 className="text-2xl font-bold text-center mb-6">Drug Batch Verification</h2>
+        <h2 className="text-2xl font-bold text-center mb-6">Product Batch Verification</h2>
         <div className="mb-4">
           <label htmlFor="batchNumber" className="block text-sm font-medium text-gray-700 mb-2">
             Enter Batch Number
@@ -154,29 +154,30 @@ const DrugVerifyScreen = () => {
               </span>
             </div>
             <div className="mb-4">
-              <h4 className="text-lg font-semibold text-green-800 mb-2">Drug Profile</h4>
+
+              <h4 className="text-lg font-semibold text-green-800 mb-2">Product Profile</h4>
               <p>
-                <strong>Drug Name:</strong> {verificationResult.drug.drugName}
+                <strong>Product Name:</strong> {verificationResult.product.productName}
               </p>
               <p>
-                <strong>Manufacturer:</strong> {verificationResult.drug.medicalDetails?.manufacturedBy || 'N/A'}
+                <strong>Manufacturer:</strong> {verificationResult.product.medicalDetails?.manufacturedBy || 'N/A'}
               </p>
               <p>
-                <strong>Description:</strong> {verificationResult.drug.medicalDetails?.description || 'N/A'}
+                <strong>Description:</strong> {verificationResult.product.medicalDetails?.description || 'N/A'}
               </p>
             </div>
             <hr className="my-4" />
             <div>
               <h4 className="text-lg font-semibold text-green-800 mb-2">Usage & Safety</h4>
               <p>
-                <strong>Dosage:</strong> {verificationResult.drug.medicalDetails?.dosage || 'N/A'}
+                <strong>Dosage:</strong> {verificationResult.product.medicalDetails?.dosage || 'N/A'}
               </p>
               <p>
-                <strong>Active Ingredients:</strong> {verificationResult.drug.medicalDetails?.activeIngredients || 'N/A'}
+                <strong>Active Ingredients:</strong> {verificationResult.product.medicalDetails?.activeIngredients || 'N/A'}
               </p>
-              {verificationResult.drug.medicalDetails?.sideEffects ? (
+              {verificationResult.product.medicalDetails?.sideEffects ? (
                 <div className="bg-yellow-100 border border-yellow-400 p-2 rounded mt-2">
-                  <strong>Side Effects:</strong> {verificationResult.drug.medicalDetails.sideEffects}
+                  <strong>Side Effects:</strong> {verificationResult.product.medicalDetails.sideEffects}
                 </div>
               ) : (
                 <p>
@@ -185,7 +186,7 @@ const DrugVerifyScreen = () => {
               )}
             </div>
             <p className="text-green-700 mt-4">
-              <strong>Times Verified:</strong> {verificationResult.drug.verificationCount}
+              <strong>Times Verified:</strong> {verificationResult.product.verificationCount}
             </p>
           </div>
         )}
@@ -204,4 +205,4 @@ const DrugVerifyScreen = () => {
   );
 };
 
-export default DrugVerifyScreen;
+export default ProductVerifyScreen;
