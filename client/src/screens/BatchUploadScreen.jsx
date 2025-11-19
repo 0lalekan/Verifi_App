@@ -5,81 +5,100 @@ import { toast } from 'react-toastify';
 
 const BatchUploadScreen = () => {
   const [file, setFile] = useState(null);
+  const navigate = useNavigate();
+  
+  // 1. Fetch Profile Data
+  const { data: userProfile, isLoading } = useUserProfile();
+
+  // 2. Route Guard
+  React.useEffect(() => {
+    if (!isLoading && userProfile) {
+      if (!userProfile.organizationDetails?.isVerified) {
+        toast.error("Account verification required.");
+        navigate('/manufacturer/portal');
+      }
+    }
+  }, [userProfile, isLoading, navigate]);
 
   const downloadTemplate = () => {
-    const template = 'batchNumber,productName,expiryDate,description\n';
+    const template = 'batchNumber,productName,expiryDate,ManufacturingDate,Description\n';
     const blob = new Blob([template], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'Verifi_Batch_Template.csv';
+    a.download = 'Verifi_Template.csv';
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
-    URL.revokeObjectURL(url);
   };
 
   const mutation = useMutation({
     mutationFn: async (formData) => {
       const response = await axios.post('/api/products/bulk-upload', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
+        headers: { 'Content-Type': 'multipart/form-data' },
       });
       return response.data;
     },
     onSuccess: (data) => {
-      toast.success(`Batch uploaded: ${data.message}`);
+      toast.success(`Success! Processed ${data.count} records.`);
       setFile(null);
     },
-    onError: () => {
-      toast.error('Failed to upload batch list');
-    },
+    onError: () => toast.error('Upload failed. Please check your CSV format.'),
   });
 
   const handleUpload = (e) => {
     e.preventDefault();
-    if (!file) {
-      toast.error('Please select a file');
-      return;
-    }
+    if (!file) return toast.error('Please select a CSV file');
     const formData = new FormData();
     formData.append('batchFile', file);
     mutation.mutate(formData);
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center py-12 px-4">
-      <div className="max-w-md w-full bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-8">
-        <h1 className="text-3xl font-bold text-center text-gray-900 mb-8">Bulk Batch Upload (CSV/Excel)</h1>
+    <div className="min-h-screen bg-slate-50 py-12 px-4 flex items-center justify-center">
+      <div className="max-w-lg w-full bg-white p-8 rounded-2xl shadow-lg border border-slate-200">
+        <div className="text-center mb-8">
+          <div className="w-16 h-16 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">
+            📤
+          </div>
+          <h1 className="text-2xl font-bold text-slate-900">Bulk Inventory Import</h1>
+          <p className="text-slate-500 mt-2">Upload your manifest to register multiple batches instantly.</p>
+        </div>
+
         <form onSubmit={handleUpload} className="space-y-6">
-          <button
-            type="button"
-            onClick={downloadTemplate}
-            className="w-full bg-blue-500 text-white py-3 px-6 rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300"
-          >
-            Download CSV Template
-          </button>
-          <div>
-            <label htmlFor="file" className="block text-sm font-medium text-gray-700 mb-2">
-              Select CSV or Excel File
-            </label>
+          
+          <div className="border-2 border-dashed border-slate-300 rounded-xl p-8 text-center hover:bg-slate-50 transition-colors cursor-pointer relative">
             <input
-              id="file"
               type="file"
-              accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+              accept=".csv"
               onChange={(e) => setFile(e.target.files[0])}
-              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300"
+              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
             />
+            <div className="space-y-2">
+              <span className="text-4xl">📄</span>
+              <p className="text-sm font-medium text-slate-900">
+                {file ? file.name : 'Click to browse or drag CSV here'}
+              </p>
+              <p className="text-xs text-slate-400">Supported format: .CSV</p>
+            </div>
           </div>
 
-          <button
-            type="submit"
-            disabled={mutation.isLoading}
-            className="w-full bg-gradient-to-r from-blue-600 to-purple-700 text-white py-3 px-6 rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {mutation.isLoading ? 'Uploading...' : 'Upload Batch List'}
-          </button>
+          <div className="flex gap-4">
+             <button
+              type="button"
+              onClick={downloadTemplate}
+              className="flex-1 py-3 px-4 bg-slate-100 text-slate-700 font-semibold rounded-xl hover:bg-slate-200 transition-colors"
+            >
+              Download Template
+            </button>
+            <button
+              type="submit"
+              disabled={mutation.isPending || !file}
+              className="flex-1 py-3 px-4 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 transition-colors disabled:opacity-50 shadow-lg shadow-blue-500/20"
+            >
+              {mutation.isPending ? 'Processing...' : 'Start Upload'}
+            </button>
+          </div>
         </form>
       </div>
     </div>

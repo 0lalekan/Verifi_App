@@ -4,261 +4,262 @@ import axios from 'axios';
 import { toast } from 'react-toastify';
 import { useZxing } from 'react-zxing';
 import { BrowserMultiFormatReader } from '@zxing/library';
-import useAuthStore from '../store';
-import Confetti from 'react-confetti';
 import { motion, AnimatePresence } from 'framer-motion';
+import Confetti from 'react-confetti';
 import { useNavigate } from 'react-router-dom';
-import SafetyTips from '../components/SafetyTips';
-
-const ShieldIcon = () => (
-  <svg className="w-64 h-64 animate-pulse" viewBox="0 0 24 24" fill="currentColor">
-    <path d="M12 1l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 1z"/>
-  </svg>
-);
 
 const ConsumerScanScreen = () => {
   const [batchNumber, setBatchNumber] = useState('');
   const [verificationResult, setVerificationResult] = useState(null);
-  const [showManual, setShowManual] = useState(false);
-  const [showConfetti, setShowConfetti] = useState(false);
-  const { userInfo } = useAuthStore();
-  const fileInputQrRef = useRef(null);
+  const [isScanning, setIsScanning] = useState(true);
+  const [isProcessingImage, setIsProcessingImage] = useState(false);
+  
+  const fileInputRef = useRef(null);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
-  const { ref: cameraRef } = useZxing({
-    onDecodeResult: (result) => {
-      const text = result.getText();
-      setBatchNumber(text);
-      verifyProduct(text);
-    },
-    constraints: { video: { facingMode: { ideal: 'environment' } } },
-  });
-
-  const verifyProduct = (batchNum) => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const { latitude, longitude, accuracy } = position.coords;
-          mutation.mutate({ batchNumber: batchNum, latitude, longitude, accuracy });
-        },
-        (error) => {
-          console.warn('Geolocation error:', error);
-          mutation.mutate({ batchNumber: batchNum, latitude: null, longitude: null, accuracy: null });
-        },
-        { enableHighAccuracy: true, timeout: 5000 }
-      );
-    } else {
-      mutation.mutate({ batchNumber: batchNum, latitude: null, longitude: null, accuracy: null });
-    }
-  };
-
+  // --- API Mutation ---
   const mutation = useMutation({
     mutationFn: async ({ batchNumber, latitude, longitude, accuracy }) => {
       const response = await axios.post('/api/products/verify', {
-        batchNumber,
-        latitude,
-        longitude,
-        accuracy,
+        batchNumber, latitude, longitude, accuracy,
       });
       return response.data;
     },
     onSuccess: (data) => {
       setVerificationResult(data);
-      setShowManual(false); // close manual
-      if (data.status === 'Valid') {
-        setShowConfetti(true);
-        // successAudio.play(); // Disabled to fix import error
-        setTimeout(() => {
-          setShowConfetti(false);
-        }, 4000);
-      } else if (data.status === 'Fake') {
-        if (navigator.vibrate) {
-          navigator.vibrate([100, 30, 100]);
-        }
-      }
-      queryClient.invalidateQueries(['userProfile']);
+      setIsScanning(false);
+      queryClient.invalidateQueries(['userProfile']); 
+      if (navigator.vibrate) navigator.vibrate(200);
     },
     onError: () => {
-      setVerificationResult({ status: 'Error' });
-      toast.error('Verification failed');
+      toast.error('Verification failed. Please try again.');
+      setIsScanning(true);
     },
   });
 
-  const handleVerify = () => {
-    if (batchNumber.trim()) {
-      verifyProduct(batchNumber);
+  // --- Handlers ---
+  const handleVerify = (code) => {
+    if (!code) return;
+    setBatchNumber(code);
+    
+    // Get Geolocation
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => mutation.mutate({ 
+          batchNumber: code, 
+          latitude: pos.coords.latitude, 
+          longitude: pos.coords.longitude, 
+          accuracy: pos.coords.accuracy 
+        }),
+        () => mutation.mutate({ batchNumber: code }) 
+      );
+    } else {
+      mutation.mutate({ batchNumber: code });
     }
   };
 
-  const handleUploadQrImage = () => {
-    fileInputQrRef.current?.click();
-  };
+  // --- Camera Scanner ---
+  const { ref: cameraRef } = useZxing({
+    paused: !isScanning,
+    onDecodeResult: (result) => {
+      const text = result.getText();
+      if (isScanning) {
+        setIsScanning(false); 
+        handleVerify(text);
+      }
+    },
+    options: {
+      hints: new Map([['TRY_HARDER', true], ['POSSIBLE_FORMATS', ['QR_CODE', 'CODE_128', 'EAN_13']]])
+    }
+  });
 
-  const handleImageDecode = async (event) => {
-    const file = event.target.files[0];
+  // --- Image Upload Handler ---
+  const handleImageUpload = async (e) => {
+    const file = e.target.files[0];
     if (!file) return;
+
+    setIsProcessingImage(true);
+    setIsScanning(false); // Pause camera while processing image
 
     try {
       const reader = new BrowserMultiFormatReader();
-      const image = new Image();
-      image.onload = () => {
-        reader.decodeFromImage(image).then(result => {
-          const text = result.getText();
-          setBatchNumber(text);
-          verifyProduct(text);
-        }).catch(err => {
-          console.error(err);
-          toast.error('Could not decode QR/Barcode from image');
-        });
-      };
-      image.src = URL.createObjectURL(file);
+      const imageUrl = URL.createObjectURL(file);
+      const result = await reader.decodeFromImageUrl(imageUrl);
+      
+      if (result) {
+        handleVerify(result.getText());
+      }
     } catch (error) {
       console.error(error);
-      toast.error('Failed to process image');
+      toast.error('Could not read QR/Barcode from image. Try manual entry.');
+      setIsScanning(true); 
+    } finally {
+      setIsProcessingImage(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
     }
   };
-
-  const handleShare = async () => {
-    const productName = verificationResult.productName || 'product';
-    const appLink = window.location.origin;
-    const message = `I just verified my ${productName} on Verifi! It's safe. Stay safe this Season! ${appLink} #VerifiNigeria`;
-
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: 'Verified safe product on Verifi',
-          text: message,
-          url: appLink
-        });
-        toast.success('Shared successfully!');
-      } catch (err) {
-        console.log('Share cancelled or failed');
-      }
-    } else {
-      try {
-        await navigator.clipboard.writeText(message);
-        toast.success('Message copied to clipboard!');
-      } catch (err) {
-        toast.error('Failed to copy message');
-      }
-    }
-  };
-
-  if (verificationResult) {
-    const isValid = verificationResult.status === 'Valid';
-    const isFake = verificationResult.status === 'Fake';
-    return (
-      <div className={`w-full h-screen flex flex-col items-center justify-center ${isValid ? 'bg-green-500' : isFake ? 'bg-red-500' : 'bg-gray-500'} relative`}>
-        <AnimatePresence>
-          {isValid && (
-            <motion.div
-              initial={{ scale: 0.5, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              className="text-center"
-            >
-              <div className="text-white mb-4">
-                <ShieldIcon />
-              </div>
-              <p className="text-white text-3xl font-bold">VERIFIED AUTHENTIC!</p>
-              <p className="text-white">You earned {verificationResult.pointsEarned} Points!</p>
-              <button
-                onClick={handleShare}
-                className="mt-6 bg-white text-green-600 px-8 py-3 rounded-lg text-xl font-bold hover:bg-gray-200 transition-colors"
-              >
-                Share Safety Win 🛡️
-              </button>
-            </motion.div>
-          )}
-          {isFake && (
-            <motion.div
-              initial={{ scale: 0.5, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              className="text-center"
-            >
-              <h1 className="text-white text-6xl font-bold mb-8">REPORT NOW</h1>
-              <button
-                onClick={() => navigate('/report')}
-                className="bg-white text-red-500 px-12 py-6 rounded-lg text-3xl font-bold hover:bg-gray-200"
-              >
-                Whistleblower Form
-              </button>
-            </motion.div>
-          )}
-        </AnimatePresence>
-        {showConfetti && <Confetti />}
-      </div>
-    );
-  }
 
   return (
-    <div className="relative w-full h-screen bg-black overflow-hidden">
-      {/* QR Scanner Background */}
-      <video ref={cameraRef} className="w-full h-full object-cover" />
-
-      {/* Scan Reticle */}
-      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-        <div className="w-64 h-64 border-4 border-white rounded-lg animate-pulse"></div>
-      </div>
-
-      {/* Bottom Sheet */}
+    <div className="fixed inset-0 bg-black text-white overflow-hidden flex flex-col h-[100dvh]">
+      
+      {/* --- Result Overlay (Success/Fail) --- */}
       <AnimatePresence>
-        {showManual && (
+        {verificationResult && (
           <motion.div
             initial={{ y: '100%' }}
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
-            className="absolute bottom-0 w-full bg-white rounded-t-3xl p-6 max-h-80 flex flex-col"
+            className="absolute z-50 inset-x-0 bottom-0 h-[85vh] bg-white rounded-t-[2.5rem] p-8 text-slate-900 flex flex-col items-center shadow-[0_-20px_60px_rgba(0,0,0,0.5)]"
           >
-            <div className="mb-4">
-              <label htmlFor="batchNumber" className="block text-sm font-medium text-gray-700 mb-2">
-                Enter Batch Number
-              </label>
-              <input
-                id="batchNumber"
-                type="text"
-                value={batchNumber}
-                onChange={(e) => setBatchNumber(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Batch Number or Scan QR/Barcode"
-              />
-              {!verificationResult && (mutation.isLoading || !showManual) && <div className="mt-4"><SafetyTips /></div>}
-            </div>
-            <div className="flex space-x-2 mb-4">
-              <button
-                onClick={handleUploadQrImage}
-                className="flex-1 bg-purple-500 text-white py-2 px-4 rounded-md hover:bg-purple-600"
-              >
-                Upload Image
-              </button>
-              <input
-                ref={fileInputQrRef}
-                type="file"
-                accept="image/*"
-                onChange={handleImageDecode}
-                className="hidden"
-              />
-            </div>
-            <button
-              onClick={handleVerify}
-              disabled={!batchNumber.trim() || mutation.isLoading}
-              className="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 disabled:opacity-50"
+            <div className="w-16 h-1.5 bg-slate-200 rounded-full mb-8"></div>
+
+            {verificationResult.status === 'Valid' ? (
+              <>
+                <Confetti numberOfPieces={200} recycle={false} className="!absolute !w-full !h-full" />
+                <motion.div 
+                  initial={{ scale: 0 }} animate={{ scale: 1 }} 
+                  className="w-24 h-24 bg-emerald-100 rounded-full flex items-center justify-center text-5xl mb-6 shadow-lg shadow-emerald-100"
+                >
+                  ✅
+                </motion.div>
+                <h2 className="text-3xl font-extrabold text-emerald-600 mb-2 tracking-tight">Authentic</h2>
+                <p className="text-slate-500 text-center mb-8 text-lg">
+                  {verificationResult.product?.productName || 'Verified Product'} <br/>
+                  <span className="text-sm font-mono text-slate-400 bg-slate-100 px-2 py-1 rounded mt-2 inline-block">
+                    {batchNumber}
+                  </span>
+                </p>
+                
+                <div className="w-full bg-slate-50 rounded-2xl p-6 mb-auto space-y-4 border border-slate-100">
+                  <div className="flex justify-between items-center">
+                    <span className="text-slate-400 font-medium">Expiry Date</span>
+                    <span className="font-bold text-slate-800">
+                      {verificationResult.product?.expiryDate 
+                        ? new Date(verificationResult.product.expiryDate).toLocaleDateString() 
+                        : 'N/A'}
+                    </span>
+                  </div>
+                  <div className="h-px bg-slate-200"></div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-slate-400 font-medium">Reward</span>
+                    <span className="font-bold text-emerald-600 flex items-center gap-1">
+                      +{verificationResult.pointsEarned} Points ✨
+                    </span>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <>
+                <motion.div 
+                  initial={{ scale: 0 }} animate={{ scale: 1 }}
+                  className="w-24 h-24 bg-red-100 rounded-full flex items-center justify-center text-5xl mb-6 shadow-lg shadow-red-100"
+                >
+                  🚨
+                </motion.div>
+                <h2 className="text-3xl font-extrabold text-red-600 mb-2 tracking-tight">STOP</h2>
+                <h3 className="text-xl font-bold text-slate-800 mb-4">Status: {verificationResult.status}</h3>
+                <p className="text-slate-500 text-center mb-8 leading-relaxed">
+                  This batch number was NOT found in the official registry or has been flagged. 
+                  <strong> Do not use this product.</strong>
+                </p>
+                <button 
+                  onClick={() => navigate('/report')}
+                  className="w-full py-4 bg-red-600 text-white rounded-xl font-bold text-lg hover:bg-red-700 transition-all shadow-xl shadow-red-500/20 mb-auto active:scale-95"
+                >
+                  Report This Item
+                </button>
+              </>
+            )}
+
+            <button 
+              onClick={() => { setVerificationResult(null); setIsScanning(true); setBatchNumber(''); }}
+              className="w-full py-4 bg-slate-900 text-white rounded-xl font-bold text-lg hover:bg-slate-800 transition-all active:scale-95"
             >
-              {mutation.isLoading ? 'Verifying...' : 'Verify Now'}
+              Scan Next Item
             </button>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Manual Entry Trigger */}
-      {!showManual && (
-        <div className="absolute bottom-0 w-full p-4">
-          <button
-            onClick={() => setShowManual(true)}
-            className="w-full bg-white text-black py-3 rounded-lg font-semibold"
-          >
-            Manual Entry
-          </button>
+      {/* --- Camera Viewport (FIXED: min-h-0 and overflow-hidden) --- */}
+      <div className="relative flex-1 bg-black min-h-0 overflow-hidden">
+        <video ref={cameraRef} className="w-full h-full object-cover opacity-90" />
+        
+        {/* Visual Guides */}
+        <div className="absolute inset-0 flex flex-col items-center justify-center p-8 pointer-events-none">
+          <div className="relative w-72 h-72 border-2 border-white/30 rounded-3xl overflow-hidden backdrop-blur-[2px]">
+            {isScanning && (
+              <motion.div
+                className="absolute left-0 right-0 h-0.5 bg-emerald-400 shadow-[0_0_30px_3px_rgba(52,211,153,0.6)]"
+                animate={{ top: ['0%', '100%', '0%'] }}
+                transition={{ duration: 3, ease: "linear", repeat: Infinity }}
+              />
+            )}
+            <div className="absolute top-0 left-0 w-6 h-6 border-t-4 border-l-4 border-emerald-500 rounded-tl-lg"></div>
+            <div className="absolute top-0 right-0 w-6 h-6 border-t-4 border-r-4 border-emerald-500 rounded-tr-lg"></div>
+            <div className="absolute bottom-0 left-0 w-6 h-6 border-b-4 border-l-4 border-emerald-500 rounded-bl-lg"></div>
+            <div className="absolute bottom-0 right-0 w-6 h-6 border-b-4 border-r-4 border-emerald-500 rounded-br-lg"></div>
+          </div>
+          
+          <div className="mt-8 px-6 py-2 bg-black/40 backdrop-blur-md rounded-full border border-white/10">
+            <p className="text-white/90 text-sm font-medium">
+              {isProcessingImage ? 'Analyzing Image...' : 'Align QR or Barcode'}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* --- Footer Controls (Now Visible) --- */}
+      {!verificationResult && (
+        <div className="bg-slate-900 px-6 pt-6 pb-8 rounded-t-3xl shadow-[0_-10px_40px_rgba(0,0,0,0.5)] z-10 border-t border-white/10">
+          <div className="flex flex-col gap-4">
+            
+            {/* Manual Entry Form */}
+            <form 
+              onSubmit={(e) => { e.preventDefault(); handleVerify(batchNumber); }} 
+              className="flex gap-3"
+            >
+              <input
+                type="text"
+                placeholder="Enter Batch Number"
+                value={batchNumber}
+                onChange={(e) => setBatchNumber(e.target.value)}
+                className="flex-1 bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all text-lg font-mono"
+              />
+              <button 
+                type="submit"
+                disabled={mutation.isPending || !batchNumber}
+                className="bg-emerald-600 hover:bg-emerald-500 text-white px-6 rounded-xl font-bold transition-all active:scale-95 disabled:opacity-50 disabled:scale-100"
+              >
+                Check
+              </button>
+            </form>
+
+            <div className="relative flex py-1 items-center">
+              <div className="flex-grow border-t border-slate-700"></div>
+              <span className="flex-shrink mx-4 text-slate-500 text-xs uppercase font-bold tracking-wider">Or Upload</span>
+              <div className="flex-grow border-t border-slate-700"></div>
+            </div>
+
+            {/* Upload Button */}
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="w-full py-3 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-xl text-slate-300 font-semibold transition-all flex items-center justify-center gap-2 active:scale-95"
+            >
+              <span className="text-xl">🖼️</span> Upload from Gallery
+            </button>
+            
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleImageUpload}
+            />
+
+          </div>
         </div>
       )}
     </div>

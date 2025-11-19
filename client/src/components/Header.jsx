@@ -5,6 +5,7 @@ import { useUserProfile } from '../hooks/useUserProfile';
 const Header = () => {
   const navigate = useNavigate();
   const { userInfo, logout } = useAuthStore();
+  // We fetch the full profile here to check verification status
   const { data: userProfile } = useUserProfile({ enabled: !!userInfo });
 
   const logoutHandler = () => {
@@ -12,10 +13,24 @@ const Header = () => {
     navigate('/login');
   };
 
+  // Logic to determine where the Logo clicks to
+  const getHomeRoute = () => {
+    if (!userInfo) return '/'; 
+
+    switch (userInfo.role) {
+      case 'manufacturer':
+        return '/manufacturer/portal';
+      case 'regulator':
+        return '/regulator/dashboard';
+      case 'consumer':
+      default:
+        return '/dashboard';
+    }
+  };
+
   const getRoleBasedLinks = () => {
     if (!userInfo) return [];
     
-    // STRICTLY MATCHING BACKEND ROLES: consumer, manufacturer, regulator
     switch (userInfo.role) {
       case 'consumer':
         return [
@@ -24,11 +39,21 @@ const Header = () => {
           { to: '/report', label: 'Report' }
         ];
       case 'manufacturer':
-        return [
-          { to: '/manufacturer/portal', label: 'Portal' },
-          { to: '/register-batch', label: 'New Batch' },
-          { to: '/bulk-upload', label: 'Bulk Upload' }
+        // Base link that is always accessible
+        const manufacturerLinks = [
+          { to: '/manufacturer/portal', label: 'Portal' }
         ];
+        
+        // SECURITY CHECK: Only show these if verified
+        if (userProfile?.organizationDetails?.isVerified) {
+          manufacturerLinks.push(
+            { to: '/register-batch', label: 'New Batch' },
+            { to: '/bulk-upload', label: 'Bulk Upload' }
+          );
+        }
+        
+        return manufacturerLinks;
+
       case 'regulator':
         return [
           { to: '/regulator/dashboard', label: 'Oversight' },
@@ -46,8 +71,8 @@ const Header = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16 items-center">
           
-          {/* Logo */}
-          <Link to="/" className="flex items-center gap-2 group">
+          {/* Logo - Dynamic */}
+          <Link to={getHomeRoute()} className="flex items-center gap-2 group">
             <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-blue-500/30 group-hover:scale-105 transition-transform">
               V
             </div>

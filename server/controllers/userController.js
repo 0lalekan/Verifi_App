@@ -69,6 +69,47 @@ const getUserProfile = asyncHandler(async (req, res) => {
   }
 });
 
+// @desc    Update user profile
+// @route   PUT /api/users/profile
+// @access  Private
+const updateUserProfile = asyncHandler(async (req, res) => {
+  const user = await User.findById(req.user._id);
+
+  if (user) {
+    user.firstName = req.body.firstName || user.firstName;
+    user.lastName = req.body.lastName || user.lastName;
+
+    // Check if email is changing
+    if (req.body.email && req.body.email !== user.email) {
+      const emailExists = await User.findOne({ email: req.body.email });
+      if (emailExists) {
+        res.status(400);
+        throw new Error('Email already in use');
+      }
+      user.email = req.body.email;
+    }
+
+    // Handle profile image upload
+    if (req.file) {
+      user.profileImage = req.file.filename;
+    }
+
+    const updatedUser = await user.save();
+
+    res.json({
+      _id: updatedUser._id,
+      firstName: updatedUser.firstName,
+      lastName: updatedUser.lastName,
+      email: updatedUser.email,
+      profileImage: updatedUser.profileImage,
+      role: updatedUser.role,
+    });
+  } else {
+    res.status(404);
+    throw new Error('User not found');
+  }
+});
+
 // @desc    Forgot password - send reset email
 // @route   POST /api/users/forgot-password
 // @access  Public
@@ -153,4 +194,42 @@ const getDashboardStats = asyncHandler(async (req, res) => {
   });
 });
 
-export { registerUser, authUser, getUserProfile, forgotPassword, resetPassword, getDashboardStats };
+// @desc    Get all pending manufacturer verifications
+// @route   GET /api/users/pending-verifications
+// @access  Protected (Regulator Only)
+const getPendingVerifications = asyncHandler(async (req, res) => {
+  const pendingUsers = await User.find({
+    role: 'manufacturer',
+    'organizationDetails.isVerified': false
+  }).select('-password'); // Exclude password
+
+  res.json(pendingUsers);
+});
+
+// @desc    Approve a manufacturer
+// @route   PUT /api/users/verify/:id
+// @access  Protected (Regulator Only)
+const verifyManufacturer = asyncHandler(async (req, res) => {
+  const user = await User.findById(req.params.id);
+
+  if (user) {
+    user.organizationDetails.isVerified = true;
+    await user.save();
+    res.json({ message: `Organization ${user.organizationDetails?.orgName} Verified` });
+  } else {
+    res.status(404);
+    throw new Error('User not found');
+  }
+});
+
+export { 
+  registerUser, 
+  authUser, 
+  getUserProfile, 
+  updateUserProfile, 
+  forgotPassword, 
+  resetPassword, 
+  getDashboardStats,
+  getPendingVerifications, // Export new function
+  verifyManufacturer       // Export new function
+};

@@ -1,79 +1,88 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import useAuthStore from '../store';
+import { useUserProfile } from '../hooks/useUserProfile';
+
+const ActionCard = ({ icon, title, desc, link, linkText, color, disabled }) => (
+  <div className={`group bg-white p-8 rounded-2xl shadow-sm border border-slate-200 transition-all duration-300 ${disabled ? 'opacity-60 cursor-not-allowed' : 'hover:shadow-md hover:border-emerald-200'}`}>
+    <div className={`w-14 h-14 ${color} rounded-xl flex items-center justify-center text-3xl mb-6 ${!disabled && 'group-hover:scale-110 transition-transform'}`}>
+      {icon}
+    </div>
+    <h3 className="text-xl font-bold text-slate-900 mb-3">{title}</h3>
+    <p className="text-slate-500 mb-8 leading-relaxed min-h-[80px]">
+      {desc}
+    </p>
+    {disabled ? (
+      <span className="inline-flex items-center font-semibold text-slate-400 cursor-not-allowed">
+        🔒 Verification Required
+      </span>
+    ) : (
+      <Link
+        to={link}
+        className="inline-flex items-center font-semibold text-emerald-600 hover:text-emerald-700 transition-colors"
+      >
+        {linkText}
+        <span className="ml-2 group-hover:translate-x-1 transition-transform">→</span>
+      </Link>
+    )}
+  </div>
+);
 
 const ManufacturerPortalScreen = () => {
+  const { userInfo } = useAuthStore();
+  // We fetch the profile again to ensure we have the latest verification status
+  const { data: userProfile } = useUserProfile();
+
+  const isVerified = userProfile?.organizationDetails?.isVerified || false;
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 py-12">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Welcome Header */}
+    <div className="min-h-screen bg-slate-50 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto">
+        {/* Header */}
         <div className="text-center mb-12">
-          <div className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white text-sm font-medium rounded-full mb-6 shadow-lg">
-            <span className="w-2 h-2 bg-white rounded-full mr-2 animate-pulse"></span>
-            Manufacturer Portal
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-slate-200 text-slate-600 text-sm font-medium mb-6">
+            <span className={`w-2 h-2 rounded-full ${isVerified ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500'}`}></span>
+            {isVerified ? 'Secure Workspace Active' : 'Action Required'}
           </div>
-          <h1 className="text-4xl lg:text-5xl font-extrabold text-gray-900 mb-4">
-            Welcome to the{' '}
-            <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              Manufacturer Hub
-            </span>
+          <h1 className="text-4xl font-extrabold text-slate-900 mb-4">
+            Manufacturer Hub
           </h1>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Manage your product batches, create new inventory, and track supply chain progress.
-          </p>
+          
+          {!isVerified && (
+            <div className="max-w-2xl mx-auto mt-6 bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-start gap-3 text-left">
+              <span className="text-2xl">⚠️</span>
+              <div>
+                <h3 className="font-bold text-amber-800">Verification Pending</h3>
+                <p className="text-amber-700 text-sm mt-1">
+                  Your organization details are currently under review. You cannot register new product batches until your business license is verified by a Regulator. 
+                  <Link to="/profile" className="underline ml-1 font-semibold">Check Profile Status</Link>
+                </p>
+              </div>
+            </div>
+          )}
         </div>
 
-        {/* Actions Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {/* Batch Upload */}
-          <div className="bg-white/90 backdrop-blur-sm shadow-xl p-8 rounded-2xl border border-white/20 text-center hover:shadow-2xl transform hover:-translate-y-2 transition-all duration-300">
-            <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-xl flex items-center justify-center mx-auto mb-6">
-              <span className="text-white text-2xl">📤</span>
-            </div>
-            <h3 className="text-2xl font-bold text-gray-900 mb-4">Bulk Upload</h3>
-            <p className="text-gray-600 mb-8 leading-relaxed">
-              Upload multiple product batches at once via CSV or Excel file for efficient batch management.
-            </p>
-            <Link
-              to="/bulk-upload"
-              className="inline-block bg-gradient-to-r from-purple-600 to-indigo-700 text-white py-3 px-6 rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300"
-            >
-              Start Upload
-            </Link>
-          </div>
+        {/* Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+          <ActionCard
+            icon="📤"
+            color="bg-blue-50 text-blue-600"
+            title="Bulk Inventory Upload"
+            desc="Import large product datasets via CSV/Excel. Ideal for onboarding new manufacturing runs efficiently."
+            link="/bulk-upload"
+            linkText="Upload Data"
+            disabled={!isVerified}
+          />
 
-          {/* Product Creation */}
-          <div className="bg-white/90 backdrop-blur-sm shadow-xl p-8 rounded-2xl border border-white/20 text-center hover:shadow-2xl transform hover:-translate-y-2 transition-all duration-300">
-            <div className="w-16 h-16 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center mx-auto mb-6">
-              <span className="text-white text-2xl">➕</span>
-            </div>
-            <h3 className="text-2xl font-bold text-gray-900 mb-4">Register Batch</h3>
-            <p className="text-gray-600 mb-8 leading-relaxed">
-              Register a new product batch with complete traceability and compliance tracking.
-            </p>
-            <Link
-              to="/register-batch"
-              className="inline-block bg-gradient-to-r from-emerald-600 to-teal-700 text-white py-3 px-6 rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300"
-            >
-              Create Batch
-            </Link>
-          </div>
-
-          {/* Supply Chain Timeline */}
-          <div className="bg-white/90 backdrop-blur-sm shadow-xl p-8 rounded-2xl border border-white/20 text-center hover:shadow-2xl transform hover:-translate-y-2 transition-all duration-300">
-            <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-red-600 rounded-xl flex items-center justify-center mx-auto mb-6">
-              <span className="text-white text-2xl">📈</span>
-            </div>
-            <h3 className="text-2xl font-bold text-gray-900 mb-4">Timeline View</h3>
-            <p className="text-gray-600 mb-8 leading-relaxed">
-              Track the supply chain progress and custody chain of your product batches.
-            </p>
-            <Link
-              to="/manufacturer/timeline"
-              className="inline-block bg-gradient-to-r from-orange-600 to-red-700 text-white py-3 px-6 rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300"
-            >
-              View Timeline
-            </Link>
-          </div>
+          <ActionCard
+            icon="🛡️"
+            color="bg-emerald-50 text-emerald-600"
+            title="Register Single Batch"
+            desc="Create a secure digital identity for a new product batch. Generates unique verification markers."
+            link="/register-batch"
+            linkText="Create Batch"
+            disabled={!isVerified}
+          />
         </div>
       </div>
     </div>

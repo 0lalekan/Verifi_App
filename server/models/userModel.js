@@ -3,24 +3,14 @@ import bcrypt from 'bcryptjs';
 
 const { Schema } = mongoose;
 
-const specialistDetailsSchema = new Schema(
+// Details specific to Manufacturers/Distributors
+const organizationDetailsSchema = new Schema(
   {
-    medicalLicenseNumber: {
-      type: String,
-      required: function () {
-        return this.parent() && this.parent().role === 'specialist';
-      },
-    },
-    specialty: {
-      type: String,
-      required: function () {
-        return this.parent() && this.parent().role === 'specialist';
-      },
-    },
-    isVerified: {
-      type: Boolean,
-      default: false,
-    },
+    orgName: { type: String },
+    orgAddress: { type: String },
+    orgLicense: { type: String }, // e.g. RC Number or NAFDAC ID
+    isVerified: { type: Boolean, default: false },
+    subscriptionStatus: { type: String, enum: ['free', 'paid'], default: 'free' }
   },
   { _id: false }
 );
@@ -31,29 +21,32 @@ const userSchema = new Schema(
     lastName: { type: String, required: true },
     email: { type: String, required: true, unique: true, lowercase: true, trim: true },
     password: { type: String, required: true, minlength: 6 },
+    profileImage: { type: String }, // URL to upload
     role: {
       type: String,
-      enum: ['consumer', 'manufacturer', 'regulator'],
+      enum: ['consumer', 'manufacturer', 'regulator'], // The only 3 valid roles
       default: 'consumer',
     },
     isActive: { type: Boolean, default: true },
     points: { type: Number, default: 0 },
     resetPasswordToken: { type: String },
     resetPasswordExpire: { type: Date },
-    specialistDetails: specialistDetailsSchema,
+    
+    // Embedded schema for manufacturer details
+    organizationDetails: organizationDetailsSchema,
   },
   { timestamps: true }
 );
 
-// Hide sensitive fields when converting to JSON
+// Hide sensitive fields
 userSchema.set('toJSON', {
-  transform(doc, ret, options) {
+  transform(doc, ret) {
     delete ret.password;
     return ret;
   },
 });
 
-// Pre-save hook: hash password if modified
+// Hash password pre-save
 userSchema.pre('save', async function (next) {
   if (!this.isModified('password')) return next();
   try {
@@ -65,15 +58,9 @@ userSchema.pre('save', async function (next) {
   }
 });
 
-// Instance method to compare password
 userSchema.methods.matchPassword = async function (enteredPassword) {
   if (!this.password) return false;
-  try {
-    return await bcrypt.compare(enteredPassword, this.password);
-  } catch (err) {
-    // In case of error, don't leak details; return false
-    return false;
-  }
+  return await bcrypt.compare(enteredPassword, this.password);
 };
 
 const User = mongoose.models.User || mongoose.model('User', userSchema);

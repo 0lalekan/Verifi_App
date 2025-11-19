@@ -2,162 +2,109 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 
 const HomeScreen = () => {
-  const features = [
-    {
-      icon: '🏥',
-      title: 'Patient Management',
-      description: 'Comprehensive patient records and history tracking'
-    },
-    {
-      icon: '💊',
-      title: 'Medication Control',
-      description: 'Real-time inventory and prescription management'
-    },
-    {
-      icon: '💻',
-      title: 'Product Verification',
-      description: 'Real-time product scanning and authenticity checks'
-    },
-    {
-      icon: '📊',
-      title: 'Analytics Dashboard',
-      description: 'Data-driven insights for better healthcare decisions'
-    }
-  ];
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
+    <div className="min-h-screen bg-slate-50 font-sans text-slate-900">
       {/* Hero Section */}
-      <section className="relative px-4 py-20 sm:py-32 lg:py-40">
-        <div className="max-w-7xl mx-auto text-center">
-          {/* Badge */}
-          <div className="inline-flex items-center px-4 py-2 bg-blue-100 text-blue-700 text-sm font-medium rounded-full mb-8">
-            <span className="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
-            Trusted by 500+ Healthcare Providers
+      <section className="relative bg-slate-900 text-white overflow-hidden">
+        <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 lg:py-32 relative z-10 text-center">
+          <div className="inline-block mb-6 px-4 py-1.5 rounded-full bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 font-medium text-sm tracking-wide animate-pulse">
+            🛡️ Official Verification Standard
           </div>
-
-          {/* Main Heading */}
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-slate-900 mb-6 leading-tight">
-            Modern Healthcare <br className="hidden sm:block"/>
-            <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              Management Made Simple
+          <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight mb-8 leading-tight">
+            Secure the Supply Chain.<br />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400">
+              Protect Public Health.
             </span>
           </h1>
-
-          {/* Subtitle */}
-          <p className="text-lg sm:text-xl text-slate-600 max-w-3xl mx-auto mb-12 leading-relaxed">
-            Streamline clinic operations with Verifi's intelligent platform for patient management,
-            medication tracking, and product verification.
+          <p className="text-xl text-slate-300 max-w-3xl mx-auto mb-10 leading-relaxed">
+            Stop counterfeit goods at the source. Verifi empowers consumers to validate products instantly, helps manufacturers protect their brand, and gives regulators a god-view of the market.
           </p>
-
-          {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
+          <div className="flex flex-col sm:flex-row justify-center gap-4">
             <Link
               to="/register"
-              className="inline-flex items-center justify-center px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-700 text-white text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300"
+              className="px-8 py-4 bg-emerald-600 hover:bg-emerald-700 text-white text-lg font-bold rounded-xl shadow-lg shadow-emerald-500/30 transition-all transform hover:-translate-y-1"
             >
-              Start Free Trial
-              <svg className="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7"/>
-              </svg>
+              Get Started Now
             </Link>
             <Link
-              to="/features"
-              className="inline-flex items-center justify-center px-8 py-4 bg-white text-slate-700 border border-slate-200 rounded-xl shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300"
+              to="/login"
+              className="px-8 py-4 bg-white/10 hover:bg-white/20 border border-white/20 text-white text-lg font-semibold rounded-xl backdrop-blur-sm transition-all"
             >
-              View Demo
+              Live Demo
             </Link>
-          </div>
-
-          {/* Trust Indicators */}
-          <div className="flex flex-wrap justify-center gap-8 text-sm text-slate-500">
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-              <span>HIPAA Compliant</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-              <span>99.9% Uptime</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-              <span>24/7 Support</span>
-            </div>
           </div>
         </div>
       </section>
 
-      {/* Features Section */}
-      <section className="px-4 py-20 bg-white/50 backdrop-blur-sm">
-        <div className="max-w-7xl mx-auto">
+      {/* Value Proposition Grid */}
+      <section className="py-24 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-4">
-              Everything You Need in One Place
-            </h2>
-            <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-              Comprehensive healthcare management tools designed for modern medical practices
+            <h2 className="text-3xl font-bold text-slate-900 mb-4">A Unified Ecosystem</h2>
+            <p className="text-slate-600 max-w-2xl mx-auto">
+              Verifi connects all stakeholders in the supply chain to create a transparent, fraud-resistant marketplace.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {features.map((feature, index) => (
-              <div key={index} className="bg-white rounded-2xl p-6 shadow-lg border border-slate-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
-                <div className="text-4xl mb-4">{feature.icon}</div>
-                <h3 className="text-xl font-semibold text-slate-900 mb-2">
-                  {feature.title}
-                </h3>
-                <p className="text-slate-600 text-sm">
-                  {feature.description}
-                </p>
+          <div className="grid md:grid-cols-3 gap-10">
+            {/* Consumer Card */}
+            <div className="group p-8 rounded-3xl bg-slate-50 border border-slate-100 hover:border-emerald-200 hover:shadow-xl hover:shadow-emerald-500/5 transition-all duration-300">
+              <div className="w-14 h-14 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center text-3xl mb-6 group-hover:scale-110 transition-transform">
+                🤳
               </div>
-            ))}
+              <h3 className="text-2xl font-bold text-slate-900 mb-3">For Consumers</h3>
+              <p className="text-slate-600 leading-relaxed">
+                Instantly verify product authenticity by scanning QR codes. Earn loyalty points for every scan and report suspicious items directly to authorities.
+              </p>
+            </div>
+
+            {/* Manufacturer Card */}
+            <div className="group p-8 rounded-3xl bg-slate-50 border border-slate-100 hover:border-blue-200 hover:shadow-xl hover:shadow-blue-500/5 transition-all duration-300">
+              <div className="w-14 h-14 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center text-3xl mb-6 group-hover:scale-110 transition-transform">
+                🏭
+              </div>
+              <h3 className="text-2xl font-bold text-slate-900 mb-3">For Manufacturers</h3>
+              <p className="text-slate-600 leading-relaxed">
+                Register batches securely and track inventory movement. Use our Bulk Upload tool to onboard thousands of products in seconds and stop revenue loss.
+              </p>
+            </div>
+
+            {/* Regulator Card */}
+            <div className="group p-8 rounded-3xl bg-slate-50 border border-slate-100 hover:border-purple-200 hover:shadow-xl hover:shadow-purple-500/5 transition-all duration-300">
+              <div className="w-14 h-14 bg-purple-100 text-purple-600 rounded-2xl flex items-center justify-center text-3xl mb-6 group-hover:scale-110 transition-transform">
+                👁️
+              </div>
+              <h3 className="text-2xl font-bold text-slate-900 mb-3">For Regulators</h3>
+              <p className="text-slate-600 leading-relaxed">
+                Access a "God View" dashboard of real-time scan data. Identify counterfeit hotspots and act on whistleblower reports with precise geolocation.
+              </p>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Stats Section */}
-      <section className="py-20 bg-gradient-to-r from-blue-600 to-purple-700 text-white">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+      {/* Stats / Trust Section */}
+      <section className="py-20 bg-slate-900 border-t border-slate-800">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             <div>
-              <div className="text-4xl sm:text-5xl font-bold mb-2">$2.4M+</div>
-              <div className="text-blue-100">Revenue Processed</div>
+              <div className="text-4xl font-bold text-emerald-400 mb-2">100%</div>
+              <div className="text-slate-400 text-sm uppercase tracking-wider">Traceability</div>
             </div>
             <div>
-              <div className="text-4xl sm:text-5xl font-bold mb-2">50K+</div>
-              <div className="text-blue-100">Patient Records</div>
+              <div className="text-4xl font-bold text-blue-400 mb-2">50k+</div>
+              <div className="text-slate-400 text-sm uppercase tracking-wider">Scans Processed</div>
             </div>
             <div>
-              <div className="text-4xl sm:text-5xl font-bold mb-2">500+</div>
-              <div className="text-blue-100">Active Clinics</div>
+              <div className="text-4xl font-bold text-purple-400 mb-2">24/7</div>
+              <div className="text-slate-400 text-sm uppercase tracking-wider">Real-time Monitoring</div>
             </div>
             <div>
-              <div className="text-4xl sm:text-5xl font-bold mb-2">99.9%</div>
-              <div className="text-blue-100">Uptime Guarantee</div>
+              <div className="text-4xl font-bold text-orange-400 mb-2">Zero</div>
+              <div className="text-slate-400 text-sm uppercase tracking-wider">Tolerance for Fakes</div>
             </div>
           </div>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="py-20 bg-white">
-        <div className="max-w-4xl mx-auto px-4 text-center">
-          <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-6">
-            Ready to Transform Your Practice?
-          </h2>
-          <p className="text-lg text-slate-600 mb-8 max-w-2xl mx-auto">
-            Join thousands of healthcare providers already using Verifi to streamline operations
-            and deliver exceptional patient care.
-          </p>
-          <Link
-            to="/register"
-            className="inline-flex items-center justify-center px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-700 text-white text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300"
-          >
-            Get Started Today
-            <svg className="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7"/>
-            </svg>
-          </Link>
         </div>
       </section>
     </div>
