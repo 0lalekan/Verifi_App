@@ -8,131 +8,127 @@ import { toast } from 'react-toastify';
 const RegisterScreen = () => {
   const navigate = useNavigate();
   const { userInfo, setCredentials } = useAuthStore();
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  
+  const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    password: '',
+    role: 'consumer' // Default role
+  });
 
   useEffect(() => {
-    if (userInfo) {
-      navigate('/');
-    }
+    if (userInfo) navigate('/dashboard');
   }, [navigate, userInfo]);
 
   const mutation = useMutation({
     mutationFn: async (userData) => await axios.post('/api/users', userData),
     onSuccess: (data) => {
       setCredentials(data.data);
-      navigate('/');
-      toast.success('Registration successful');
+      navigate('/dashboard');
+      toast.success('Account created successfully!');
     },
     onError: (error) => {
-      toast.error(error.response?.data?.message || error.message);
+      toast.error(error.response?.data?.message || 'Registration failed');
     }
   });
 
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
   const submitHandler = (e) => {
     e.preventDefault();
-    mutation.mutate({ firstName, lastName, email, password });
+    mutation.mutate(formData);
   };
 
   return (
-    <div className="space-y-6">
-      <div className="text-center">
-        <h2 className="text-2xl font-bold text-slate-800">Create an Account</h2>
-        <p className="text-slate-500">Join Verifi and streamline your healthcare workflows.</p>
+    <div className="min-h-screen flex items-center justify-center bg-slate-50 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-2xl shadow-xl border border-slate-100">
+        <div className="text-center">
+          <h2 className="text-3xl font-extrabold text-slate-900">Join Verifi</h2>
+          <p className="mt-2 text-sm text-slate-600">Start verifying products securely.</p>
+        </div>
+
+        <form className="mt-8 space-y-6" onSubmit={submitHandler}>
+          <div className="rounded-md shadow-sm -space-y-px">
+            <div className="grid grid-cols-2 gap-4 mb-4">
+              <input
+                name="firstName"
+                type="text"
+                required
+                className="appearance-none rounded-lg relative block w-full px-3 py-3 border border-slate-300 placeholder-slate-500 text-slate-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                placeholder="First Name"
+                value={formData.firstName}
+                onChange={handleChange}
+              />
+              <input
+                name="lastName"
+                type="text"
+                required
+                className="appearance-none rounded-lg relative block w-full px-3 py-3 border border-slate-300 placeholder-slate-500 text-slate-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                placeholder="Last Name"
+                value={formData.lastName}
+                onChange={handleChange}
+              />
+            </div>
+            <div className="mb-4">
+              <input
+                name="email"
+                type="email"
+                required
+                className="appearance-none rounded-lg relative block w-full px-3 py-3 border border-slate-300 placeholder-slate-500 text-slate-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                placeholder="Email address"
+                value={formData.email}
+                onChange={handleChange}
+              />
+            </div>
+            <div className="mb-4">
+              <input
+                name="password"
+                type="password"
+                required
+                className="appearance-none rounded-lg relative block w-full px-3 py-3 border border-slate-300 placeholder-slate-500 text-slate-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                placeholder="Password"
+                value={formData.password}
+                onChange={handleChange}
+              />
+            </div>
+            
+            {/* ROLE SELECTOR - Critical for App Logic */}
+            <div className="mb-4">
+              <label htmlFor="role" className="block text-sm font-medium text-slate-700 mb-1 ml-1">I am a...</label>
+              <select
+                id="role"
+                name="role"
+                value={formData.role}
+                onChange={handleChange}
+                className="block w-full pl-3 pr-10 py-3 text-base border-slate-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-lg"
+              >
+                <option value="consumer">Consumer (Checking Products)</option>
+                <option value="manufacturer">Manufacturer (Registering Products)</option>
+                <option value="regulator">Regulator (Oversight)</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <button
+              type="submit"
+              disabled={mutation.isPending}
+              className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-xl text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 shadow-lg hover:shadow-blue-500/30"
+            >
+              {mutation.isPending ? 'Creating Account...' : 'Create Account'}
+            </button>
+          </div>
+        </form>
+        
+        <div className="text-center">
+          <Link to="/login" className="font-medium text-blue-600 hover:text-blue-500">
+            Already have an account? Sign in
+          </Link>
+        </div>
       </div>
-
-      <form onSubmit={submitHandler} className="space-y-4">
-        <div>
-          <label htmlFor="firstName" className="block text-sm font-medium text-slate-700 text-left">
-            First Name
-          </label>
-          <div className="mt-1">
-            <input
-              id="firstName"
-              name="firstName"
-              type="text"
-              autoComplete="given-name"
-              value={firstName}
-              onChange={(e) => setFirstName(e.target.value)}
-              required
-              className="appearance-none block w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-            />
-          </div>
-        </div>
-
-        <div>
-          <label htmlFor="lastName" className="block text-sm font-medium text-slate-700 text-left">
-            Last Name
-          </label>
-          <div className="mt-1">
-            <input
-              id="lastName"
-              name="lastName"
-              type="text"
-              autoComplete="family-name"
-              value={lastName}
-              onChange={(e) => setLastName(e.target.value)}
-              required
-              className="appearance-none block w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-            />
-          </div>
-        </div>
-
-        <div>
-          <label htmlFor="email" className="block text-sm font-medium text-slate-700 text-left">
-            Email address
-          </label>
-          <div className="mt-1">
-            <input
-              id="email"
-              name="email"
-              type="email"
-              autoComplete="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              className="appearance-none block w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-            />
-          </div>
-        </div>
-
-        <div>
-          <label htmlFor="password" className="block text-sm font-medium text-slate-700 text-left">
-            Password
-          </label>
-          <div className="mt-1">
-            <input
-              id="password"
-              name="password"
-              type="password"
-              autoComplete="new-password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              className="appearance-none block w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-            />
-          </div>
-        </div>
-
-        <div>
-          <button
-            type="submit"
-            disabled={mutation.isPending}
-            className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {mutation.isPending ? 'Registering...' : 'Register'}
-          </button>
-        </div>
-      </form>
-
-      <p className="text-center text-sm text-slate-600">
-        Already have an account?{' '}
-        <Link to="/login" className="font-medium text-indigo-600 hover:text-indigo-500">
-          Sign in
-        </Link>
-      </p>
     </div>
   );
 };
