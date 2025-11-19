@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import axios from 'axios';
+import api from '../api';
 import FakeMapComponent from '../components/FakeMapComponent';
 import { Link } from 'react-router-dom';
 import {
@@ -38,8 +38,8 @@ const StatCard = ({ title, value, color }) => (
 const RegulatorDashboardScreen = () => {
   const { data: logs, isLoading } = useQuery({
     queryKey: ['adminLogs'],
-    queryFn: async () => (await axios.get('/api/logs')).data,
-    refetchInterval: 30000 
+    queryFn: async () => (await api.get('/logs')).data,
+    refetchInterval: 30000
   });
 
   // Process Data for Charts

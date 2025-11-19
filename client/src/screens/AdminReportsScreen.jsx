@@ -1,6 +1,6 @@
 import React, { useState } from 'react'; // Import useState
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import axios from 'axios';
+import api from '../api';
 import { toast } from 'react-toastify';
 import FakeMapComponent from '../components/FakeMapComponent'; // Import Map
 
@@ -11,14 +11,14 @@ const AdminReportsScreen = () => {
   const { data: reports, isLoading, error } = useQuery({
     queryKey: ['allReports'],
     queryFn: async () => {
-      const response = await axios.get('/api/reports');
+      const response = await api.get('/api/reports');
       return response.data;
     },
   });
 
   const mutation = useMutation({
     mutationFn: async ({ id, status }) => {
-      await axios.put(`/api/reports/${id}`, { status });
+      await api.put(`/api/reports/${id}`, { status });
     },
     onSuccess: () => {
       queryClient.invalidateQueries(['allReports']);

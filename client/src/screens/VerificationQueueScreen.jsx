@@ -1,6 +1,6 @@
 import React from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import axios from 'axios';
+import api from '../api';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 
@@ -11,12 +11,12 @@ const VerificationQueueScreen = () => {
   // Fetch pending users
   const { data: pendingUsers, isLoading } = useQuery({
     queryKey: ['pendingVerifications'],
-    queryFn: async () => (await axios.get('/api/users/pending-verifications')).data
+    queryFn: async () => (await api.get('/users/pending-verifications')).data
   });
 
   // Approve Mutation
   const mutation = useMutation({
-    mutationFn: async (userId) => await axios.put(`/api/users/verify/${userId}`),
+    mutationFn: async (userId) => await api.put(`/users/verify/${userId}`),
     onSuccess: () => {
       toast.success('Manufacturer verified successfully');
       queryClient.invalidateQueries(['pendingVerifications']);

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
-import axios from 'axios';
+import api from '../api';
 import { toast } from 'react-toastify';
 
 const ForgotPasswordScreen = () => {
@@ -9,7 +9,7 @@ const ForgotPasswordScreen = () => {
 
   const mutation = useMutation({
     mutationFn: async (userData) => {
-      const response = await axios.post('/api/users/forgot-password', userData);
+      const response = await api.post('/users/forgot-password', userData);
       return response.data;
     },
     onSuccess: () => {

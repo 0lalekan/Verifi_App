@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../api';
 import { toast } from 'react-toastify';
 import { useUserProfile } from '../hooks/useUserProfile'; // Import this hook
 
@@ -32,7 +32,7 @@ const RegisterBatchScreen = () => {
 
   const mutation = useMutation({
     mutationFn: async (data) => {
-      const response = await axios.post('/api/products/', data);
+      const response = await api.post('/products', data);
       return response.data;
     },
     onSuccess: () => {

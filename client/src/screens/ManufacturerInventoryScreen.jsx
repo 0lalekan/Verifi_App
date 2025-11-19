@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import axios from 'axios';
+import api from '../api';
 import { Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
 
@@ -9,7 +9,7 @@ const ManufacturerInventoryScreen = () => {
 
   const { data: batches, isLoading, error } = useQuery({
     queryKey: ['myInventory'],
-    queryFn: async () => (await axios.get('/api/products/my-inventory')).data
+    queryFn: async () => (await api.get('/products/my-inventory')).data
   });
 
   const downloadQR = async (batchNumber) => {

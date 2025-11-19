@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import axios from 'axios';
+import api from '../api';
 import { toast } from 'react-toastify';
 import useAuthStore from '../store';
 
@@ -16,7 +16,7 @@ const ProductCreationScreen = () => {
 
   const mutation = useMutation({
     mutationFn: async (data) => {
-      const response = await axios.post('/api/products', data);
+      const response = await api.post('/products', data);
       return response.data;
     },
     onSuccess: () => {

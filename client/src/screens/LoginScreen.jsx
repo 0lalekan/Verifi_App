@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
-import axios from 'axios';
+import api from '../api';
 import useAuthStore from '../store';
 import { toast } from 'react-toastify';
 
@@ -29,7 +29,7 @@ const LoginScreen = () => {
   }, [navigate, userInfo]);
 
   const mutation = useMutation({
-    mutationFn: async (userData) => await axios.post('/api/users/login', userData),
+    mutationFn: async (userData) => await api.post('/users/login', userData),
     onSuccess: (data) => {
       const user = data.data;
       setCredentials(user);

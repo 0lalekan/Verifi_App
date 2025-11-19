@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import axios from 'axios';
+import api from '../api';
 import { toast } from 'react-toastify';
 import { useUserProfile } from '../hooks/useUserProfile';
 import useAuthStore from '../store';
@@ -44,7 +44,7 @@ const ProfileScreen = () => {
 
   const mutation = useMutation({
     mutationFn: async (data) => {
-      const response = await axios.put('/api/users/profile', data, {
+      const response = await api.put('/users/profile', data, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
       return response.data;

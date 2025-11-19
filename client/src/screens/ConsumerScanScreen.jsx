@@ -1,6 +1,6 @@
 import React, { useState, useRef, useMemo } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import axios from 'axios';
+import api from '../api';
 import { toast } from 'react-toastify';
 import { useZxing } from 'react-zxing';
 import { BrowserMultiFormatReader, BarcodeFormat, DecodeHintType } from '@zxing/library';
@@ -34,7 +34,7 @@ const ConsumerScanScreen = () => {
   // --- API Mutation ---
   const mutation = useMutation({
     mutationFn: async ({ batchNumber, latitude, longitude, accuracy }) => {
-      const response = await axios.post('/api/products/verify', {
+      const response = await api.post('/api/products/verify', {
         batchNumber, latitude, longitude, accuracy,
       });
       return response.data;

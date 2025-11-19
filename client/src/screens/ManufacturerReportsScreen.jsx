@@ -1,12 +1,12 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
-import axios from 'axios';
+import api from '../api';
 import { Link } from 'react-router-dom';
 
 const ManufacturerReportsScreen = () => {
   const { data: reports, isLoading } = useQuery({
     queryKey: ['manufacturerReports'],
-    queryFn: async () => (await axios.get('/api/reports/manufacturer-reports')).data
+    queryFn: async () => (await api.get('/reports/manufacturer-reports')).data
   });
 
   if (isLoading) return <div className="min-h-screen bg-slate-50 flex items-center justify-center">Loading...</div>;

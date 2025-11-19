@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useMutation } from '@tanstack/react-query';
-import axios from 'axios';
+import api from '../api';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 import { useUserProfile } from '../hooks/useUserProfile';
@@ -36,7 +36,7 @@ const BatchUploadScreen = () => {
 
   const mutation = useMutation({
     mutationFn: async (formData) => {
-      const response = await axios.post('/api/products/bulk-upload', formData, {
+      const response = await api.post('/products/bulk-upload', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
       return response.data;

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../api';
 import { toast } from 'react-toastify';
 
 const ReportScreen = () => {
@@ -17,7 +17,7 @@ const ReportScreen = () => {
 
   const mutation = useMutation({
     mutationFn: async (data) => {
-      const response = await axios.post('/api/reports', data);
+      const response = await api.post('/reports', data);
       return response.data;
     },
     onSuccess: () => {

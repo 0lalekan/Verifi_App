@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { useUserProfile } from '../hooks/useUserProfile';
 import useAuthStore from '../store';
 import { useQuery } from '@tanstack/react-query';
-import axios from 'axios';
+import api from '../api';
 
 const DashboardScreen = () => {
   const { userInfo } = useAuthStore();
@@ -12,7 +12,7 @@ const DashboardScreen = () => {
   // Fetch User History
   const { data: history } = useQuery({
     queryKey: ['userHistory'],
-    queryFn: async () => (await axios.get('/api/logs/my-history')).data,
+    queryFn: async () => (await api.get('/logs/my-history')).data,
     enabled: !!userInfo && userInfo.role === 'consumer'
   });
 

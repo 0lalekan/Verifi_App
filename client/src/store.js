@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import axios from 'axios'
+import api from './api';
 
 const useAuthStore = create((set, get) => ({
   userInfo: localStorage.getItem('userInfo')
@@ -13,7 +13,7 @@ const useAuthStore = create((set, get) => ({
 
   refreshUserProfile: async () => {
     try {
-      const response = await axios.get('/api/users/profile')
+      const response = await api.get('/users/profile')
       if (response.data) {
         get().setCredentials(response.data)
       }
