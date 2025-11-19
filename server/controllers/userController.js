@@ -9,43 +9,49 @@ import generateToken from '../utils/generateToken.js';
 // @route   POST /api/users
 // @access  Public
 const registerUser = asyncHandler(async (req, res) => {
-	const { firstName, lastName, email, password, role } = req.body;
+  const { firstName, lastName, email, password, role } = req.body;
 
-	// Check if user exists
-	const userExists = await User.findOne({ email });
-	if (userExists) {
-		res.status(400);
-		throw new Error('User already exists');
-	}
+  const userExists = await User.findOne({ email });
+  if (userExists) {
+    res.status(400);
+    throw new Error('User already exists');
+  }
 
-	const user = await User.create({ firstName, lastName, email, password, role });
+  const user = await User.create({ firstName, lastName, email, password, role });
 
-	if (user) {
-		// Set token cookie
-		generateToken(res, user._id);
-
-		res.status(201).json({ _id: user._id, firstName: user.firstName, email: user.email, role: user.role });
-	} else {
-		res.status(400);
-		throw new Error('Invalid user data');
-	}
+  if (user) {
+    generateToken(res, user._id);
+    res.status(201).json({ 
+      _id: user._id, 
+      firstName: user.firstName, 
+      email: user.email, 
+      role: user.role 
+    });
+  } else {
+    res.status(400);
+    throw new Error('Invalid user data');
+  }
 });
 
 // @desc    Authenticate user & get token
 // @route   POST /api/users/login
 // @access  Public
 const authUser = asyncHandler(async (req, res) => {
-	const { email, password } = req.body;
+  const { email, password } = req.body;
+  const user = await User.findOne({ email });
 
-	const user = await User.findOne({ email });
-
-	if (user && (await user.matchPassword(password))) {
-		generateToken(res, user._id);
-		res.json({ _id: user._id, firstName: user.firstName, email: user.email, role: user.role });
-	} else {
-		res.status(401);
-		throw new Error('Invalid email or password');
-	}
+  if (user && (await user.matchPassword(password))) {
+    generateToken(res, user._id);
+    res.json({ 
+      _id: user._id, 
+      firstName: user.firstName, 
+      email: user.email, 
+      role: user.role 
+    });
+  } else {
+    res.status(401);
+    throw new Error('Invalid email or password');
+  }
 });
 
 // @desc    Get user profile
@@ -62,6 +68,8 @@ const getUserProfile = asyncHandler(async (req, res) => {
       email: user.email,
       role: user.role,
       points: user.points || 0,
+      profileImage: user.profileImage,
+      organizationDetails: user.organizationDetails 
     });
   } else {
     res.status(404);
@@ -78,8 +86,7 @@ const updateUserProfile = asyncHandler(async (req, res) => {
   if (user) {
     user.firstName = req.body.firstName || user.firstName;
     user.lastName = req.body.lastName || user.lastName;
-
-    // Check if email is changing
+    
     if (req.body.email && req.body.email !== user.email) {
       const emailExists = await User.findOne({ email: req.body.email });
       if (emailExists) {
@@ -89,9 +96,32 @@ const updateUserProfile = asyncHandler(async (req, res) => {
       user.email = req.body.email;
     }
 
-    // Handle profile image upload
+    if (req.body.password) {
+      user.password = req.body.password;
+    }
+
     if (req.file) {
-      user.profileImage = req.file.filename;
+      user.profileImage = '/uploads/' + req.file.filename;
+    }
+
+    if (req.body.role) {
+      user.role = req.body.role;
+    }
+
+    if (req.body.organizationDetails) {
+      try {
+        const orgData = typeof req.body.organizationDetails === 'string' 
+          ? JSON.parse(req.body.organizationDetails) 
+          : req.body.organizationDetails;
+          
+        user.organizationDetails = { ...user.organizationDetails, ...orgData };
+        
+        if (orgData.orgName || orgData.orgLicense) {
+            user.organizationDetails.isVerified = false; 
+        }
+      } catch (e) {
+        console.error("Error parsing organization details:", e);
+      }
     }
 
     const updatedUser = await user.save();
@@ -101,8 +131,10 @@ const updateUserProfile = asyncHandler(async (req, res) => {
       firstName: updatedUser.firstName,
       lastName: updatedUser.lastName,
       email: updatedUser.email,
-      profileImage: updatedUser.profileImage,
       role: updatedUser.role,
+      points: updatedUser.points,
+      profileImage: updatedUser.profileImage,
+      organizationDetails: updatedUser.organizationDetails,
     });
   } else {
     res.status(404);
@@ -115,24 +147,18 @@ const updateUserProfile = asyncHandler(async (req, res) => {
 // @access  Public
 const forgotPassword = asyncHandler(async (req, res) => {
   const { email } = req.body;
-
   const user = await User.findOne({ email });
   if (!user) {
     res.status(404);
     throw new Error('User not found');
   }
 
-  // Generate reset token
   const resetToken = crypto.randomBytes(20).toString('hex');
-
-  // Hash token and set expiry
   user.resetPasswordToken = crypto.createHash('sha256').update(resetToken).digest('hex');
-  user.resetPasswordExpire = Date.now() + 10 * 60 * 1000; // 10 minutes
+  user.resetPasswordExpire = Date.now() + 10 * 60 * 1000; 
 
   await user.save();
-
-  // Placeholder: send email (log for now)
-  console.log(`Password reset email sent to ${email}. Reset token: ${resetToken} (unhashed for testing)`);
+  console.log(`Reset token for ${email}: ${resetToken}`); 
 
   res.status(200).json({ message: 'Password reset email sent' });
 });
@@ -143,8 +169,6 @@ const forgotPassword = asyncHandler(async (req, res) => {
 const resetPassword = asyncHandler(async (req, res) => {
   const { token } = req.params;
   const { newPassword } = req.body;
-
-  // Hash token to match with DB
   const resetPasswordToken = crypto.createHash('sha256').update(token).digest('hex');
 
   const user = await User.findOne({
@@ -157,11 +181,9 @@ const resetPassword = asyncHandler(async (req, res) => {
     throw new Error('Invalid or expired token');
   }
 
-  // Update password and clear reset fields
   user.password = newPassword;
   user.resetPasswordToken = undefined;
   user.resetPasswordExpire = undefined;
-
   await user.save();
 
   res.status(200).json({ message: 'Password reset successful' });
@@ -172,15 +194,20 @@ const resetPassword = asyncHandler(async (req, res) => {
 // @access  Private
 const getDashboardStats = asyncHandler(async (req, res) => {
   const totalProducts = await ProductBatch.countDocuments();
-  const validProducts = await ProductBatch.countDocuments({
+  
+  // UPDATED LOGIC: Count 'Active' products not expired
+  const validProducts = await ProductBatch.countDocuments({ 
+    status: 'Active',
+    expiryDate: { $gt: new Date() } 
+  });
+
+  // UPDATED LOGIC: Count Explicitly Expired status OR logic expiration
+  const expiredProducts = await ProductBatch.countDocuments({ 
     $or: [
-      { status: { $exists: false } },
-      { status: 'In-Transit' },
-      { status: 'At-Pharmacy' },
-      { status: 'Dispensed' }
+      { status: 'Expired' },
+      { expiryDate: { $lt: new Date() } }
     ]
-  }); // Assuming these are valid statuses
-  const expiredProducts = await ProductBatch.countDocuments({ expiryDate: { $lt: new Date() } });
+  });
 
   const totalReports = await Report.countDocuments();
   const pendingReports = await Report.countDocuments({ status: 'Pending' });
@@ -201,7 +228,7 @@ const getPendingVerifications = asyncHandler(async (req, res) => {
   const pendingUsers = await User.find({
     role: 'manufacturer',
     'organizationDetails.isVerified': false
-  }).select('-password'); // Exclude password
+  }).select('-password');
 
   res.json(pendingUsers);
 });
@@ -230,6 +257,6 @@ export {
   forgotPassword, 
   resetPassword, 
   getDashboardStats,
-  getPendingVerifications, // Export new function
-  verifyManufacturer       // Export new function
+  getPendingVerifications,
+  verifyManufacturer
 };

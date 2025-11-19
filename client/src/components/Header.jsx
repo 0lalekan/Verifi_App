@@ -96,10 +96,15 @@ const Header = () => {
           <div className="flex items-center gap-4">
             {userInfo ? (
               <>
-                <div className="hidden sm:flex flex-col items-end">
-                  <span className="text-sm font-bold text-slate-800">{userInfo.firstName}</span>
+                {/* Profile Link - Now Clickable */}
+                <Link 
+                  to="/profile" 
+                  className="hidden sm:flex flex-col items-end cursor-pointer hover:bg-slate-50 p-2 rounded-lg transition-all group"
+                >
+                  <span className="text-sm font-bold text-slate-800 group-hover:text-blue-600">{userInfo.firstName}</span>
                   <span className="text-xs text-slate-500 capitalize">{userInfo.role}</span>
-                </div>
+                </Link>
+                
                 <button
                   onClick={logoutHandler}
                   className="px-4 py-2 rounded-lg border border-slate-200 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-red-600 transition-colors"

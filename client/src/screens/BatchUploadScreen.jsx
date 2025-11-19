@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import axios from 'axios';
 import { toast } from 'react-toastify';
+import { useNavigate } from 'react-router-dom';
+import { useUserProfile } from '../hooks/useUserProfile';
 
 const BatchUploadScreen = () => {
   const [file, setFile] = useState(null);
@@ -10,8 +12,8 @@ const BatchUploadScreen = () => {
   // 1. Fetch Profile Data
   const { data: userProfile, isLoading } = useUserProfile();
 
-  // 2. Route Guard
-  React.useEffect(() => {
+  // 2. Route Guard: Redirect if unverified
+  useEffect(() => {
     if (!isLoading && userProfile) {
       if (!userProfile.organizationDetails?.isVerified) {
         toast.error("Account verification required.");
@@ -53,6 +55,11 @@ const BatchUploadScreen = () => {
     formData.append('batchFile', file);
     mutation.mutate(formData);
   };
+
+  // Loading state to prevent UI flash before redirect
+  if (isLoading) {
+    return <div className="min-h-screen bg-slate-50 flex items-center justify-center">Checking permissions...</div>;
+  }
 
   return (
     <div className="min-h-screen bg-slate-50 py-12 px-4 flex items-center justify-center">

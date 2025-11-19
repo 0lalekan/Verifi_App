@@ -15,11 +15,11 @@ const productBatchSchema = new Schema(
       type: String,
       required: [true, 'A product name is required.'],
     },
-    // This will link to a User with role 'admin' or a future 'Organization' model
+    // Link to the Manufacturer who created this batch
     manufacturer: {
       type: Schema.Types.ObjectId,
       ref: 'User',
-      required: false,
+      required: true,
     },
     expiryDate: {
       type: Date,
@@ -29,35 +29,28 @@ const productBatchSchema = new Schema(
       type: Date,
       required: [true, 'A manufacturing date is required.'],
     },
+    // UPDATED: Generic Statuses for any industry
     status: {
       type: String,
-      enum: ['In-Transit', 'At-Pharmacy', 'Dispensed', 'Expired'],
-      default: 'In-Transit',
+      enum: ['Active', 'Expired', 'Recalled', 'Investigating'],
+      default: 'Active',
     },
     verificationCount: {
       type: Number,
       default: 0,
     },
+    // Flexible map for details like "Ingredients", "Material", "Origin" etc.
     productAttributes: {
       type: Map,
       of: String,
     },
-    custodyChain: [
+    // Optional: Track scan history locations if needed for advanced analytics
+    scanHistory: [
       {
-        handlerId: {
-          type: Schema.Types.ObjectId,
-          ref: 'User',
-        },
-        handlerRole: {
-          type: String,
-          enum: ['distributor', 'pharmacist'],
-        },
-        scannedAt: {
-          type: Date,
-          default: Date.now,
-        },
-      },
-    ],
+        scannedAt: { type: Date, default: Date.now },
+        location: { type: String } // Geo-coordinates or region
+      }
+    ]
   },
   {
     timestamps: true,
