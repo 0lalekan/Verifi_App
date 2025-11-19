@@ -3,12 +3,11 @@ import bcrypt from 'bcryptjs';
 
 const { Schema } = mongoose;
 
-// Details specific to Manufacturers/Distributors
 const organizationDetailsSchema = new Schema(
   {
-    orgName: { type: String },
-    orgAddress: { type: String },
-    orgLicense: { type: String }, // e.g. RC Number or NAFDAC ID
+    orgName: { type: String, default: '' },
+    orgAddress: { type: String, default: '' },
+    orgLicense: { type: String, default: '' },
     isVerified: { type: Boolean, default: false },
     subscriptionStatus: { type: String, enum: ['free', 'paid'], default: 'free' }
   },
@@ -21,24 +20,22 @@ const userSchema = new Schema(
     lastName: { type: String, required: true },
     email: { type: String, required: true, unique: true, lowercase: true, trim: true },
     password: { type: String, required: true, minlength: 6 },
-    profileImage: { type: String }, // URL to upload
+    profileImage: { type: String },
     role: {
       type: String,
-      enum: ['consumer', 'manufacturer', 'regulator'], // The only 3 valid roles
+      enum: ['consumer', 'manufacturer', 'regulator'],
       default: 'consumer',
     },
     isActive: { type: Boolean, default: true },
     points: { type: Number, default: 0 },
     resetPasswordToken: { type: String },
     resetPasswordExpire: { type: Date },
-    
-    // Embedded schema for manufacturer details
-    organizationDetails: organizationDetailsSchema,
+    // Ensure this defaults to an empty object so fields exist
+    organizationDetails: { type: organizationDetailsSchema, default: () => ({}) },
   },
   { timestamps: true }
 );
 
-// Hide sensitive fields
 userSchema.set('toJSON', {
   transform(doc, ret) {
     delete ret.password;
@@ -46,7 +43,6 @@ userSchema.set('toJSON', {
   },
 });
 
-// Hash password pre-save
 userSchema.pre('save', async function (next) {
   if (!this.isModified('password')) return next();
   try {

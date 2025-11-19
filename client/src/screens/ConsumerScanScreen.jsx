@@ -1,9 +1,9 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useMemo } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import { useZxing } from 'react-zxing';
-import { BrowserMultiFormatReader } from '@zxing/library';
+import { BrowserMultiFormatReader, BarcodeFormat, DecodeHintType } from '@zxing/library';
 import { motion, AnimatePresence } from 'framer-motion';
 import Confetti from 'react-confetti';
 import { useNavigate } from 'react-router-dom';
@@ -17,6 +17,19 @@ const ConsumerScanScreen = () => {
   const fileInputRef = useRef(null);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+
+  // 1. Define Configuration Hints (Memoized)
+  // These tell the scanner to try harder and look for specific formats
+  const scanHints = useMemo(() => new Map([
+    [DecodeHintType.TRY_HARDER, true],
+    [DecodeHintType.POSSIBLE_FORMATS, [
+      BarcodeFormat.QR_CODE, 
+      BarcodeFormat.CODE_128, 
+      BarcodeFormat.EAN_13,
+      BarcodeFormat.DATA_MATRIX,
+      BarcodeFormat.CODE_39
+    ]]
+  ]), []);
 
   // --- API Mutation ---
   const mutation = useMutation({
@@ -62,6 +75,9 @@ const ConsumerScanScreen = () => {
   // --- Camera Scanner ---
   const { ref: cameraRef } = useZxing({
     paused: !isScanning,
+    constraints: { 
+      video: { facingMode: 'environment' } 
+    },
     onDecodeResult: (result) => {
       const text = result.getText();
       if (isScanning) {
@@ -69,9 +85,7 @@ const ConsumerScanScreen = () => {
         handleVerify(text);
       }
     },
-    options: {
-      hints: new Map([['TRY_HARDER', true], ['POSSIBLE_FORMATS', ['QR_CODE', 'CODE_128', 'EAN_13']]])
-    }
+    hints: scanHints // Apply hints to camera
   });
 
   // --- Image Upload Handler ---
@@ -80,11 +94,14 @@ const ConsumerScanScreen = () => {
     if (!file) return;
 
     setIsProcessingImage(true);
-    setIsScanning(false); // Pause camera while processing image
+    setIsScanning(false);
 
     try {
-      const reader = new BrowserMultiFormatReader();
+      // Apply the SAME hints to the image reader
+      const reader = new BrowserMultiFormatReader(scanHints);
       const imageUrl = URL.createObjectURL(file);
+      
+      // Decode
       const result = await reader.decodeFromImageUrl(imageUrl);
       
       if (result) {
@@ -92,7 +109,8 @@ const ConsumerScanScreen = () => {
       }
     } catch (error) {
       console.error(error);
-      toast.error('Could not read QR/Barcode from image. Try manual entry.');
+      // More descriptive error handling
+      toast.error('No code found in image. Please try a clearer photo or manual entry.');
       setIsScanning(true); 
     } finally {
       setIsProcessingImage(false);

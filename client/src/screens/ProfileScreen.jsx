@@ -27,7 +27,6 @@ const ProfileScreen = () => {
   const [previewImage, setPreviewImage] = useState(null);
   const [uploadFile, setUploadFile] = useState(null);
 
-  // Initialize form with existing data
   useEffect(() => {
     if (userProfile) {
       setFormData(prev => ({
@@ -45,14 +44,13 @@ const ProfileScreen = () => {
 
   const mutation = useMutation({
     mutationFn: async (data) => {
-      // Using PUT to update profile
       const response = await axios.put('/api/users/profile', data, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
       return response.data;
     },
     onSuccess: (data) => {
-      setCredentials(data); // Update local user info
+      setCredentials(data);
       queryClient.invalidateQueries(['userProfile']);
       setIsEditing(false);
       toast.success('Profile updated successfully');
@@ -84,7 +82,7 @@ const ProfileScreen = () => {
     if (formData.password) submitData.append('password', formData.password);
     if (uploadFile) submitData.append('profileImage', uploadFile);
 
-    // Package organization details as JSON string
+    // FIXED: Properly stringify organization details
     if (formData.role === 'manufacturer') {
       const orgData = {
         orgName: formData.orgName,
@@ -100,13 +98,13 @@ const ProfileScreen = () => {
   if (isLoading) return <div className="min-h-screen flex items-center justify-center bg-slate-50">Loading...</div>;
 
   const isManufacturer = formData.role === 'manufacturer';
+  // Handle image URL correctly whether it's from backend or blob
   const serverImageUrl = userProfile?.profileImage ? `http://localhost:5000${userProfile.profileImage}` : null;
 
   return (
     <div className="min-h-screen bg-slate-50 py-12 px-4">
       <div className="max-w-3xl mx-auto">
         
-        {/* Identity Header */}
         <div className="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden mb-8">
           <div className="h-32 bg-slate-900 relative">
             <div className="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
@@ -129,7 +127,7 @@ const ProfileScreen = () => {
                 <button 
                   onClick={() => fileInputRef.current?.click()}
                   className="absolute bottom-0 right-0 bg-blue-600 text-white p-2 rounded-full shadow-lg hover:bg-blue-700 transition-colors"
-                  title="Upload Photo"
+                  type="button"
                 >
                   📷
                 </button>
@@ -153,6 +151,7 @@ const ProfileScreen = () => {
 
             <button 
               onClick={() => setIsEditing(!isEditing)}
+              type="button"
               className={`px-6 py-2.5 rounded-xl font-semibold transition-all ${isEditing ? 'bg-slate-100 text-slate-700' : 'bg-blue-600 text-white shadow-lg shadow-blue-500/30'}`}
             >
               {isEditing ? 'Cancel' : 'Edit Profile'}
@@ -160,7 +159,6 @@ const ProfileScreen = () => {
           </div>
         </div>
 
-        {/* Edit Form */}
         <form onSubmit={handleSubmit} className="bg-white rounded-3xl shadow-sm border border-slate-200 p-8">
           <h2 className="text-xl font-bold text-slate-900 mb-6 flex items-center gap-2">
             <span>📝</span> Personal Information
@@ -200,7 +198,6 @@ const ProfileScreen = () => {
             />
           </div>
 
-          {/* Role & Org Section */}
           <div className="border-t border-slate-100 pt-8 mb-8">
             <h2 className="text-xl font-bold text-slate-900 mb-4 flex items-center gap-2">
               <span>🏢</span> Account Type
@@ -215,20 +212,20 @@ const ProfileScreen = () => {
               >
                 <option value="consumer">Consumer</option>
                 <option value="manufacturer">Manufacturer</option>
-                {/* Regulator should not be selectable by user generally, but keeping for testing */}
                 <option value="regulator">Regulator</option>
               </select>
             </div>
 
-            {/* Conditional Manufacturer Fields */}
             {isManufacturer && (
-              <div className="bg-slate-50 p-6 rounded-2xl border border-slate-200 space-y-4 animate-in fade-in slide-in-from-top-4">
-                 <div className="flex items-start gap-3 text-amber-700 bg-amber-50 px-4 py-3 rounded-xl border border-amber-100 mb-4">
-                    <span className="text-xl">⚠️</span>
-                    <p className="text-sm leading-relaxed">
-                      <strong>Verification Required:</strong> Updating these details will reset your verification status. You will be unable to create batches until a Regulator re-approves your account.
-                    </p>
-                 </div>
+              <div className="bg-slate-50 p-6 rounded-2xl border border-slate-200 space-y-4">
+                 {!userProfile?.organizationDetails?.isVerified && (
+                   <div className="flex items-start gap-3 text-amber-700 bg-amber-50 px-4 py-3 rounded-xl border border-amber-100 mb-4">
+                      <span className="text-xl">⚠️</span>
+                      <p className="text-sm leading-relaxed">
+                        <strong>Verification Required:</strong> Complete your details below. You cannot create batches until verified.
+                      </p>
+                   </div>
+                 )}
                  
                  <div className="grid md:grid-cols-2 gap-6">
                     <div>
@@ -239,7 +236,6 @@ const ProfileScreen = () => {
                           value={formData.orgName}
                           onChange={e => setFormData({...formData, orgName: e.target.value})}
                           className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white focus:ring-2 focus:ring-blue-500"
-                          placeholder="Legal Business Name"
                         />
                     </div>
                     <div>
@@ -250,7 +246,6 @@ const ProfileScreen = () => {
                           value={formData.orgLicense}
                           onChange={e => setFormData({...formData, orgLicense: e.target.value})}
                           className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white focus:ring-2 focus:ring-blue-500"
-                          placeholder="e.g. RC-12345678"
                         />
                     </div>
                  </div>
@@ -262,14 +257,12 @@ const ProfileScreen = () => {
                       value={formData.orgAddress}
                       onChange={e => setFormData({...formData, orgAddress: e.target.value})}
                       className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white focus:ring-2 focus:ring-blue-500"
-                      placeholder="Full business address"
                     />
                  </div>
               </div>
             )}
           </div>
 
-          {/* Security Section */}
           <div className="border-t border-slate-100 pt-8">
             <h2 className="text-xl font-bold text-slate-900 mb-6 flex items-center gap-2">
               <span>🔒</span> Security
@@ -300,7 +293,6 @@ const ProfileScreen = () => {
             </div>
           </div>
 
-          {/* Save Actions */}
           {isEditing && (
             <div className="flex justify-end pt-8 mt-8 border-t border-slate-100">
               <button 
