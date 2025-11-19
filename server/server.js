@@ -11,7 +11,6 @@ import { fileURLToPath } from 'url';
 import cookieParser from 'cookie-parser';
 import userRoutes from './routes/userRoutes.js'
 import productRoutes from './routes/productRoutes.js';
-import teleDiagCaseRoutes from './routes/teleDiagCaseRoutes.js';
 import logRoutes from './routes/logRoutes.js';
 import reportRoutes from './routes/reportRoutes.js';
 
@@ -50,7 +49,6 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 // Routes
 app.use('/api/users', userRoutes);
 app.use('/api/products', productRoutes);
-app.use('/api/cases', teleDiagCaseRoutes);
 app.use('/api/logs', logRoutes);
 app.use('/api/reports', reportRoutes);
 
