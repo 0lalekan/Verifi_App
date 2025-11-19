@@ -95,7 +95,7 @@ ogamed/
    - Copy `.env.example` to `.env` in the server directory
    - Update the following variables:
      ```env
-     MONGO_URI=mongodb://localhost:27017/ogamed
+     MONGO_URI=
      PORT=5000
      JWT_SECRET=your-jwt-secret-key
      ```
