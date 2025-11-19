@@ -18,12 +18,14 @@ import ProfileScreen from './screens/ProfileScreen.jsx'
 import DashboardScreen from './screens/DashboardScreen.jsx'
 import ConsumerScanScreen from './screens/ConsumerScanScreen.jsx' 
 import ReportScreen from './screens/ReportScreen.jsx'
+import ConsumerReportsScreen from './screens/ConsumerReportsScreen.jsx'
 
 // Manufacturer Screens
 import ManufacturerPortalScreen from './screens/ManufacturerPortalScreen.jsx'
 import RegisterBatchScreen from './screens/RegisterBatchScreen.jsx'
 import BatchUploadScreen from './screens/BatchUploadScreen.jsx'
 import ManufacturerInventoryScreen from './screens/ManufacturerInventoryScreen.jsx'
+import ManufacturerReportsScreen from './screens/ManufacturerReportsScreen.jsx' 
 
 // Regulator/Admin Screens
 import RegulatorDashboardScreen from './screens/RegulatorDashboardScreen.jsx'
@@ -50,12 +52,14 @@ const router = createBrowserRouter(
       {/* === Consumer Routes === */}
       <Route path="/verify-product" element={<ConsumerScanScreen />} />
       <Route path="/report" element={<ReportScreen />} />
+      <Route path="/consumer/reports" element={<ConsumerReportsScreen />} />
 
       {/* === Manufacturer Routes === */}
       <Route path="/manufacturer/portal" element={<ManufacturerPortalScreen />} />
       <Route path="/register-batch" element={<RegisterBatchScreen />} />
       <Route path="/bulk-upload" element={<BatchUploadScreen />} />
       <Route path="/manufacturer/inventory" element={<ManufacturerInventoryScreen />} />
+      <Route path="/manufacturer/reports" element={<ManufacturerReportsScreen />} />
 
       {/* === Regulator/Admin Routes === */}
       <Route path="/regulator/dashboard" element={<RegulatorDashboardScreen />} />

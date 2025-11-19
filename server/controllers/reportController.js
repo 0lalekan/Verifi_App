@@ -1,5 +1,6 @@
 import asyncHandler from 'express-async-handler';
 import Report from '../models/ReportModel.js';
+import ProductBatch from '../models/productBatchModel.js';
 
 const createReport = asyncHandler(async (req, res) => {
   const { productName, batchNumber, location, description } = req.body;
@@ -57,4 +58,40 @@ const updateReportStatus = asyncHandler(async (req, res) => {
   }
 });
 
-export { createReport, getAllReports, updateReportStatus };
+// @desc    Get reports submitted by the logged-in user
+// @route   GET /api/reports/my-reports
+const getMyReports = asyncHandler(async (req, res) => {
+  const reports = await Report.find({ reporter: req.user._id }).sort({ createdAt: -1 });
+  res.json(reports);
+});
+
+// @desc    Get reports related to the manufacturer's products
+// @route   GET /api/reports/manufacturer-reports
+const getManufacturerReports = asyncHandler(async (req, res) => {
+  // 1. Find all batches created by this manufacturer
+  const myBatches = await ProductBatch.find({ manufacturer: req.user._id });
+  
+  // 2. Extract unique Batch Numbers and Product Names
+  const batchNumbers = myBatches.map(b => b.batchNumber);
+  const productNames = [...new Set(myBatches.map(b => b.productName))]; // Unique names
+
+  // 3. Find reports that match either the Batch Number OR the Product Name
+  // This ensures they see reports even if the batch number scanned was a fake one, 
+  // provided the product name matches their brand.
+  const reports = await Report.find({
+    $or: [
+      { batchNumber: { $in: batchNumbers } },
+      { productName: { $in: productNames } } // Fuzzy match could be better, but exact match works for now
+    ]
+  }).sort({ createdAt: -1 });
+
+  res.json(reports);
+});
+
+export { 
+  createReport, 
+  getAllReports, 
+  updateReportStatus, 
+  getMyReports, 
+  getManufacturerReports 
+};

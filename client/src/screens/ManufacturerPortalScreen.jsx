@@ -95,6 +95,18 @@ const ManufacturerPortalScreen = () => {
             linkText="Manage Items"
             disabled={!isVerified}
           />
+
+          {/* Card 4: Reports (NEW) */}
+          <ActionCard
+            icon="🚨"
+            color="bg-red-50 text-red-600"
+            title="Brand Alerts"
+            desc="View whistleblower reports and incidents involving your brand."
+            link="/manufacturer/reports"
+            linkText="View Incidents"
+            disabled={!isVerified}
+          />
+          
         </div>
       </div>
     </div>

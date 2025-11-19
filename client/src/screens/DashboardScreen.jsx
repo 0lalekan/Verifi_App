@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { useUserProfile } from '../hooks/useUserProfile';
 import useAuthStore from '../store';
-import { useQuery } from '@tanstack/react-query'; // Import useQuery
+import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 
 const DashboardScreen = () => {
@@ -13,7 +13,7 @@ const DashboardScreen = () => {
   const { data: history } = useQuery({
     queryKey: ['userHistory'],
     queryFn: async () => (await axios.get('/api/logs/my-history')).data,
-    enabled: !!userInfo && userInfo.role === 'consumer' // Only fetch for consumers
+    enabled: !!userInfo && userInfo.role === 'consumer'
   });
 
   if (isLoading) {
@@ -26,13 +26,12 @@ const DashboardScreen = () => {
     );
   }
 
-  // Determine Role Specific Status
   const isManufacturer = userInfo?.role === 'manufacturer';
   const isVerified = userProfile?.organizationDetails?.isVerified;
 
   return (
     <div className="min-h-screen bg-slate-50 pb-20">
-      {/* Top Section - Identity */}
+      {/* Top Section */}
       <div className="bg-slate-900 text-white pt-12 pb-24 px-6 rounded-b-[3rem] shadow-2xl shadow-slate-900/20 relative overflow-hidden">
         <div className="absolute top-0 left-0 w-full h-full opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
         
@@ -81,6 +80,17 @@ const DashboardScreen = () => {
                 <div className="w-12 h-12 bg-red-100 text-red-600 rounded-xl flex items-center justify-center text-2xl mb-3 group-hover:scale-110 transition-transform">📢</div>
                 <h3 className="font-bold text-slate-900">Report Fake</h3>
               </Link>
+              
+              {/* --- NEW BUTTON: My Reports --- */}
+              <Link to="/consumer/reports" className="group bg-white p-6 rounded-2xl shadow-lg border border-slate-100 hover:border-blue-200 transition-all active:scale-95 col-span-2">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">📂</div>
+                  <div className="text-left">
+                     <h3 className="font-bold text-slate-900">My Reports</h3>
+                     <p className="text-xs text-slate-500 mt-1">Track case status</p>
+                  </div>
+                </div>
+              </Link>
             </>
           )}
 
@@ -99,7 +109,7 @@ const DashboardScreen = () => {
         </div>
       </div>
 
-      {/* Recent Activity (For Consumers Only) */}
+      {/* Recent Activity (Consumer Only) */}
       {!isManufacturer && (
         <div className="max-w-md mx-auto px-6 mt-8">
           <h3 className="text-slate-800 font-bold mb-4 flex items-center justify-between">

@@ -1,10 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react'; // Import useState
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
 import { toast } from 'react-toastify';
+import FakeMapComponent from '../components/FakeMapComponent'; // Import Map
 
 const AdminReportsScreen = () => {
   const queryClient = useQueryClient();
+  const [selectedMapLocation, setSelectedMapLocation] = useState(null); // State for Modal
 
   const { data: reports, isLoading, error } = useQuery({
     queryKey: ['allReports'],
@@ -35,7 +37,7 @@ const AdminReportsScreen = () => {
   if (error) return <div className="text-red-600 text-center mt-10">Error: {error.message}</div>;
 
   return (
-    <div className="min-h-screen bg-slate-50 px-4 py-12">
+    <div className="min-h-screen bg-slate-50 px-4 py-12 relative">
       <div className="max-w-7xl mx-auto">
         <div className="flex justify-between items-end mb-8">
           <div>
@@ -73,7 +75,18 @@ const AdminReportsScreen = () => {
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-600">
-                      {report.location.length > 20 ? 'Pinned GPS' : report.location}
+                       {/* Make Location Clickable if Coordinates Exist */}
+                       {report.coordinates ? (
+                         <button 
+                           onClick={() => setSelectedMapLocation(report)}
+                           className="flex items-center text-blue-600 hover:text-blue-800 font-medium transition-colors"
+                         >
+                           <span className="mr-1">📍</span>
+                           {report.location.substring(0, 20)}...
+                         </button>
+                       ) : (
+                         report.location
+                       )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
                       {report.evidenceImage ? (
@@ -115,14 +128,26 @@ const AdminReportsScreen = () => {
               </tbody>
             </table>
           </div>
-          {(!reports || reports.length === 0) && (
-            <div className="text-center py-12">
-              <div className="text-4xl mb-3">🎉</div>
-              <p className="text-slate-500 font-medium">No active reports pending review.</p>
-            </div>
-          )}
         </div>
       </div>
+
+      {/* Map Modal Overlay */}
+      {selectedMapLocation && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={() => setSelectedMapLocation(null)}>
+          <div className="bg-white w-full max-w-3xl rounded-2xl overflow-hidden shadow-2xl" onClick={e => e.stopPropagation()}>
+             <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                <h3 className="font-bold text-slate-800">Incident Location: {selectedMapLocation.productName}</h3>
+                <button onClick={() => setSelectedMapLocation(null)} className="text-slate-400 hover:text-slate-600 text-2xl">&times;</button>
+             </div>
+             <div className="h-96 relative">
+                <FakeMapComponent scanLogs={[{ location: selectedMapLocation.coordinates, status: 'Fake' }]} />
+             </div>
+             <div className="p-4 bg-white text-sm text-slate-500">
+                GPS: {selectedMapLocation.coordinates.latitude}, {selectedMapLocation.coordinates.longitude}
+             </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
