@@ -38,12 +38,9 @@ const productBatchSchema = new Schema(
       type: Number,
       default: 0,
     },
-    medicalDetails: {
-      description: String,
-      dosage: String,
-      sideEffects: String,
-      activeIngredients: String,
-      manufacturedBy: String,
+    productAttributes: {
+      type: Map,
+      of: String,
     },
     custodyChain: [
       {

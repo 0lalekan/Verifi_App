@@ -15,8 +15,8 @@ const HomeScreen = () => {
     },
     {
       icon: '💻',
-      title: 'Tele-Diagnostics',
-      description: 'Remote consultations and diagnostic support'
+      title: 'Product Verification',
+      description: 'Real-time product scanning and authenticity checks'
     },
     {
       icon: '📊',
@@ -47,7 +47,7 @@ const HomeScreen = () => {
           {/* Subtitle */}
           <p className="text-lg sm:text-xl text-slate-600 max-w-3xl mx-auto mb-12 leading-relaxed">
             Streamline clinic operations with Verifi's intelligent platform for patient management,
-            medication tracking, and tele-diagnostic excellence.
+            medication tracking, and product verification.
           </p>
 
           {/* CTA Buttons */}

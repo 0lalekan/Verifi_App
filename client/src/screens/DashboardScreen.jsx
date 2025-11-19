@@ -109,28 +109,28 @@ const DashboardScreen = () => {
               <div className="bg-white/90 backdrop-blur-sm shadow-xl p-8 rounded-2xl border border-blue-200 hover:shadow-2xl transform hover:-translate-y-2 transition-all duration-300 group">
                 <div className="flex items-center mb-6">
                   <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center mr-4">
-                    <span className="text-white text-xl">📋</span>
+                    <span className="text-white text-xl">💊</span>
                   </div>
-                  <h3 className="text-xl font-bold text-gray-900">Create New Tele-Diag Case</h3>
+                  <h3 className="text-xl font-bold text-gray-900">Medication Management</h3>
                 </div>
-                <p className="text-gray-600 mb-8 leading-relaxed">Start a new telemedicine consultation for a patient with comprehensive evaluation tools.</p>
+                <p className="text-gray-600 mb-8 leading-relaxed">Access and manage medication records, prescriptions, and inventory for patients.</p>
                 <button className="w-full bg-gradient-to-r from-blue-600 to-cyan-700 text-white py-3 px-6 rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300">
-                  <span>Start New Case</span>
+                  <span>Manage Medications</span>
                   <svg className="ml-2 w-5 h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
                   </svg>
                 </button>
               </div>
               <div className="bg-white/90 backdrop-blur-sm shadow-xl p-8 rounded-2xl border border-blue-200 hover:shadow-2xl transform hover:-translate-y-2 transition-all duration-300 group">
                 <div className="flex items-center mb-6">
                   <div className="w-12 h-12 bg-gradient-to-br from-cyan-500 to-teal-600 rounded-xl flex items-center justify-center mr-4">
-                    <span className="text-white text-xl">📊</span>
+                    <span className="text-white text-xl">📋</span>
                   </div>
-                  <h3 className="text-xl font-bold text-gray-900">My Open Cases</h3>
+                  <h3 className="text-xl font-bold text-gray-900">Patient Records</h3>
                 </div>
-                <p className="text-gray-600 mb-8 leading-relaxed">View and manage your active patient cases with real-time updates and collaboration tools.</p>
+                <p className="text-gray-600 mb-8 leading-relaxed">View and update patient medical records, history, and care notes.</p>
                 <button className="w-full bg-gradient-to-r from-cyan-600 to-teal-700 text-white py-3 px-6 rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300">
-                  <span>View Active Cases</span>
+                  <span>Access Records</span>
                   <svg className="ml-2 w-5 h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
@@ -156,13 +156,13 @@ const DashboardScreen = () => {
                     <span className="text-white text-2xl">🔍</span>
                   </div>
                   <div>
-                    <h3 className="text-2xl font-bold text-gray-900">Find Open Cases</h3>
-                    <p className="text-purple-600 font-medium">Medical Consultation Cases</p>
+                    <h3 className="text-2xl font-bold text-gray-900">Patient Consultations</h3>
+                    <p className="text-purple-600 font-medium">Medical Analysis Cases</p>
                   </div>
                 </div>
-                <p className="text-gray-600 mb-8 leading-relaxed">Browse and take on available medical consultation cases from nurses and patients requiring specialist evaluation.</p>
+                <p className="text-gray-600 mb-8 leading-relaxed">Access and review patient consultation records and provide specialist medical analysis.</p>
                 <button className="w-full bg-gradient-to-r from-purple-600 to-violet-700 text-white py-3 px-6 rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300">
-                  <span>Browse Available Cases</span>
+                  <span>View Consultations</span>
                   <svg className="ml-2 w-5 h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                   </svg>

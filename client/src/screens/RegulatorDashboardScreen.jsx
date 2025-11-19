@@ -1,6 +1,9 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
+import FakeMapComponent from '../components/FakeMapComponent';
+import { Bar } from 'react-chartjs-2';
+import 'chart.js/auto';
 
 const RegulatorDashboardScreen = () => {
   const { data, isLoading, error } = useQuery({
@@ -31,39 +34,71 @@ const RegulatorDashboardScreen = () => {
         <>
           {(() => {
             const logsToDisplay = data?.data ? data.data : data;
-            return Array.isArray(logsToDisplay) && logsToDisplay.length > 0 ? (
-              <>
-                <p className="mb-4">Total Scans: {logsToDisplay.length}</p>
-                <table className="min-w-full bg-white border border-gray-300">
-                  <thead className="bg-gray-100">
-                    <tr>
-                      <th className="px-4 py-2 border-b text-left">Batch Number</th>
-                      <th className="px-4 py-2 border-b text-left">Status</th>
-                      <th className="px-4 py-2 border-b text-left">Latitude</th>
-                      <th className="px-4 py-2 border-b text-left">Longitude</th>
-                      <th className="px-4 py-2 border-b text-left">Accuracy (m)</th>
-                      <th className="px-4 py-2 border-b text-left">Scanned By (Email)</th>
-                      <th className="px-4 py-2 border-b text-left">Timestamp</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {logsToDisplay.map((log, index) => (
-                      <tr key={log._id || index} className="hover:bg-gray-50">
-                        <td className="px-4 py-2 border-b">{log.productBatch}</td>
-                        <td className="px-4 py-2 border-b">{log.status}</td>
-                        <td className="px-4 py-2 border-b">{log.location?.latitude || 'N/A'}</td>
-                        <td className="px-4 py-2 border-b">{log.location?.longitude || 'N/A'}</td>
-                        <td className="px-4 py-2 border-b">{log.locationAccuracy ? log.locationAccuracy.toLocaleString() : 'N/A'}</td>
-                        <td className="px-4 py-2 border-b">{log.scannedBy?.email || 'N/A'}</td>
-                        <td className="px-4 py-2 border-b">{new Date(log.createdAt).toLocaleString()}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </>
-            ) : (
-              <p className="text-center text-gray-600">No verification data recorded yet.</p>
-            );
+            if (Array.isArray(logsToDisplay) && logsToDisplay.length > 0) {
+              // Aggregate scans per location
+              const locationCounts = {};
+              logsToDisplay.forEach(log => {
+                if (log.location && log.location.longitude !== null && log.location.latitude !== null) {
+                  const locationKey = `${log.location.latitude.toFixed(2)}, ${log.location.longitude.toFixed(2)}`;
+                  locationCounts[locationKey] = (locationCounts[locationKey] || 0) + 1;
+                }
+              });
+
+              const labels = Object.keys(locationCounts);
+              const dataPoints = Object.values(locationCounts);
+
+              const chartData = {
+                labels,
+                datasets: [
+                  {
+                    label: 'Number of Scans',
+                    data: dataPoints,
+                    backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 1,
+                  },
+                ],
+              };
+
+              const chartOptions = {
+                responsive: true,
+                plugins: {
+                  title: {
+                    display: true,
+                    text: 'Scan Distribution Map',
+                  },
+                },
+                scales: {
+                  y: {
+                    beginAtZero: true,
+                    title: {
+                      display: true,
+                      text: 'Number of Scans',
+                    },
+                  },
+                  x: {
+                    title: {
+                      display: true,
+                      text: 'Location (Lat, Lng)',
+                    },
+                  },
+                },
+              };
+
+              return (
+                <>
+                  <p className="mb-4">Total Scans: {logsToDisplay.length}</p>
+                  <FakeMapComponent scanLogs={logsToDisplay} />
+                  <div className="mt-6">
+                    <Bar data={chartData} options={chartOptions} />
+                  </div>
+                </>
+              );
+            } else {
+              return (
+                <p className="text-center text-gray-600">No verification data recorded yet.</p>
+              );
+            }
           })()}
         </>
       )}

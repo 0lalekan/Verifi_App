@@ -68,7 +68,7 @@ export const verifyProductBatch = asyncHandler(async (req, res) => {
 // @route   POST /api/productbatches
 // @access  Protected (manufacturer/admin)
 export const createProductBatch = asyncHandler(async (req, res) => {
-  const { batchNumber, productName, expiryDate, manufacturingDate, medicalDetails } = req.body;
+  const { batchNumber, productName, expiryDate, manufacturingDate, productAttributes } = req.body;
   const manufacturer = req.user && req.user._id;
 
   const newProduct = await ProductBatch.create({
@@ -77,7 +77,7 @@ export const createProductBatch = asyncHandler(async (req, res) => {
     expiryDate,
     manufacturingDate,
     manufacturer,
-    medicalDetails,
+    productAttributes,
     verificationCount: 0,
   });
 
@@ -110,12 +110,12 @@ export const uploadBatchList = asyncHandler(async (req, res) => {
           manufacturer,
           expiryDate: new Date(row.ExpiryDate),
           manufacturingDate: new Date(row.ManufacturingDate),
-          medicalDetails: {
-            description: row.Description,
-            dosage: row.Dosage,
-            sideEffects: row.SideEffects,
-            activeIngredients: row.ActiveIngredients,
-            manufacturedBy: row.ManufacturedBy,
+          productAttributes: {
+            Description: row.Description,
+            Dosage: row.Dosage,
+            SideEffects: row.SideEffects,
+            ActiveIngredients: row.ActiveIngredients,
+            ManufacturedBy: row.ManufacturedBy,
           },
           verificationCount: 0,
         };

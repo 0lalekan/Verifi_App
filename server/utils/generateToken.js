@@ -6,19 +6,12 @@ import jwt from 'jsonwebtoken';
  * @param {string} userId - The user's MongoDB ObjectId to be included in the JWT payload.
  */
 const generateToken = (res, userId) => {
-  let jwtSecret = process.env.JWT_SECRET;
-
-  if (!jwtSecret) {
-    if (process.env.NODE_ENV === 'development') {
-      // Development fallback (INSECURE) — prefer setting JWT_SECRET in your .env
-      console.warn('WARNING: JWT_SECRET is not set. Using insecure development fallback. Set JWT_SECRET in .env for real environments.');
-      jwtSecret = 'dev-secret-change-me';
-    } else {
-      throw new Error('JWT_SECRET must be defined in environment variables');
-    }
+  if (!process.env.JWT_SECRET) {
+    console.error('Fatal error: JWT_SECRET is not defined in environment variables');
+    throw new Error('JWT_SECRET must be defined in environment variables');
   }
 
-  const token = jwt.sign({ userId }, jwtSecret, {
+  const token = jwt.sign({ userId }, process.env.JWT_SECRET, {
     expiresIn: '30d',
   });
 
