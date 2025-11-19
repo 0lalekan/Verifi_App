@@ -1,6 +1,7 @@
 import { Link, useNavigate } from 'react-router-dom';
 import useAuthStore from '../store';
 import { useUserProfile } from '../hooks/useUserProfile';
+import verifiLogo from '../assets/verifi-logo.png';
 
 const Header = () => {
   const navigate = useNavigate();
@@ -61,9 +62,7 @@ const Header = () => {
         <div className="flex justify-between h-16 items-center">
           
           <Link to={getHomeRoute()} className="flex items-center gap-2 group">
-            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-blue-500/30 group-hover:scale-105 transition-transform">
-              V
-            </div>
+            <img src={verifiLogo} alt="Verifi Logo" className="w-8 h-8 rounded-lg shadow-lg shadow-blue-500/30 group-hover:scale-105 transition-transform" />
             <span className="text-xl font-bold text-slate-800 tracking-tight">Verifi</span>
           </Link>
 

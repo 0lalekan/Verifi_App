@@ -17,33 +17,37 @@ import reportRoutes from './routes/reportRoutes.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-// 1. CRITICAL: Ensure Uploads Directory Exists
+// Ensure Uploads Directory Exists
 const uploadDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadDir)){
     fs.mkdirSync(uploadDir);
 }
 
-// Load environment variables
 dotenv.config();
 
 // Global error handlers
 process.on('uncaughtException', (err) => {
-  console.error('Uncaught Exception:', err && err.stack ? err.stack : err);
+  console.error('Uncaught Exception:', err);
   process.exit(1);
 });
 
 process.on('unhandledRejection', (reason) => {
-  console.error('Unhandled Rejection at:', reason);
+  console.error('Unhandled Rejection:', reason);
   process.exit(1);
 });
 
-// Initialize Express app
 const app = express();
 
-// Middleware
-app.use(cors());
+// --- SECURITY CONFIGURATION ---
+// 1. CORS: Allow your frontend to talk to this backend
+app.use(cors({
+  // In production, you should change '*' to your actual Vercel URL array
+  // e.g., origin: ["https://verifi-app.vercel.app", "http://localhost:5173"]
+  origin: process.env.CLIENT_URL || "http://localhost:5173", 
+  credentials: true // Allow cookies (JWT)
+}));
 
-// --- FIX: Configure Helmet to allow images to be loaded from other origins ---
+// 2. Helmet: Allow images to be loaded cross-origin
 app.use(helmet({
   crossOriginResourcePolicy: { policy: "cross-origin" }
 }));
@@ -53,7 +57,7 @@ app.use(express.urlencoded({ extended: false }));
 app.use(morgan('dev'));
 app.use(cookieParser());
 
-// Serve static files from uploads directory
+// Serve static files
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Routes
@@ -62,25 +66,21 @@ app.use('/api/products', productRoutes);
 app.use('/api/logs', logRoutes);
 app.use('/api/reports', reportRoutes);
 
-
-// Create HTTP server
 const httpServer = createServer(app);
 
-// Initialize Socket.io
 const io = new Server(httpServer, {
   cors: {
-    origin: '*', 
+    origin: process.env.CLIENT_URL || "http://localhost:5173",
     methods: ['GET', 'POST'],
+    credentials: true
   },
 });
 
-// Make io accessible to our routers
 app.use((req, res, next) => {
   req.io = io;
   next();
 });
 
-// MongoDB Connection
 const MONGO_URI = process.env.MONGO_URI;
 const PORT = process.env.PORT || 5000;
 
@@ -90,8 +90,8 @@ function startServer() {
   });
 }
 
-if (!MONGO_URI || MONGO_URI.includes('<')) {
-  console.warn('MONGO_URI not provided or contains placeholder; skipping MongoDB connection.');
+if (!MONGO_URI) {
+  console.warn('MONGO_URI not provided; skipping DB connection.');
   startServer();
 } else {
   mongoose
@@ -107,24 +107,11 @@ if (!MONGO_URI || MONGO_URI.includes('<')) {
 }
 
 app.get('/', (req, res) => {
-  res.status(200).send('Server is up and running');
+  res.status(200).send('Verifi API is running');
 });
 
 io.on('connection', (socket) => {
-  console.log('A user connected:', socket.id);
-  socket.on('disconnect', () => {
-    console.log('User disconnected:', socket.id);
-  });
-});
-
-app.use((req, res) => {
-  res.status(404).json({ message: 'Not Found' });
-});
-
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  const statusCode = res.statusCode && res.statusCode !== 200 ? res.statusCode : 500;
-  res.status(statusCode).json({ message: err.message || 'Internal Server Error' });
+  // console.log('A user connected:', socket.id);
 });
 
 export default app;
