@@ -35,9 +35,26 @@ const createReport = asyncHandler(async (req, res) => {
 });
 
 const getAllReports = asyncHandler(async (req, res) => {
-  const reports = await Report.find().populate('reporter', 'name email');
-
+  const reports = await Report.find().populate('reporter', 'firstName email lastName').sort({ createdAt: -1 });
   res.json(reports);
 });
 
-export { createReport, getAllReports };
+// @desc    Update report status
+// @route   PUT /api/reports/:id
+// @access  Protected (Regulator)
+const updateReportStatus = asyncHandler(async (req, res) => {
+  const { status, adminNotes } = req.body;
+  const report = await Report.findById(req.params.id);
+
+  if (report) {
+    report.status = status || report.status;
+    report.adminNotes = adminNotes || report.adminNotes;
+    const updatedReport = await report.save();
+    res.json(updatedReport);
+  } else {
+    res.status(404);
+    throw new Error('Report not found');
+  }
+});
+
+export { createReport, getAllReports, updateReportStatus };

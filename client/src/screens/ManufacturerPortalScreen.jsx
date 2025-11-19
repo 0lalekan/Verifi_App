@@ -65,22 +65,34 @@ const ManufacturerPortalScreen = () => {
         {/* Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
           <ActionCard
+            icon="🛡️"
+            color="bg-emerald-50 text-emerald-600"
+            title="Register Batch"
+            desc="Create a secure digital identity for a new product batch."
+            link="/register-batch"
+            linkText="Create Batch"
+            disabled={!isVerified}
+          />
+
+          {/* Card 2: Upload */}
+          <ActionCard
             icon="📤"
             color="bg-blue-50 text-blue-600"
-            title="Bulk Inventory Upload"
-            desc="Import large product datasets via CSV/Excel. Ideal for onboarding new manufacturing runs efficiently."
+            title="Bulk Upload"
+            desc="Import large product datasets via CSV/Excel."
             link="/bulk-upload"
             linkText="Upload Data"
             disabled={!isVerified}
           />
 
+          {/* Card 3: Inventory (NEW) */}
           <ActionCard
-            icon="🛡️"
-            color="bg-emerald-50 text-emerald-600"
-            title="Register Single Batch"
-            desc="Create a secure digital identity for a new product batch. Generates unique verification markers."
-            link="/register-batch"
-            linkText="Create Batch"
+            icon="📦"
+            color="bg-purple-50 text-purple-600"
+            title="My Inventory"
+            desc="Track registered batches, monitor scans, and download QR codes."
+            link="/manufacturer/inventory"
+            linkText="Manage Items"
             disabled={!isVerified}
           />
         </div>

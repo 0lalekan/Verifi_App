@@ -5,7 +5,6 @@ import { useUserProfile } from '../hooks/useUserProfile';
 const Header = () => {
   const navigate = useNavigate();
   const { userInfo, logout } = useAuthStore();
-  // We fetch the full profile here to check verification status
   const { data: userProfile } = useUserProfile({ enabled: !!userInfo });
 
   const logoutHandler = () => {
@@ -13,24 +12,17 @@ const Header = () => {
     navigate('/login');
   };
 
-  // Logic to determine where the Logo clicks to
   const getHomeRoute = () => {
     if (!userInfo) return '/'; 
-
     switch (userInfo.role) {
-      case 'manufacturer':
-        return '/manufacturer/portal';
-      case 'regulator':
-        return '/regulator/dashboard';
-      case 'consumer':
-      default:
-        return '/dashboard';
+      case 'manufacturer': return '/manufacturer/portal';
+      case 'regulator': return '/regulator/dashboard';
+      case 'consumer': default: return '/dashboard';
     }
   };
 
   const getRoleBasedLinks = () => {
     if (!userInfo) return [];
-    
     switch (userInfo.role) {
       case 'consumer':
         return [
@@ -39,39 +31,35 @@ const Header = () => {
           { to: '/report', label: 'Report' }
         ];
       case 'manufacturer':
-        // Base link that is always accessible
-        const manufacturerLinks = [
-          { to: '/manufacturer/portal', label: 'Portal' }
-        ];
-        
-        // SECURITY CHECK: Only show these if verified
+        const manufacturerLinks = [{ to: '/manufacturer/portal', label: 'Portal' }];
         if (userProfile?.organizationDetails?.isVerified) {
           manufacturerLinks.push(
             { to: '/register-batch', label: 'New Batch' },
             { to: '/bulk-upload', label: 'Bulk Upload' }
           );
         }
-        
         return manufacturerLinks;
-
       case 'regulator':
         return [
           { to: '/regulator/dashboard', label: 'Oversight' },
           { to: '/admin/reports', label: 'Reports' }
         ];
-      default:
-        return [{ to: '/dashboard', label: 'Dashboard' }];
+      default: return [{ to: '/dashboard', label: 'Dashboard' }];
     }
   };
 
   const navLinks = getRoleBasedLinks();
+  
+  // Image URL Logic (Relative path handling)
+  const profileImg = userProfile?.profileImage 
+    ? `http://localhost:5000${userProfile.profileImage}` 
+    : null;
 
   return (
     <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16 items-center">
           
-          {/* Logo - Dynamic */}
           <Link to={getHomeRoute()} className="flex items-center gap-2 group">
             <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-blue-500/30 group-hover:scale-105 transition-transform">
               V
@@ -79,7 +67,6 @@ const Header = () => {
             <span className="text-xl font-bold text-slate-800 tracking-tight">Verifi</span>
           </Link>
 
-          {/* Desktop Navigation */}
           <nav className="hidden md:flex space-x-1">
             {navLinks.map((link) => (
               <Link
@@ -92,24 +79,38 @@ const Header = () => {
             ))}
           </nav>
 
-          {/* Auth Actions */}
           <div className="flex items-center gap-4">
             {userInfo ? (
               <>
-                {/* Profile Link - Now Clickable */}
                 <Link 
                   to="/profile" 
-                  className="hidden sm:flex flex-col items-end cursor-pointer hover:bg-slate-50 p-2 rounded-lg transition-all group"
+                  className="flex items-center gap-3 cursor-pointer hover:bg-slate-50 p-1.5 pr-3 rounded-xl transition-all group border border-transparent hover:border-slate-100"
                 >
-                  <span className="text-sm font-bold text-slate-800 group-hover:text-blue-600">{userInfo.firstName}</span>
-                  <span className="text-xs text-slate-500 capitalize">{userInfo.role}</span>
+                  <div className="w-9 h-9 rounded-full bg-slate-200 overflow-hidden border-2 border-white shadow-sm flex items-center justify-center">
+                    {profileImg ? (
+                      <img src={profileImg} alt="User" className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="text-sm font-bold text-slate-500">
+                        {userInfo.firstName.charAt(0)}
+                      </span>
+                    )}
+                  </div>
+                  <div className="hidden sm:flex flex-col items-start">
+                    <span className="text-sm font-bold text-slate-800 group-hover:text-blue-600 leading-tight">
+                      {userInfo.firstName}
+                    </span>
+                    <span className="text-[10px] text-slate-500 capitalize leading-tight">
+                      {userInfo.role}
+                    </span>
+                  </div>
                 </Link>
                 
                 <button
                   onClick={logoutHandler}
-                  className="px-4 py-2 rounded-lg border border-slate-200 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-red-600 transition-colors"
+                  className="p-2 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+                  title="Logout"
                 >
-                  Logout
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
                 </button>
               </>
             ) : (

@@ -17,6 +17,17 @@ export const verifyProductBatch = asyncHandler(async (req, res) => {
   let status;
   if (!productBatch) {
     status = 'Fake';
+
+    // 🚨 REAL-TIME ALERT TRIGGER
+    // This sends a signal to all connected Regulators immediately
+    if (req.io) {
+      req.io.emit('admin_alert', {
+        type: 'FAKE_SCAN',
+        message: `⚠️ Counterfeit Detected! Batch: ${batchNumber}`,
+        location: latitude && longitude ? { lat: latitude, lng: longitude } : 'Unknown',
+        timestamp: new Date()
+      });
+    }
   } else {
     const now = new Date();
     status = productBatch.expiryDate < now ? 'Expired' : 'Valid';
@@ -98,6 +109,15 @@ export const createProductBatch = asyncHandler(async (req, res) => {
   }
 });
 
+// @desc    Get all batches for logged-in manufacturer
+// @route   GET /api/products/my-inventory
+// @access  Protected (Manufacturer Only)
+export const getManufacturerBatches = asyncHandler(async (req, res) => {
+  const batches = await ProductBatch.find({ manufacturer: req.user._id })
+    .sort({ createdAt: -1 });
+  res.json(batches);
+});
+
 // @desc    Upload batch list
 // @route   POST /api/products/bulk-upload
 // @access  Protected (Manufacturer Only)
@@ -124,7 +144,6 @@ export const uploadBatchList = asyncHandler(async (req, res) => {
       fsSync.createReadStream(filePath)
         .pipe(csv())
         .on('data', (row) => {
-          // Simple mapping - adjust based on your CSV structure
           if (row.batchNumber && row.productName) {
             dataArray.push({
               batchNumber: row.batchNumber,
@@ -144,9 +163,7 @@ export const uploadBatchList = asyncHandler(async (req, res) => {
     });
 
     if (dataArray.length > 0) {
-      // Use ordered: false to ignore duplicates and insert the rest
       await ProductBatch.insertMany(dataArray, { ordered: false }).catch(err => {
-        // Ignore duplicate key errors
         console.log('Some duplicates skipped');
       });
     }
@@ -165,4 +182,5 @@ export default {
   verifyProductBatch,
   createProductBatch,
   uploadBatchList,
+  getManufacturerBatches,
 };

@@ -9,12 +9,19 @@ import { Server } from 'socket.io';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import cookieParser from 'cookie-parser';
+import fs from 'fs';
 import userRoutes from './routes/userRoutes.js'
 import productRoutes from './routes/productRoutes.js';
 import logRoutes from './routes/logRoutes.js';
 import reportRoutes from './routes/reportRoutes.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+// 1. CRITICAL: Ensure Uploads Directory Exists
+const uploadDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadDir)){
+    fs.mkdirSync(uploadDir);
+}
 
 // Load environment variables
 dotenv.config();
@@ -62,6 +69,12 @@ const io = new Server(httpServer, {
     origin: '*', // Adjust for your client's origin
     methods: ['GET', 'POST'],
   },
+});
+
+// Make io accessible to our routers
+app.use((req, res, next) => {
+  req.io = io;
+  next();
 });
 
 // MongoDB Connection
