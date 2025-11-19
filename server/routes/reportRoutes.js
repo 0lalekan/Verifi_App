@@ -6,6 +6,6 @@ import { protect, restrictTo } from '../middleware/authMiddleware.js';
 const router = express.Router();
 
 router.post('/', upload.single('evidenceImage'), createReport);
-router.get('/', protect, restrictTo('admin', 'specialist'), getAllReports);
+router.get('/', protect, restrictTo('regulator'), getAllReports);
 
 export default router;

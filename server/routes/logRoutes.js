@@ -4,6 +4,6 @@ import { getAllVerificationLogs } from '../controllers/logController.js';
 
 const router = express.Router();
 
-router.get('/', protect, restrictTo('admin', 'specialist', 'regulator'), getAllVerificationLogs);
+router.get('/', protect, restrictTo('regulator'), getAllVerificationLogs);
 
 export default router;

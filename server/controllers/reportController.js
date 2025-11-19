@@ -11,13 +11,24 @@ const createReport = asyncHandler(async (req, res) => {
     evidenceImage = '/uploads/' + req.file.filename;
   }
 
+  // Parse latitude and longitude from location string if present
+  let coordinates = null;
+  const latLonMatch = location.match(/Lat:\s*([-\d.]+),\s*Lon:\s*([-\d.]+)/);
+  if (latLonMatch) {
+    coordinates = {
+      latitude: parseFloat(latLonMatch[1]),
+      longitude: parseFloat(latLonMatch[2])
+    };
+  }
+
   const newReport = await Report.create({
     productName,
     batchNumber,
     location,
     description,
     evidenceImage,
-    reporter
+    reporter,
+    ...(coordinates && { coordinates })
   });
 
   res.status(201).json(newReport);

@@ -1,4 +1,5 @@
 import { Link, useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 import useAuthStore from '../store';
 import { useUserProfile } from '../hooks/useUserProfile';
 
@@ -6,6 +7,8 @@ const Header = () => {
   const navigate = useNavigate();
   const { userInfo, logout } = useAuthStore();
   const { data: userProfile } = useUserProfile({ enabled: !!userInfo });
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [userDropdownOpen, setUserDropdownOpen] = useState(false);
 
   const logoutHandler = () => {
     logout();

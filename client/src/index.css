@@ -1,84 +1,20 @@
 @import "tailwindcss";
 
-:root {
-  font-family: 'Inter', system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
-
-  color-scheme: light dark;
-  color: rgba(17, 24, 39, 1);
-  background-color: #f8fafc;
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-/* small touch-ups that complement Tailwind */
-body {
-  margin: 0;
-  min-width: 320px;
-  min-height: 100vh;
-}
-
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
-}
-
-button {
-  font-family: inherit;
-}
-
-/* Custom animations */
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
+@layer base {
+  body {
+    @apply bg-slate-50 text-slate-900 antialiased;
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+  /* Professional Typography */
+  h1, h2, h3 {
+    @apply tracking-tight font-bold text-slate-900;
   }
 }
 
-@keyframes fadeInRight {
-  from {
-    opacity: 0;
-    transform: translateX(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
+/* Custom Utilities for "Mature" UI */
+.glass-panel {
+  @apply bg-white/80 backdrop-blur-md border border-slate-200 shadow-sm;
 }
 
-@keyframes float {
-  0%, 100% {
-    transform: translateY(0px);
-  }
-  50% {
-    transform: translateY(-20px);
-  }
-}
-
-.animate-fade-in-up {
-  animation: fadeInUp 1s ease-out;
-}
-
-.animate-fade-in-right {
-  animation: fadeInRight 1s ease-out 0.3s both;
-}
-
-.animate-float {
-  animation: float 3s ease-in-out infinite;
-}
-
-.animation-delay-1000 {
-  animation-delay: 1s;
-}
-
-.animation-delay-2000 {
-  animation-delay: 2s;
+.govt-card {
+  @apply bg-white border border-slate-200 shadow-[0_2px_8px_rgba(0,0,0,0.04)] rounded-lg;
 }

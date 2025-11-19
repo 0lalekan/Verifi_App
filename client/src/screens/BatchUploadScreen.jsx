@@ -6,6 +6,19 @@ import { toast } from 'react-toastify';
 const BatchUploadScreen = () => {
   const [file, setFile] = useState(null);
 
+  const downloadTemplate = () => {
+    const template = 'batchNumber,productName,expiryDate,description\n';
+    const blob = new Blob([template], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'Verifi_Batch_Template.csv';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
   const mutation = useMutation({
     mutationFn: async (formData) => {
       const response = await axios.post('/api/products/bulk-upload', formData, {
@@ -40,6 +53,13 @@ const BatchUploadScreen = () => {
       <div className="max-w-md w-full bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-8">
         <h1 className="text-3xl font-bold text-center text-gray-900 mb-8">Bulk Batch Upload (CSV/Excel)</h1>
         <form onSubmit={handleUpload} className="space-y-6">
+          <button
+            type="button"
+            onClick={downloadTemplate}
+            className="w-full bg-blue-500 text-white py-3 px-6 rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300"
+          >
+            Download CSV Template
+          </button>
           <div>
             <label htmlFor="file" className="block text-sm font-medium text-gray-700 mb-2">
               Select CSV or Excel File

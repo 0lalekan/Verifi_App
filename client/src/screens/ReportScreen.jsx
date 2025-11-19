@@ -11,6 +11,7 @@ const ReportScreen = () => {
   const [location, setLocation] = useState('');
   const [description, setDescription] = useState('');
   const [evidenceFile, setEvidenceFile] = useState(null);
+  const [isLocating, setIsLocating] = useState(false);
 
   const mutation = useMutation({
     mutationFn: async (formData) => {
@@ -37,6 +38,27 @@ const ReportScreen = () => {
       formData.append('evidenceImage', evidenceFile);
     }
     mutation.mutate(formData);
+  };
+
+  const getCurrentLocation = () => {
+    if (!navigator.geolocation) {
+      toast.error('Geolocation is not supported by this browser');
+      return;
+    }
+    setIsLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        setLocation(`Lat: ${latitude.toFixed(4)}, Lon: ${longitude.toFixed(4)}`);
+        setIsLocating(false);
+      },
+      (error) => {
+        console.error('Geolocation error:', error);
+        toast.error('Failed to get current location');
+        setIsLocating(false);
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
   };
 
   return (
@@ -77,15 +99,26 @@ const ReportScreen = () => {
             <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-2">
               Location Purchased
             </label>
-            <input
-              id="location"
-              type="text"
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300"
-              placeholder="e.g. Lagos Pharmacy"
-              required
-            />
+            <div className="flex gap-2">
+              <input
+                id="location"
+                type="text"
+                value={location}
+                onChange={(e) => setLocation(e.target.value)}
+                className="flex-1 px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300"
+                placeholder="e.g. Lagos Pharmacy or click button to get current location"
+                required
+              />
+              <button
+                type="button"
+                onClick={getCurrentLocation}
+                disabled={isLocating}
+                className="px-4 py-3 bg-blue-500 text-white rounded-xl hover:bg-blue-600 disabled:opacity-50 transition-all duration-300"
+                title="Use Current Location"
+              >
+                {isLocating ? '...' : '📍 Use Current Location'}
+              </button>
+            </div>
           </div>
 
           <div>

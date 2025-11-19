@@ -5,6 +5,10 @@ const reportSchema = new mongoose.Schema({
   productName: { type: String, required: true },
   batchNumber: { type: String },
   location: { type: String, required: true },
+  coordinates: {
+    latitude: { type: Number },
+    longitude: { type: Number }
+  },
   description: { type: String, required: true },
   evidenceImage: { type: String },
   status: { type: String, enum: ['Pending', 'Investigating', 'Resolved', 'Rejected'], default: 'Pending' },

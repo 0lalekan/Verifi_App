@@ -1,107 +1,55 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
-import FakeMapComponent from '../components/FakeMapComponent';
-import { Bar } from 'react-chartjs-2';
-import 'chart.js/auto';
+import { motion } from 'framer-motion'; // Install: npm install framer-motion
+
+// Reusable "Stat Card" with mature styling
+const StatCard = ({ title, value, trend, trendUp }) => (
+  <div className="govt-card p-6">
+    <h3 className="text-slate-500 text-xs font-semibold uppercase tracking-wider">{title}</h3>
+    <div className="mt-2 flex items-baseline gap-2">
+      <span className="text-3xl font-bold text-slate-900">{value}</span>
+      {trend && (
+        <span className={`text-sm font-medium ${trendUp ? 'text-verifi-success' : 'text-verifi-error'}`}>
+          {trend}
+        </span>
+      )}
+    </div>
+  </div>
+);
 
 const RegulatorDashboardScreen = () => {
-  const { data, isLoading, error } = useQuery({
+  const { data: logs } = useQuery({
     queryKey: ['verificationLogs'],
-    queryFn: async () => {
-      const response = await axios.get('/api/logs');
-      return response.data;
-    },
+    queryFn: async () => (await axios.get('/api/logs')).data
   });
 
+  const safeLogs = Array.isArray(logs) ? logs : (logs?.data || []);
+
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-3xl font-bold mb-6">Naija-Verify: Raw Scan Data Logs</h1>
+    <div className="min-h-screen bg-slate-50 p-8">
+      {/* Header Section */}
+      <header className="mb-8">
+        <h1 className="text-2xl text-govt-900">National Verification Oversight</h1>
+        <p className="text-slate-500 mt-1">Real-time surveillance of consumable goods supply chain.</p>
+      </header>
 
-      {isLoading && (
+      {/* Metrics Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <StatCard title="Total Scans (24h)" value={safeLogs.length} trend="+12%" trendUp={true} />
+        <StatCard title="Flagged Anomalies" value="3" trend="+2%" trendUp={false} />
+        <StatCard title="Active Regions" value="5" />
+        <StatCard title="Compliance Rate" value="98.2%" trend="+0.4%" trendUp={true} />
+      </div>
+
+      {/* Main Content Area - Map Placeholder */}
+      <div className="govt-card h-96 flex items-center justify-center bg-slate-100 border-dashed border-2 border-slate-300">
         <div className="text-center">
-          <p className="text-gray-600">Loading...</p>
+          <span className="text-4xl mb-2 block">🗺️</span>
+          <p className="text-slate-500 font-medium">Geospatial Intelligence Map</p>
+          <p className="text-slate-400 text-sm">Live feed of Lagos, Abuja, Port Harcourt...</p>
         </div>
-      )}
-
-      {error && (
-        <div className="text-center">
-          <p className="text-red-500">Error fetching logs: {error.message}</p>
-        </div>
-      )}
-
-      {data && (
-        <>
-          {(() => {
-            const logsToDisplay = data?.data ? data.data : data;
-            if (Array.isArray(logsToDisplay) && logsToDisplay.length > 0) {
-              // Aggregate scans per location
-              const locationCounts = {};
-              logsToDisplay.forEach(log => {
-                if (log.location && log.location.longitude !== null && log.location.latitude !== null) {
-                  const locationKey = `${log.location.latitude.toFixed(2)}, ${log.location.longitude.toFixed(2)}`;
-                  locationCounts[locationKey] = (locationCounts[locationKey] || 0) + 1;
-                }
-              });
-
-              const labels = Object.keys(locationCounts);
-              const dataPoints = Object.values(locationCounts);
-
-              const chartData = {
-                labels,
-                datasets: [
-                  {
-                    label: 'Number of Scans',
-                    data: dataPoints,
-                    backgroundColor: 'rgba(54, 162, 235, 0.6)',
-                    borderColor: 'rgba(54, 162, 235, 1)',
-                    borderWidth: 1,
-                  },
-                ],
-              };
-
-              const chartOptions = {
-                responsive: true,
-                plugins: {
-                  title: {
-                    display: true,
-                    text: 'Scan Distribution Map',
-                  },
-                },
-                scales: {
-                  y: {
-                    beginAtZero: true,
-                    title: {
-                      display: true,
-                      text: 'Number of Scans',
-                    },
-                  },
-                  x: {
-                    title: {
-                      display: true,
-                      text: 'Location (Lat, Lng)',
-                    },
-                  },
-                },
-              };
-
-              return (
-                <>
-                  <p className="mb-4">Total Scans: {logsToDisplay.length}</p>
-                  <FakeMapComponent scanLogs={logsToDisplay} />
-                  <div className="mt-6">
-                    <Bar data={chartData} options={chartOptions} />
-                  </div>
-                </>
-              );
-            } else {
-              return (
-                <p className="text-center text-gray-600">No verification data recorded yet.</p>
-              );
-            }
-          })()}
-        </>
-      )}
+      </div>
     </div>
   );
 };

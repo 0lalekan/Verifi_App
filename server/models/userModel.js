@@ -33,8 +33,8 @@ const userSchema = new Schema(
     password: { type: String, required: true, minlength: 6 },
     role: {
       type: String,
-      enum: ['patient', 'nurse', 'specialist', 'pharmacist', 'admin'],
-      default: 'patient',
+      enum: ['consumer', 'manufacturer', 'regulator'],
+      default: 'consumer',
     },
     isActive: { type: Boolean, default: true },
     points: { type: Number, default: 0 },
