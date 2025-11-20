@@ -31,7 +31,10 @@ const ConsumerScanScreen = () => {
       BarcodeFormat.UPC_A,        // Added (Critical for many products)
       BarcodeFormat.UPC_E,        // Added
       BarcodeFormat.ITF           // Added
-    ]]
+    ]],
+    
+    [DecodeHintType.CHARACTER_SET, 'UTF-8'],
+    [DecodeHintType.ASSUME_GS1, true]
   ]), []);
 
   // --- API Mutation ---
@@ -93,30 +96,32 @@ const ConsumerScanScreen = () => {
 
   // --- Image Upload Handler ---
   const handleImageUpload = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
+  const file = e.target.files[0];
+  if (!file) return;
 
-    setIsProcessingImage(true);
-    setIsScanning(false);
+  setIsProcessingImage(true);
+  setIsScanning(false);
 
-    try {
-      const reader = new BrowserMultiFormatReader(scanHints);
-      const imageUrl = URL.createObjectURL(file);
-      
-      const result = await reader.decodeFromImageUrl(imageUrl);
-      
-      if (result) {
-        handleVerify(result.getText());
-      }
-    } catch (error) {
-      console.error(error);
-      toast.error('No code found. Ensure the image is clear and contains a valid barcode.');
-      setIsScanning(true); 
-    } finally {
-      setIsProcessingImage(false);
-      if (fileInputRef.current) fileInputRef.current.value = '';
+  try {
+    const reader = new BrowserMultiFormatReader();
+    const imageUrl = URL.createObjectURL(file);
+
+    // Correct way: pass hints as the 3rd argument
+    const result = await reader.decodeFromImage(undefined, imageUrl, scanHints);
+
+    if (result) {
+      handleVerify(result.getText());
     }
-  };
+  } catch (error) {
+    console.error(error);
+    toast.error('No code found. Ensure the image is clear and contains a valid barcode.');
+    setIsScanning(true);
+  } finally {
+    setIsProcessingImage(false);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  }
+};
+
 
   return (
     <div className="fixed inset-0 bg-black text-white overflow-hidden flex flex-col h-[100dvh]">
