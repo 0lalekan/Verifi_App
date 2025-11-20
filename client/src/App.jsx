@@ -7,7 +7,10 @@ import useAuthStore from './store';
 import io from 'socket.io-client';
 
 // Initialize socket outside component to prevent reconnections
-const socket = io('http://localhost:5000');
+const socket = io('http://localhost:5000', {
+  withCredentials: true,
+  transports: ['websocket', 'polling'], // Force specific transports to avoid connection issues
+});
 
 const App = () => {
   const { userInfo } = useAuthStore();

@@ -41,7 +41,6 @@ const app = express();
 // --- SECURITY CONFIGURATION ---
 // 1. CORS: Allow your frontend to talk to this backend
 app.use(cors({
-  // In production, you should change '*' to your actual Vercel URL array
   // e.g., origin: ["https://verifi-app.vercel.app", "http://localhost:5173"]
   origin: process.env.CLIENT_URL || "http://localhost:5173", 
   credentials: true // Allow cookies (JWT)

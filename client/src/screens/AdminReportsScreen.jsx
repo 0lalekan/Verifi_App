@@ -11,14 +11,14 @@ const AdminReportsScreen = () => {
   const { data: reports, isLoading, error } = useQuery({
     queryKey: ['allReports'],
     queryFn: async () => {
-      const response = await api.get('/api/reports');
+      const response = await api.get('/reports');
       return response.data;
     },
   });
 
   const mutation = useMutation({
     mutationFn: async ({ id, status }) => {
-      await api.put(`/api/reports/${id}`, { status });
+      await api.put(`/reports/${id}`, { status });
     },
     onSuccess: () => {
       queryClient.invalidateQueries(['allReports']);

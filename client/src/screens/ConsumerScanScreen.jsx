@@ -34,7 +34,7 @@ const ConsumerScanScreen = () => {
   // --- API Mutation ---
   const mutation = useMutation({
     mutationFn: async ({ batchNumber, latitude, longitude, accuracy }) => {
-      const response = await api.post('/api/products/verify', {
+      const response = await api.post('/products/verify', {
         batchNumber, latitude, longitude, accuracy,
       });
       return response.data;
