@@ -91,7 +91,7 @@ const AdminReportsScreen = () => {
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
                       {report.evidenceImage ? (
                         <a 
-                          href={`http://localhost:5000${report.evidenceImage}`} 
+                          href={report.evidenceImage} 
                           target="_blank" 
                           rel="noopener noreferrer"
                           className="text-blue-600 hover:text-blue-800 font-medium underline"

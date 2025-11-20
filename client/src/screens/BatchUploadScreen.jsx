@@ -22,8 +22,10 @@ const BatchUploadScreen = () => {
     }
   }, [userProfile, isLoading, navigate]);
 
+  // 3. Download Template
   const downloadTemplate = () => {
-    const template = 'batchNumber,productName,expiryDate,ManufacturingDate,Description\n';
+  // Added 'quantity' to the headers
+    const template = 'batchNumber,productName,quantity,expiryDate,manufacturingDate,description\n';
     const blob = new Blob([template], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');

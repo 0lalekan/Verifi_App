@@ -2,19 +2,19 @@
 
 @layer base {
   body {
-    @apply bg-slate-50 text-slate-900 antialiased;
+    /* Added dark mode variants */
+    @apply bg-slate-50 text-slate-900 dark:bg-slate-900 dark:text-slate-50 antialiased transition-colors duration-200;
   }
-  /* Professional Typography */
   h1, h2, h3 {
-    @apply tracking-tight font-bold text-slate-900;
+    @apply tracking-tight font-bold text-slate-900 dark:text-white;
   }
 }
 
-/* Custom Utilities for "Mature" UI */
+/* Custom Utilities */
 .glass-panel {
-  @apply bg-white/80 backdrop-blur-md border border-slate-200 shadow-sm;
+  @apply bg-white/80 backdrop-blur-md border border-slate-200 shadow-sm dark:bg-slate-800/80 dark:border-slate-700;
 }
 
 .govt-card {
-  @apply bg-white border border-slate-200 shadow-[0_2px_8px_rgba(0,0,0,0.04)] rounded-lg;
+  @apply bg-white border border-slate-200 shadow-[0_2px_8px_rgba(0,0,0,0.04)] rounded-lg dark:bg-slate-800 dark:border-slate-700;
 }

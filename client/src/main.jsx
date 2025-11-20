@@ -14,6 +14,14 @@ import ForgotPasswordScreen from './screens/ForgotPasswordScreen.jsx';
 import ResetPasswordScreen from './screens/ResetPasswordScreen.jsx';
 import ProfileScreen from './screens/ProfileScreen.jsx'
 
+// Static Pages (NEW)
+import Features from './screens/Features.jsx';
+import Pricing from './screens/Pricing.jsx';
+import Docs from './screens/Docs.jsx';
+import Contact from './screens/Contact.jsx';
+import Privacy from './screens/Privacy.jsx';
+import Terms from './screens/Terms.jsx';
+
 // Consumer Screens
 import DashboardScreen from './screens/DashboardScreen.jsx'
 import ConsumerScanScreen from './screens/ConsumerScanScreen.jsx' 
@@ -44,6 +52,14 @@ const router = createBrowserRouter(
       <Route path="/register" element={<RegisterScreen />} />
       <Route path="/forgot-password" element={<ForgotPasswordScreen />} />
       <Route path="/reset-password/:token" element={<ResetPasswordScreen />} />
+
+      {/* === Content Routes (NEW) === */}
+      <Route path="/features" element={<Features />} />
+      <Route path="/pricing" element={<Pricing />} />
+      <Route path="/docs" element={<Docs />} />
+      <Route path="/contact" element={<Contact />} />
+      <Route path="/privacy" element={<Privacy />} />
+      <Route path="/terms" element={<Terms />} />
 
       {/* === Protected / General === */}
       <Route path="/dashboard" element={<DashboardScreen />} />

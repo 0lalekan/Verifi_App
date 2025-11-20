@@ -4,6 +4,7 @@ import User from '../models/userModel.js';
 import ProductBatch from '../models/productBatchModel.js';
 import Report from '../models/ReportModel.js';
 import generateToken from '../utils/generateToken.js';
+import sendEmail from '../utils/sendEmail.js';
 
 // ... (keep registerUser and authUser as is) ...
 
@@ -81,7 +82,7 @@ const updateUserProfile = asyncHandler(async (req, res) => {
     }
 
     if (req.file) {
-      user.profileImage = `/uploads/${req.file.filename}`;
+      user.profileImage = req.file.path;
     }
 
     if (req.body.role) {
@@ -131,19 +132,62 @@ const updateUserProfile = asyncHandler(async (req, res) => {
 
 // ... (keep forgotPassword, resetPassword, getDashboardStats as is) ...
 
+// @desc    Forgot Password
+// @route   POST /api/users/forgot-password
+// @access  Public
 const forgotPassword = asyncHandler(async (req, res) => {
   const { email } = req.body;
   const user = await User.findOne({ email });
+
   if (!user) {
     res.status(404);
     throw new Error('User not found');
   }
+
+  // 1. Get Reset Token
   const resetToken = crypto.randomBytes(20).toString('hex');
-  user.resetPasswordToken = crypto.createHash('sha256').update(resetToken).digest('hex');
-  user.resetPasswordExpire = Date.now() + 10 * 60 * 1000; 
-  await user.save();
-  console.log(`Reset token for ${email}: ${resetToken}`); 
-  res.status(200).json({ message: 'Password reset email sent' });
+
+  // 2. Hash token and save to DB
+  user.resetPasswordToken = crypto
+    .createHash('sha256')
+    .update(resetToken)
+    .digest('hex');
+
+  user.resetPasswordExpire = Date.now() + 10 * 60 * 1000; // 10 Minutes
+
+  await user.save({ validateBeforeSave: false });
+
+  // 3. Create Reset URL
+  // Ensure CLIENT_URL is set in your .env (e.g., CLIENT_URL=http://localhost:5173)
+  const resetUrl = `${process.env.CLIENT_URL}/reset-password/${resetToken}`;
+
+  const message = `
+    You are receiving this email because you (or someone else) has requested the reset of a password.
+    Please click the link below to verify:
+    \n\n ${resetUrl} \n\n
+    If you did not request this, please ignore this email.
+  `;
+
+  try {
+    // 4. ACTUALLY SEND THE EMAIL
+    await sendEmail({
+      email: user.email,
+      subject: 'Verifi Password Reset Token',
+      message,
+    });
+
+    console.log(`Reset token generated for ${email}`); // Debug log
+    res.status(200).json({ success: true, data: 'Email sent' });
+    
+  } catch (err) {
+    console.error(err);
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpire = undefined;
+    await user.save({ validateBeforeSave: false });
+
+    res.status(500);
+    throw new Error('Email could not be sent');
+  }
 });
 
 const resetPassword = asyncHandler(async (req, res) => {

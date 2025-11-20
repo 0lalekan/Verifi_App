@@ -50,7 +50,7 @@ const ManufacturerReportsScreen = () => {
                        </td>
                        <td className="px-6 py-4 text-sm">
                          {report.evidenceImage ? (
-                           <a href={`http://localhost:5000${report.evidenceImage}`} target="_blank" rel="noreferrer" className="text-blue-600 underline">View Image</a>
+                           <a href={report.evidenceImage} target="_blank" rel="noreferrer" className="text-blue-600 underline">View Image</a>
                          ) : <span className="text-slate-400">None</span>}
                        </td>
                      </tr>

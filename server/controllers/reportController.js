@@ -9,7 +9,7 @@ const createReport = asyncHandler(async (req, res) => {
 
   let evidenceImage = null;
   if (req.file) {
-    evidenceImage = '/uploads/' + req.file.filename;
+    evidenceImage = req.file.path;
   }
 
   // Parse latitude and longitude from location string if present

@@ -4,6 +4,7 @@ module.exports = {
     './index.html',
     './src/**/*.{js,jsx,ts,tsx}'
   ],
+  darkMode: 'class', // <--- ADD THIS LINE
   theme: {
     extend: {
       colors: {
@@ -21,8 +22,8 @@ module.exports = {
         }
       },
       fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'], // Keep Inter, it's professional
-        mono: ['JetBrains Mono', 'monospace'], // For Batch Numbers
+        sans: ['Inter', 'system-ui', 'sans-serif'],
+        mono: ['JetBrains Mono', 'monospace'],
       },
       animation: {
         'scan-line': 'scan 2s linear infinite',

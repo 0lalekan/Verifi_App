@@ -4,6 +4,7 @@ const { Schema } = mongoose;
 
 const productBatchSchema = new Schema(
   {
+    // ... existing fields (batchNumber, productName, etc.) ...
     batchNumber: {
       type: String,
       required: [true, 'A batch number is required.'],
@@ -15,7 +16,6 @@ const productBatchSchema = new Schema(
       type: String,
       required: [true, 'A product name is required.'],
     },
-    // Link to the Manufacturer who created this batch
     manufacturer: {
       type: Schema.Types.ObjectId,
       ref: 'User',
@@ -29,26 +29,31 @@ const productBatchSchema = new Schema(
       type: Date,
       required: [true, 'A manufacturing date is required.'],
     },
-    // UPDATED: Generic Statuses for any industry
     status: {
       type: String,
-      enum: ['Active', 'Expired', 'Recalled', 'Investigating'],
+      enum: ['Active', 'Expired', 'Recalled', 'Investigating', 'Suspicious'], // Added 'Suspicious'
       default: 'Active',
     },
     verificationCount: {
       type: Number,
       default: 0,
     },
-    // Flexible map for details like "Ingredients", "Material", "Origin" etc.
+    // --- NEW FIELD ---
+    maxScansAllowed: {
+      type: Number,
+      required: true,
+      default: 1000, // Default fallback
+      description: "The estimated threshold before this batch is flagged as cloned"
+    },
+    // -----------------
     productAttributes: {
       type: Map,
       of: String,
     },
-    // Optional: Track scan history locations if needed for advanced analytics
     scanHistory: [
       {
         scannedAt: { type: Date, default: Date.now },
-        location: { type: String } // Geo-coordinates or region
+        location: { type: String }
       }
     ]
   },

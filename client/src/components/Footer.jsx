@@ -2,9 +2,11 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import useAuthStore from '../store';
 
-const Footer = ({ userRole }) => {
+const Footer = () => {
+  const { userInfo } = useAuthStore();
+
   return (
-    <footer className="bg-slate-900 text-slate-300 border-t border-slate-800">
+    <footer className="bg-slate-900 text-slate-300 border-t border-slate-800 mt-auto">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
           {/* Brand Section */}
@@ -22,9 +24,24 @@ const Footer = ({ userRole }) => {
           <div>
             <h3 className="text-sm font-bold text-white uppercase tracking-wider mb-4">Platform</h3>
             <ul className="space-y-3 text-sm">
-              <li><Link to="/" className="hover:text-emerald-400 transition-colors">Home</Link></li>
-              <li><Link to="/login" className="hover:text-emerald-400 transition-colors">Login</Link></li>
-              <li><Link to="/register" className="hover:text-emerald-400 transition-colors">Register</Link></li>
+              {/* LOGIC CHANGE: Only show Home if NOT logged in */}
+              {!userInfo && (
+                 <li><Link to="/" className="hover:text-emerald-400 transition-colors">Home</Link></li>
+              )}
+              
+              {userInfo ? (
+                // Logged in user sees Dashboard
+                <li><Link to="/dashboard" className="hover:text-emerald-400 transition-colors">Dashboard</Link></li>
+              ) : (
+                // Visitors see Login/Register
+                <>
+                  <li><Link to="/login" className="hover:text-emerald-400 transition-colors">Login</Link></li>
+                  <li><Link to="/register" className="hover:text-emerald-400 transition-colors">Register</Link></li>
+                </>
+              )}
+              
+              <li><Link to="/features" className="hover:text-emerald-400 transition-colors">Features</Link></li>
+              <li><Link to="/pricing" className="hover:text-emerald-400 transition-colors">Pricing</Link></li>
             </ul>
           </div>
 
@@ -32,9 +49,9 @@ const Footer = ({ userRole }) => {
           <div>
             <h3 className="text-sm font-bold text-white uppercase tracking-wider mb-4">Legal</h3>
             <ul className="space-y-3 text-sm">
-              <li><a href="#" className="hover:text-emerald-400 transition-colors">Privacy Policy</a></li>
-              <li><a href="#" className="hover:text-emerald-400 transition-colors">Terms of Service</a></li>
-              <li><a href="#" className="hover:text-emerald-400 transition-colors">Compliance</a></li>
+              <li><Link to="/privacy" className="hover:text-emerald-400 transition-colors">Privacy Policy</Link></li>
+              <li><Link to="/terms" className="hover:text-emerald-400 transition-colors">Terms of Service</Link></li>
+              <li><Link to="/docs" className="hover:text-emerald-400 transition-colors">Documentation</Link></li>
             </ul>
           </div>
 
@@ -42,8 +59,14 @@ const Footer = ({ userRole }) => {
           <div>
             <h3 className="text-sm font-bold text-white uppercase tracking-wider mb-4">Contact</h3>
             <ul className="space-y-3 text-sm">
-              <li className="flex items-center"><span className="mr-2">📧</span> support@verifi.ng</li>
-              <li className="flex items-center"><span className="mr-2">🏢</span> Lagos, Nigeria</li>
+              <li>
+                <Link to="/contact" className="hover:text-emerald-400 transition-colors flex items-center">
+                  <span className="mr-2">📧</span> Contact Support
+                </Link>
+              </li>
+              <li className="flex items-center text-slate-500 cursor-default">
+                <span className="mr-2">🏢</span> Lagos, Nigeria
+              </li>
             </ul>
           </div>
         </div>

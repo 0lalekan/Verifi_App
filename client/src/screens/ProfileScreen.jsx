@@ -82,7 +82,6 @@ const ProfileScreen = () => {
     if (formData.password) submitData.append('password', formData.password);
     if (uploadFile) submitData.append('profileImage', uploadFile);
 
-    // FIXED: Properly stringify organization details
     if (formData.role === 'manufacturer') {
       const orgData = {
         orgName: formData.orgName,
@@ -98,8 +97,10 @@ const ProfileScreen = () => {
   if (isLoading) return <div className="min-h-screen flex items-center justify-center bg-slate-50">Loading...</div>;
 
   const isManufacturer = formData.role === 'manufacturer';
-  // Handle image URL correctly whether it's from backend or blob
-  const serverImageUrl = userProfile?.profileImage ? `http://localhost:5000${userProfile.profileImage}` : null;
+  
+  // --- FIX IS HERE ---
+  // Renamed 'profileImg' to 'serverImageUrl' to match usage in the return statement
+  const serverImageUrl = userProfile?.profileImage || null;
 
   return (
     <div className="min-h-screen bg-slate-50 py-12 px-4">

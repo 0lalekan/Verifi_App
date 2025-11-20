@@ -11,11 +11,12 @@ import {
   verifyManufacturer       // Import
 } from '../controllers/userController.js';
 import { protect, restrictTo } from '../middleware/authMiddleware.js';
+import { validateRegistration } from '../middleware/validationMiddleware.js';
 import { upload } from '../multerConfig.js';
 
 const router = express.Router();
 
-router.route('/').post(registerUser);
+router.route('/').post(validateRegistration, registerUser);
 router.post('/login', authUser);
 
 router.route('/profile')
