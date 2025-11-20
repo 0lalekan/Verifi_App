@@ -7,9 +7,13 @@ import useAuthStore from './store';
 import io from 'socket.io-client';
 
 // Initialize socket outside component to prevent reconnections
-const socket = io('http://localhost:5000', {
+const SOCKET_URL = import.meta.env.VITE_API_BASE_URL 
+  ? new URL(import.meta.env.VITE_API_BASE_URL).origin 
+  : 'http://localhost:5000';
+
+const socket = io(SOCKET_URL, {
   withCredentials: true,
-  transports: ['websocket', 'polling'], // Force specific transports to avoid connection issues
+  transports: ['websocket', 'polling'],
 });
 
 const App = () => {
