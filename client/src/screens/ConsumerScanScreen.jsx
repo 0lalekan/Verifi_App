@@ -18,16 +18,19 @@ const ConsumerScanScreen = () => {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
-  // 1. Define Configuration Hints (Memoized)
-  // These tell the scanner to try harder and look for specific formats
+  // --- FIX #1: Expanded Formats to include UPC and others ---
   const scanHints = useMemo(() => new Map([
     [DecodeHintType.TRY_HARDER, true],
     [DecodeHintType.POSSIBLE_FORMATS, [
       BarcodeFormat.QR_CODE, 
       BarcodeFormat.CODE_128, 
       BarcodeFormat.EAN_13,
+      BarcodeFormat.EAN_8,        // Added
       BarcodeFormat.DATA_MATRIX,
-      BarcodeFormat.CODE_39
+      BarcodeFormat.CODE_39,
+      BarcodeFormat.UPC_A,        // Added (Critical for many products)
+      BarcodeFormat.UPC_E,        // Added
+      BarcodeFormat.ITF           // Added
     ]]
   ]), []);
 
@@ -85,7 +88,7 @@ const ConsumerScanScreen = () => {
         handleVerify(text);
       }
     },
-    hints: scanHints // Apply hints to camera
+    hints: scanHints
   });
 
   // --- Image Upload Handler ---
@@ -97,11 +100,9 @@ const ConsumerScanScreen = () => {
     setIsScanning(false);
 
     try {
-      // Apply the SAME hints to the image reader
       const reader = new BrowserMultiFormatReader(scanHints);
       const imageUrl = URL.createObjectURL(file);
       
-      // Decode
       const result = await reader.decodeFromImageUrl(imageUrl);
       
       if (result) {
@@ -109,8 +110,7 @@ const ConsumerScanScreen = () => {
       }
     } catch (error) {
       console.error(error);
-      // More descriptive error handling
-      toast.error('No code found in image. Please try a clearer photo or manual entry.');
+      toast.error('No code found. Ensure the image is clear and contains a valid barcode.');
       setIsScanning(true); 
     } finally {
       setIsProcessingImage(false);
@@ -200,13 +200,15 @@ const ConsumerScanScreen = () => {
         )}
       </AnimatePresence>
 
-      {/* --- Camera Viewport (FIXED: min-h-0 and overflow-hidden) --- */}
+      {/* --- Camera Viewport --- */}
       <div className="relative flex-1 bg-black min-h-0 overflow-hidden">
-        <video ref={cameraRef} className="w-full h-full object-cover opacity-90" />
+        {/* FIX #2: Changed opacity-90 to opacity-100 for maximum clarity */}
+        <video ref={cameraRef} className="w-full h-full object-cover opacity-100" />
         
         {/* Visual Guides */}
         <div className="absolute inset-0 flex flex-col items-center justify-center p-8 pointer-events-none">
-          <div className="relative w-72 h-72 border-2 border-white/30 rounded-3xl overflow-hidden backdrop-blur-[2px]">
+          {/* FIX #3: Removed 'backdrop-blur-[2px]' which was blurring the camera view */}
+          <div className="relative w-72 h-72 border-2 border-white/30 rounded-3xl overflow-hidden">
             {isScanning && (
               <motion.div
                 className="absolute left-0 right-0 h-0.5 bg-emerald-400 shadow-[0_0_30px_3px_rgba(52,211,153,0.6)]"
@@ -228,7 +230,7 @@ const ConsumerScanScreen = () => {
         </div>
       </div>
 
-      {/* --- Footer Controls (Now Visible) --- */}
+      {/* --- Footer Controls --- */}
       {!verificationResult && (
         <div className="bg-slate-900 px-6 pt-6 pb-8 rounded-t-3xl shadow-[0_-10px_40px_rgba(0,0,0,0.5)] z-10 border-t border-white/10">
           <div className="flex flex-col gap-4">
