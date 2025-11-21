@@ -1,110 +1,84 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { ShieldCheck, Zap, Globe, ChevronRight } from 'lucide-react';
 
 const HomeScreen = () => {
   return (
-    <div className="min-h-screen bg-slate-50 font-sans text-slate-900">
-      {/* Hero Section */}
-      <section className="relative bg-slate-900 text-white overflow-hidden">
-        <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 lg:py-32 relative z-10 text-center">
-          <div className="inline-block mb-6 px-4 py-1.5 rounded-full bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 font-medium text-sm tracking-wide animate-pulse">
-            🛡️ Official Verification Standard
-          </div>
-          <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight mb-8 leading-tight">
-            Secure the Supply Chain.<br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400">
-              Protect Public Health.
+    <div className="relative min-h-screen overflow-hidden bg-background text-foreground transition-colors duration-300">
+      
+      {/* Background Blobs */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[600px] bg-brand-500/20 rounded-full blur-[120px] -z-10 opacity-50 dark:opacity-20 animate-pulse" />
+      
+      {/* Hero */}
+      <section className="pt-48 pb-20 px-6">
+        <div className="max-w-4xl mx-auto text-center">
+          
+          {/* Removed System Operational Badge */}
+
+          <h1 className="text-6xl md:text-9xl font-display font-extrabold tracking-tight mb-8 leading-[0.9] animate-in fade-in slide-in-from-bottom-8 duration-1000">
+            Trust is <br/>
+            {/* Using the class from index.css for correct Light/Dark contrast */}
+            <span className="text-gradient">
+              Verifiable.
             </span>
           </h1>
-          <p className="text-xl text-slate-300 max-w-3xl mx-auto mb-10 leading-relaxed">
-            Stop counterfeit goods at the source. Verifi empowers consumers to validate products instantly, helps manufacturers protect their brand, and gives regulators a god-view of the market.
+
+          <p className="text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto mb-12 leading-relaxed font-light animate-in fade-in slide-in-from-bottom-12 duration-1000 delay-200">
+            The modern standard for supply chain integrity. Protect your brand and public health with cryptographic product verification.
           </p>
-          <div className="flex flex-col sm:flex-row justify-center gap-4">
+
+          <div className="flex flex-col sm:flex-row justify-center gap-6 animate-in fade-in zoom-in duration-1000 delay-300">
             <Link
               to="/register"
-              className="px-8 py-4 bg-emerald-600 hover:bg-emerald-700 text-white text-lg font-bold rounded-xl shadow-lg shadow-emerald-500/30 transition-all transform hover:-translate-y-1"
+              className="group flex items-center justify-center gap-2 px-10 py-5 bg-foreground text-background rounded-full text-xl font-bold hover:scale-105 transition-all shadow-2xl hover:shadow-brand-500/20"
             >
-              Get Started Now
+              Start Now 
+              <ChevronRight size={24} className="group-hover:translate-x-1 transition-transform" />
             </Link>
             <Link
               to="/login"
-              className="px-8 py-4 bg-white/10 hover:bg-white/20 border border-white/20 text-white text-lg font-semibold rounded-xl backdrop-blur-sm transition-all"
+              className="px-10 py-5 bg-secondary/50 border border-border text-secondary-foreground rounded-full text-xl font-semibold hover:bg-secondary transition-all backdrop-blur-sm"
             >
               Live Demo
             </Link>
           </div>
+
         </div>
       </section>
 
-      {/* Value Proposition Grid */}
-      <section className="py-24 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold text-slate-900 mb-4">A Unified Ecosystem</h2>
-            <p className="text-slate-600 max-w-2xl mx-auto">
-              Verifi connects all stakeholders in the supply chain to create a transparent, fraud-resistant marketplace.
-            </p>
-          </div>
+      {/* Features - Bento Strip */}
+      <section className="py-32 border-t border-border/40 bg-background/50 backdrop-blur-sm">
+        <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-16">
+           {/* ... Features remain the same ... */}
+           <div className="flex flex-col items-center text-center group">
+             <div className="w-20 h-20 bg-brand-500/10 text-brand-600 dark:text-brand-400 rounded-[2rem] flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+               <ShieldCheck size={40} />
+             </div>
+             <h3 className="text-2xl font-bold mb-3">Anti-Counterfeit</h3>
+             <p className="text-muted-foreground text-lg leading-relaxed">
+               Real-time clone detection algorithms that flag suspicious scan velocity instantly.
+             </p>
+           </div>
+           
+           <div className="flex flex-col items-center text-center group">
+             <div className="w-20 h-20 bg-blue-500/10 text-blue-600 dark:text-blue-400 rounded-[2rem] flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+               <Zap size={40} />
+             </div>
+             <h3 className="text-2xl font-bold mb-3">Instant Verify</h3>
+             <p className="text-muted-foreground text-lg leading-relaxed">
+               Works on any smartphone camera. No specialized hardware required.
+             </p>
+           </div>
 
-          <div className="grid md:grid-cols-3 gap-10">
-            {/* Consumer Card */}
-            <div className="group p-8 rounded-3xl bg-slate-50 border border-slate-100 hover:border-emerald-200 hover:shadow-xl hover:shadow-emerald-500/5 transition-all duration-300">
-              <div className="w-14 h-14 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center text-3xl mb-6 group-hover:scale-110 transition-transform">
-                🤳
-              </div>
-              <h3 className="text-2xl font-bold text-slate-900 mb-3">For Consumers</h3>
-              <p className="text-slate-600 leading-relaxed">
-                Instantly verify product authenticity by scanning QR codes. Earn loyalty points for every scan and report suspicious items directly to authorities.
-              </p>
-            </div>
-
-            {/* Manufacturer Card */}
-            <div className="group p-8 rounded-3xl bg-slate-50 border border-slate-100 hover:border-blue-200 hover:shadow-xl hover:shadow-blue-500/5 transition-all duration-300">
-              <div className="w-14 h-14 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center text-3xl mb-6 group-hover:scale-110 transition-transform">
-                🏭
-              </div>
-              <h3 className="text-2xl font-bold text-slate-900 mb-3">For Manufacturers</h3>
-              <p className="text-slate-600 leading-relaxed">
-                Register batches securely and track inventory movement. Use our Bulk Upload tool to onboard thousands of products in seconds and stop revenue loss.
-              </p>
-            </div>
-
-            {/* Regulator Card */}
-            <div className="group p-8 rounded-3xl bg-slate-50 border border-slate-100 hover:border-purple-200 hover:shadow-xl hover:shadow-purple-500/5 transition-all duration-300">
-              <div className="w-14 h-14 bg-purple-100 text-purple-600 rounded-2xl flex items-center justify-center text-3xl mb-6 group-hover:scale-110 transition-transform">
-                👁️
-              </div>
-              <h3 className="text-2xl font-bold text-slate-900 mb-3">For Regulators</h3>
-              <p className="text-slate-600 leading-relaxed">
-                Access a "God View" dashboard of real-time scan data. Identify counterfeit hotspots and act on whistleblower reports with precise geolocation.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Stats / Trust Section */}
-      <section className="py-20 bg-slate-900 border-t border-slate-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            <div>
-              <div className="text-4xl font-bold text-emerald-400 mb-2">100%</div>
-              <div className="text-slate-400 text-sm uppercase tracking-wider">Traceability</div>
-            </div>
-            <div>
-              <div className="text-4xl font-bold text-blue-400 mb-2">50k+</div>
-              <div className="text-slate-400 text-sm uppercase tracking-wider">Scans Processed</div>
-            </div>
-            <div>
-              <div className="text-4xl font-bold text-purple-400 mb-2">24/7</div>
-              <div className="text-slate-400 text-sm uppercase tracking-wider">Real-time Monitoring</div>
-            </div>
-            <div>
-              <div className="text-4xl font-bold text-orange-400 mb-2">Zero</div>
-              <div className="text-slate-400 text-sm uppercase tracking-wider">Tolerance for Fakes</div>
-            </div>
-          </div>
+           <div className="flex flex-col items-center text-center group">
+             <div className="w-20 h-20 bg-purple-500/10 text-purple-600 dark:text-purple-400 rounded-[2rem] flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+               <Globe size={40} />
+             </div>
+             <h3 className="text-2xl font-bold mb-3">Global Ledger</h3>
+             <p className="text-muted-foreground text-lg leading-relaxed">
+               Regulators get a "God View" map of supply chain movements and hotspots.
+             </p>
+           </div>
         </div>
       </section>
     </div>

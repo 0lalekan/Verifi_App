@@ -1,82 +1,99 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import useAuthStore from '../store';
+import verifiLogo from '../assets/verifi-logo.png';
+import { Twitter, Linkedin, Github, Mail } from 'lucide-react';
 
 const Footer = () => {
   const { userInfo } = useAuthStore();
 
   return (
-    <footer className="bg-slate-900 text-slate-300 border-t border-slate-800 mt-auto">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
-          {/* Brand Section */}
-          <div className="col-span-1 md:col-span-1">
-            <div className="flex items-center mb-4">
-              <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold mr-2">V</div>
-              <span className="text-2xl font-bold text-white tracking-tight">Verifi</span>
+    <footer className="border-t border-border/40 bg-background/50 backdrop-blur-lg pt-16 pb-8 mt-auto">
+      <div className="max-w-7xl mx-auto px-6 lg:px-8">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-12 mb-12">
+          
+          {/* Brand Column */}
+          <div className="md:col-span-5 space-y-6">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center">
+                <img src={verifiLogo} alt="Verifi" className="w-6 h-6" />
+              </div>
+              <span className="text-xl font-display font-bold tracking-tight">Verifi</span>
             </div>
-            <p className="text-slate-400 text-sm mb-6 leading-relaxed">
-              The global standard for product authenticity. Protecting consumers and brands through decentralized verification.
+            <p className="text-muted-foreground text-sm leading-relaxed max-w-sm">
+              The global standard for product authenticity. We combine blockchain transparency with real-time AI monitoring to secure supply chains and protect public health.
             </p>
+            <div className="flex gap-4">
+              <SocialLink icon={<Twitter size={18} />} href="#" />
+              <SocialLink icon={<Linkedin size={18} />} href="#" />
+              <SocialLink icon={<Github size={18} />} href="#" />
+              <SocialLink icon={<Mail size={18} />} href="mailto:hello@verifi.app" />
+            </div>
           </div>
 
-          {/* Quick Links */}
-          <div>
-            <h3 className="text-sm font-bold text-white uppercase tracking-wider mb-4">Platform</h3>
-            <ul className="space-y-3 text-sm">
-              {/* LOGIC CHANGE: Only show Home if NOT logged in */}
-              {!userInfo && (
-                 <li><Link to="/" className="hover:text-emerald-400 transition-colors">Home</Link></li>
-              )}
-              
-              {userInfo ? (
-                // Logged in user sees Dashboard
-                <li><Link to="/dashboard" className="hover:text-emerald-400 transition-colors">Dashboard</Link></li>
-              ) : (
-                // Visitors see Login/Register
-                <>
-                  <li><Link to="/login" className="hover:text-emerald-400 transition-colors">Login</Link></li>
-                  <li><Link to="/register" className="hover:text-emerald-400 transition-colors">Register</Link></li>
-                </>
-              )}
-              
-              <li><Link to="/features" className="hover:text-emerald-400 transition-colors">Features</Link></li>
-              <li><Link to="/pricing" className="hover:text-emerald-400 transition-colors">Pricing</Link></li>
-            </ul>
-          </div>
+          {/* Navigation Columns */}
+          <div className="md:col-span-7 grid grid-cols-2 sm:grid-cols-3 gap-8">
+            <div>
+              <h3 className="font-bold text-foreground mb-4">Platform</h3>
+              <ul className="space-y-3 text-sm text-muted-foreground">
+                {!userInfo ? (
+                  <>
+                    <li><FooterLink to="/register">Get Started</FooterLink></li>
+                    <li><FooterLink to="/login">Live Demo</FooterLink></li>
+                  </>
+                ) : (
+                  <li><FooterLink to="/dashboard">Dashboard</FooterLink></li>
+                )}
+                <li><FooterLink to="/pricing">Pricing</FooterLink></li>
+                <li><FooterLink to="/features">Features</FooterLink></li>
+              </ul>
+            </div>
 
-          {/* Legal */}
-          <div>
-            <h3 className="text-sm font-bold text-white uppercase tracking-wider mb-4">Legal</h3>
-            <ul className="space-y-3 text-sm">
-              <li><Link to="/privacy" className="hover:text-emerald-400 transition-colors">Privacy Policy</Link></li>
-              <li><Link to="/terms" className="hover:text-emerald-400 transition-colors">Terms of Service</Link></li>
-              <li><Link to="/docs" className="hover:text-emerald-400 transition-colors">Documentation</Link></li>
-            </ul>
-          </div>
+            <div>
+              <h3 className="font-bold text-foreground mb-4">Company</h3>
+              <ul className="space-y-3 text-sm text-muted-foreground">
+                <li><FooterLink to="/about">About Us</FooterLink></li>
+                <li><FooterLink to="/contact">Contact</FooterLink></li>
+                <li><FooterLink to="/careers">Careers</FooterLink></li>
+                <li><FooterLink to="/blog">Blog</FooterLink></li>
+              </ul>
+            </div>
 
-          {/* Contact */}
-          <div>
-            <h3 className="text-sm font-bold text-white uppercase tracking-wider mb-4">Contact</h3>
-            <ul className="space-y-3 text-sm">
-              <li>
-                <Link to="/contact" className="hover:text-emerald-400 transition-colors flex items-center">
-                  <span className="mr-2">📧</span> Contact Support
-                </Link>
-              </li>
-              <li className="flex items-center text-slate-500 cursor-default">
-                <span className="mr-2">🏢</span> Lagos, Nigeria
-              </li>
-            </ul>
+            <div>
+              <h3 className="font-bold text-foreground mb-4">Legal</h3>
+              <ul className="space-y-3 text-sm text-muted-foreground">
+                <li><FooterLink to="/privacy">Privacy Policy</FooterLink></li>
+                <li><FooterLink to="/terms">Terms of Service</FooterLink></li>
+                <li><FooterLink to="/security">Security</FooterLink></li>
+              </ul>
+            </div>
           </div>
         </div>
 
-        <div className="mt-12 pt-8 border-t border-slate-800 text-center text-slate-500 text-sm">
-          <p>&copy; {new Date().getFullYear()} Verifi Systems. All rights reserved.</p>
+        <div className="border-t border-border/40 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-muted-foreground">
+          <p>&copy; {new Date().getFullYear()} Verifi Systems Inc. All rights reserved.</p>
+          <div className="flex gap-6">
+            <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Systems Operational</span>
+          </div>
         </div>
       </div>
     </footer>
   );
 };
+
+const SocialLink = ({ icon, href }) => (
+  <a 
+    href={href} 
+    className="w-10 h-10 rounded-full bg-secondary text-muted-foreground flex items-center justify-center hover:bg-primary hover:text-primary-foreground transition-all duration-300"
+  >
+    {icon}
+  </a>
+);
+
+const FooterLink = ({ to, children }) => (
+  <Link to={to} className="hover:text-primary transition-colors block py-1">
+    {children}
+  </Link>
+);
 
 export default Footer;

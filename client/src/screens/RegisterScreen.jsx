@@ -4,10 +4,12 @@ import { useMutation } from '@tanstack/react-query';
 import api from '../api'; 
 import useAuthStore from '../store';
 import { toast } from 'react-toastify';
+import { Eye, EyeOff, CheckCircle2, User, Factory } from 'lucide-react';
 
 const RegisterScreen = () => {
   const navigate = useNavigate();
   const { userInfo, setCredentials } = useAuthStore();
+  const [showPassword, setShowPassword] = useState(false);
   
   const [formData, setFormData] = useState({
     firstName: '',
@@ -16,23 +18,17 @@ const RegisterScreen = () => {
     password: '',
     role: 'consumer'
   });
-  
-  // 1. State for password visibility
-  const [showPassword, setShowPassword] = useState(false);
 
   const getRedirectPath = (role) => {
     switch (role) {
       case 'manufacturer': return '/manufacturer/portal';
       case 'regulator': return '/regulator/dashboard';
-      case 'consumer': 
-      default: return '/dashboard';
+      case 'consumer': default: return '/dashboard';
     }
   };
 
   useEffect(() => {
-    if (userInfo) {
-      navigate(getRedirectPath(userInfo.role));
-    }
+    if (userInfo) navigate(getRedirectPath(userInfo.role));
   }, [navigate, userInfo]);
 
   const mutation = useMutation({
@@ -52,123 +48,156 @@ const RegisterScreen = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  const selectRole = (role) => {
+    setFormData({ ...formData, role });
+  };
+
   const submitHandler = (e) => {
     e.preventDefault();
     mutation.mutate(formData);
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-2xl shadow-xl border border-slate-100">
-        <div className="text-center">
-          <h2 className="text-3xl font-extrabold text-slate-900">Join Verifi</h2>
-          <p className="mt-2 text-sm text-slate-600">Create an account to get started.</p>
-        </div>
+    <div className="min-h-screen w-full flex items-center justify-center bg-background bg-gradient-mesh dark:bg-gradient-mesh-dark p-4 sm:p-8 transition-colors duration-500">
+      
+      {/* Centered Form Container - Using 'glass' utility for consistency */}
+      <div className="w-full max-w-2xl glass rounded-[2.5rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-500">
+        
+        <div className="p-8 sm:p-12">
+          <div className="text-center mb-10">
+            <h2 className="text-3xl font-display font-bold tracking-tight text-foreground">Create an account</h2>
+            <p className="text-muted-foreground mt-2">Start verifying products in seconds.</p>
+          </div>
 
-        <form className="mt-8 space-y-6" onSubmit={submitHandler}>
-          <div className="rounded-md shadow-sm space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label htmlFor="firstName" className="sr-only">First Name</label>
+          <form onSubmit={submitHandler} className="space-y-6">
+            
+            {/* Name Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-foreground" htmlFor="firstName">First Name</label>
                 <input
                   name="firstName"
                   type="text"
                   required
-                  className="appearance-none rounded-lg relative block w-full px-3 py-3 border border-slate-300 placeholder-slate-500 text-slate-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                  placeholder="First Name"
+                  className="flex h-12 w-full rounded-xl border border-input bg-background/50 px-4 py-2 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-0 disabled:cursor-not-allowed disabled:opacity-50"
+                  placeholder="Jane"
                   value={formData.firstName}
                   onChange={handleChange}
                 />
               </div>
-              <div>
-                <label htmlFor="lastName" className="sr-only">Last Name</label>
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-foreground" htmlFor="lastName">Last Name</label>
                 <input
                   name="lastName"
                   type="text"
                   required
-                  className="appearance-none rounded-lg relative block w-full px-3 py-3 border border-slate-300 placeholder-slate-500 text-slate-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                  placeholder="Last Name"
+                  className="flex h-12 w-full rounded-xl border border-input bg-background/50 px-4 py-2 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-0"
+                  placeholder="Doe"
                   value={formData.lastName}
                   onChange={handleChange}
                 />
               </div>
             </div>
-            <div>
-              <label htmlFor="email" className="sr-only">Email address</label>
+
+            {/* Email */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-foreground" htmlFor="email">Email</label>
               <input
                 name="email"
                 type="email"
                 required
-                className="appearance-none rounded-lg relative block w-full px-3 py-3 border border-slate-300 placeholder-slate-500 text-slate-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                placeholder="Email address"
+                className="flex h-12 w-full rounded-xl border border-input bg-background/50 px-4 py-2 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-0"
+                placeholder="jane@example.com"
                 value={formData.email}
                 onChange={handleChange}
               />
             </div>
-            
-            {/* 2. Password Field with Toggle */}
-            <div className="relative">
-              <label htmlFor="password" className="sr-only">Password</label>
-              <input
-                name="password"
-                type={showPassword ? "text" : "password"}
-                required
-                className="appearance-none rounded-lg relative block w-full px-3 py-3 border border-slate-300 placeholder-slate-500 text-slate-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm pr-10"
-                placeholder="Password"
-                value={formData.password}
-                onChange={handleChange}
-              />
-               <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 z-20"
-              >
-                {showPassword ? (
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88" />
-                  </svg>
-                ) : (
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                  </svg>
-                )}
-              </button>
-            </div>
-            
-            <div>
-              <label htmlFor="role" className="block text-sm font-medium text-slate-700 mb-1 ml-1">Account Type</label>
-              <select
-                id="role"
-                name="role"
-                value={formData.role}
-                onChange={handleChange}
-                className="block w-full px-3 py-3 border border-slate-300 bg-white rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-              >
-                <option value="consumer">Consumer (Check Products)</option>
-                <option value="manufacturer">Manufacturer/Distributor (Register Products)</option>
-              </select>
-            </div>
-          </div>
 
-          <div>
+            {/* Password */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-foreground" htmlFor="password">Password</label>
+              <div className="relative">
+                <input
+                  name="password"
+                  type={showPassword ? "text" : "password"}
+                  required
+                  className="flex h-12 w-full rounded-xl border border-input bg-background/50 px-4 py-2 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-0 pr-10"
+                  placeholder="••••••••"
+                  value={formData.password}
+                  onChange={handleChange}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors p-1 rounded-md hover:bg-secondary"
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
+            </div>
+
+            {/* Role Selection Cards */}
+            <div className="space-y-3 pt-2">
+              <label className="text-sm font-medium text-foreground">I am a...</label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                
+                {/* Consumer Card */}
+                <div 
+                  onClick={() => selectRole('consumer')}
+                  className={`relative flex items-start gap-3 p-4 rounded-2xl border-2 cursor-pointer transition-all duration-200 ${
+                    formData.role === 'consumer' 
+                      ? 'border-primary bg-primary/10 dark:bg-primary/20' 
+                      : 'border-border/60 bg-background/30 hover:bg-background/50 hover:border-border'
+                  }`}
+                >
+                  <div className={`mt-0.5 p-2 rounded-full ${formData.role === 'consumer' ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground'}`}>
+                    <User size={18} />
+                  </div>
+                  <div>
+                    <h3 className={`font-bold text-sm ${formData.role === 'consumer' ? 'text-primary' : 'text-foreground'}`}>Consumer</h3>
+                    <p className="text-xs text-muted-foreground mt-1">I want to scan and verify products.</p>
+                  </div>
+                  {formData.role === 'consumer' && <div className="absolute top-4 right-4 text-primary"><CheckCircle2 size={18} /></div>}
+                </div>
+
+                {/* Manufacturer Card */}
+                <div 
+                  onClick={() => selectRole('manufacturer')}
+                  className={`relative flex items-start gap-3 p-4 rounded-2xl border-2 cursor-pointer transition-all duration-200 ${
+                    formData.role === 'manufacturer' 
+                      ? 'border-primary bg-primary/10 dark:bg-primary/20' 
+                      : 'border-border/60 bg-background/30 hover:bg-background/50 hover:border-border'
+                  }`}
+                >
+                  <div className={`mt-0.5 p-2 rounded-full ${formData.role === 'manufacturer' ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground'}`}>
+                    <Factory size={18} />
+                  </div>
+                  <div>
+                    <h3 className={`font-bold text-sm ${formData.role === 'manufacturer' ? 'text-primary' : 'text-foreground'}`}>Manufacturer</h3>
+                    <p className="text-xs text-muted-foreground mt-1">I want to register products.</p>
+                  </div>
+                  {formData.role === 'manufacturer' && <div className="absolute top-4 right-4 text-primary"><CheckCircle2 size={18} /></div>}
+                </div>
+
+              </div>
+            </div>
+
             <button
               type="submit"
               disabled={mutation.isPending}
-              className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-xl text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 shadow-lg hover:shadow-blue-500/30 disabled:opacity-50"
+              className="inline-flex h-14 items-center justify-center rounded-xl bg-primary px-8 w-full text-base font-bold text-primary-foreground shadow-lg shadow-primary/20 transition-all hover:bg-primary/90 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 mt-6"
             >
               {mutation.isPending ? 'Creating Account...' : 'Create Account'}
             </button>
-          </div>
-        </form>
-        
-        <div className="text-center">
-          <p className="text-sm text-slate-600">
+
+          </form>
+
+          <div className="mt-8 text-center text-sm text-muted-foreground">
             Already have an account?{' '}
-            <Link to="/login" className="font-medium text-blue-600 hover:text-blue-500">
+            <Link to="/login" className="font-semibold text-primary hover:underline transition-all">
               Sign in
             </Link>
-          </p>
+          </div>
         </div>
       </div>
     </div>

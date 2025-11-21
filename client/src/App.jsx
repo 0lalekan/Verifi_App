@@ -6,7 +6,6 @@ import { ToastContainer, toast } from 'react-toastify';
 import useAuthStore from './store';
 import io from 'socket.io-client';
 
-// Initialize socket outside component to prevent reconnections
 const SOCKET_URL = import.meta.env.VITE_API_BASE_URL 
   ? new URL(import.meta.env.VITE_API_BASE_URL).origin 
   : 'http://localhost:5000';
@@ -20,10 +19,8 @@ const App = () => {
   const { userInfo } = useAuthStore();
 
   useEffect(() => {
-    // Only listen if user is a Regulator
     if (userInfo?.role === 'regulator') {
       socket.on('admin_alert', (data) => {
-        // Play sound?
         toast.error(data.message, {
           position: "top-right",
           autoClose: 10000,
@@ -35,7 +32,6 @@ const App = () => {
         });
       });
     }
-
     return () => {
       socket.off('admin_alert');
     };
@@ -43,16 +39,25 @@ const App = () => {
 
   return (
     <>
-      <div className="relative z-50">
-        <Header />
-      </div>
-      <main className="flex-grow py-3 z-0 relative">
-        <div className="container mx-auto px-4">
+      {/* Header is Fixed/Sticky */}
+      <Header />
+      
+      {/* LAYOUT FIX:
+         - pt-20: Enough for the 16-unit mobile header (64px)
+         - md:pt-44: Enough for the 24-unit desktop header (96px) + top-6 offset (24px) + breathing room
+         - pb-24: Keeps mobile content above the bottom nav bar
+      */}
+      <main className="flex-grow relative z-0 pt-20 md:pt-44 pb-24 md:pb-0 min-h-screen bg-background transition-colors duration-300">
+        <div className="container mx-auto px-4 md:px-6">
           <Outlet />
         </div>
       </main>
-      <Footer userRole={userInfo?.role} />
-      <ToastContainer />
+      
+      <div className="hidden md:block">
+        <Footer userRole={userInfo?.role} />
+      </div>
+      
+      <ToastContainer position="bottom-center" theme="colored" />
     </>
   );
 };

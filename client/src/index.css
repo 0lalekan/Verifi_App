@@ -1,20 +1,93 @@
 @import "tailwindcss";
 
 @layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 240 10% 3.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 3.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 3.9%;
+    --primary: 142.1 76.2% 36.3%;
+    --primary-foreground: 355.7 100% 97.3%;
+    --secondary: 240 4.8% 95.9%;
+    --secondary-foreground: 240 5.9% 10%;
+    --muted: 240 4.8% 95.9%;
+    --muted-foreground: 240 3.8% 46.1%;
+    --accent: 240 4.8% 95.9%;
+    --accent-foreground: 240 5.9% 10%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 5.9% 90%;
+    --input: 240 5.9% 90%;
+    --ring: 142.1 76.2% 36.3%;
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 240 10% 3.9%;
+    --card-foreground: 0 0% 98%;
+    --popover: 240 10% 3.9%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 142.1 70.6% 45.3%;
+    --primary-foreground: 144.9 80.4% 10%;
+    --secondary: 240 3.7% 15.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
+    --accent: 240 3.7% 15.9%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 142.4 71.8% 29.2%;
+  }
+}
+
+@layer base {
+  * {
+    border-color: hsl(var(--border));
+  }
+  
   body {
-    /* Added dark mode variants */
-    @apply bg-slate-50 text-slate-900 dark:bg-slate-900 dark:text-slate-50 antialiased transition-colors duration-200;
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    font-feature-settings: "rlig" 1, "calt" 1;
+    @apply antialiased transition-colors duration-300;
   }
-  h1, h2, h3 {
-    @apply tracking-tight font-bold text-slate-900 dark:text-white;
+
+  h1, h2, h3, h4 {
+    @apply font-sans tracking-tight;
   }
 }
 
-/* Custom Utilities */
-.glass-panel {
-  @apply bg-white/80 backdrop-blur-md border border-slate-200 shadow-sm dark:bg-slate-800/80 dark:border-slate-700;
-}
+@layer utilities {
+  .glass {
+    /* More transparent white for true glass feel */
+    background-color: rgba(255, 255, 255, 0.6);
+    @apply backdrop-blur-2xl border border-white/40 shadow-xl;
+  }
 
-.govt-card {
-  @apply bg-white border border-slate-200 shadow-[0_2px_8px_rgba(0,0,0,0.04)] rounded-lg dark:bg-slate-800 dark:border-slate-700;
+  .dark .glass {
+    background-color: rgba(0, 0, 0, 0.6);
+    @apply border-white/10;
+  }
+  
+  .glass-card {
+    @apply relative overflow-hidden rounded-2xl border border-white/20 dark:border-white/5 bg-white/40 dark:bg-zinc-900/40 backdrop-blur-md shadow-lg transition-all duration-300 hover:shadow-xl hover:bg-white/50 dark:hover:bg-zinc-900/60;
+  }
+
+  .text-gradient {
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    background-image: linear-gradient(135deg, #022c22 0%, #059669 50%, #2563eb 100%);
+  }
+
+  .dark .text-gradient {
+    background-image: linear-gradient(135deg, #34d399 0%, #22d3ee 50%, #818cf8 100%);
+  }
 }
