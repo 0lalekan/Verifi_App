@@ -3,17 +3,15 @@ import { useMutation } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import api from '../api';
 import { toast } from 'react-toastify';
+import { Mail, ArrowLeft, Loader2, KeyRound } from 'lucide-react';
 
 const ForgotPasswordScreen = () => {
   const [email, setEmail] = useState('');
 
   const mutation = useMutation({
-    mutationFn: async (userData) => {
-      const response = await api.post('/users/forgot-password', userData);
-      return response.data;
-    },
+    mutationFn: async (userData) => (await api.post('/users/forgot-password', userData)).data,
     onSuccess: () => {
-      toast.success('Password reset email sent!');
+      toast.success('Reset link sent to your email.');
       setEmail('');
     },
     onError: (error) => {
@@ -27,40 +25,50 @@ const ForgotPasswordScreen = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 via-purple-50 to-indigo-100 flex items-center justify-center py-12 px-4">
-      <div className="max-w-md w-full bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-8">
-        <h1 className="text-3xl font-bold text-center text-gray-900 mb-8">Forgot Password</h1>
-        <form onSubmit={submitHandler} className="space-y-6">
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-              Email Address
-            </label>
-            <input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300"
-              placeholder="Enter your email"
-              required
-            />
+    <div className="min-h-screen w-full flex items-center justify-center bg-background bg-gradient-mesh dark:bg-gradient-mesh-dark p-4 transition-colors duration-500">
+      <div className="w-full max-w-md animate-in zoom-in-95 duration-500">
+        
+        <Link to="/login" className="mb-6 inline-flex items-center text-sm font-bold text-muted-foreground hover:text-foreground transition-colors">
+          <ArrowLeft size={18} className="mr-2" /> Back to Login
+        </Link>
+
+        <div className="glass rounded-[2.5rem] p-8 md:p-10 shadow-2xl">
+          <div className="text-center mb-8">
+            <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-6 text-primary border border-primary/20">
+              <KeyRound size={32} />
+            </div>
+            <h1 className="text-3xl font-display font-bold text-foreground mb-2">Forgot Password?</h1>
+            <p className="text-muted-foreground text-sm">
+              Enter your email address and we'll send you a secure link to reset your password.
+            </p>
           </div>
 
-          <button
-            type="submit"
-            disabled={mutation.isPending}
-            className="w-full bg-gradient-to-r from-blue-600 to-purple-700 text-white py-3 px-6 rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {mutation.isPending ? 'Sending...' : 'Send Reset Email'}
-          </button>
-        </form>
+          <form onSubmit={submitHandler} className="space-y-6">
+            <div className="space-y-2">
+              <label htmlFor="email" className="text-sm font-bold text-foreground ml-1">Email Address</label>
+              <div className="relative">
+                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" size={20} />
+                <input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full pl-11 pr-4 py-3.5 rounded-xl border border-input bg-background/50 shadow-sm focus:ring-2 focus:ring-primary outline-none transition-all placeholder:text-muted-foreground"
+                  placeholder="name@example.com"
+                  required
+                />
+              </div>
+            </div>
 
-        <p className="text-center text-sm text-slate-600 mt-6">
-          Remember your password?{' '}
-          <Link to="/" className="font-medium text-indigo-600 hover:text-indigo-500">
-            Sign in
-          </Link>
-        </p>
+            <button
+              type="submit"
+              disabled={mutation.isPending}
+              className="w-full py-3.5 bg-primary hover:bg-primary/90 text-primary-foreground font-bold rounded-xl shadow-lg shadow-primary/20 transition-all hover:-translate-y-0.5 disabled:opacity-50 flex items-center justify-center gap-2"
+            >
+              {mutation.isPending ? <Loader2 className="animate-spin" /> : 'Send Reset Link'}
+            </button>
+          </form>
+        </div>
       </div>
     </div>
   );

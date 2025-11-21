@@ -5,18 +5,29 @@ import { Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import Skeleton from '../components/Skeleton';
 import ErrorState from '../components/ErrorState';
+import { 
+  Package, 
+  Plus, 
+  Printer, 
+  Edit3, 
+  Trash2, 
+  AlertCircle, 
+  CheckCircle, 
+  XCircle,
+  Search,
+  Filter
+} from 'lucide-react';
 
 const ManufacturerInventoryScreen = () => {
   const queryClient = useQueryClient();
   const [editingBatch, setEditingBatch] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
 
-  // Fetch Data with error handling and refetch exposed
   const { data: batches, isLoading, error, refetch } = useQuery({
     queryKey: ['myInventory'],
     queryFn: async () => (await api.get('/products/my-inventory')).data
   });
 
-  // Delete Mutation
   const deleteMutation = useMutation({
     mutationFn: async (id) => await api.delete(`/products/${id}`),
     onSuccess: () => {
@@ -26,7 +37,6 @@ const ManufacturerInventoryScreen = () => {
     onError: (err) => toast.error(err.response?.data?.message || 'Delete failed')
   });
 
-  // Edit Mutation
   const updateMutation = useMutation({
     mutationFn: async (data) => await api.put(`/products/${data._id}`, data),
     onSuccess: () => {
@@ -34,32 +44,30 @@ const ManufacturerInventoryScreen = () => {
       setEditingBatch(null);
       queryClient.invalidateQueries(['myInventory']);
     },
-    onError: (err) => toast.error('Update failed')
+    onError: () => toast.error('Update failed')
   });
 
-  // Print Handler (Opens a clean printable window)
   const handlePrint = (batchNumber) => {
     const printWindow = window.open('', '_blank');
     printWindow.document.write(`
       <html>
         <head>
-          <title>Print Labels - ${batchNumber}</title>
+          <title>Label - ${batchNumber}</title>
           <style>
             body { font-family: sans-serif; padding: 20px; }
             .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; }
-            .label { border: 1px dashed #ccc; padding: 10px; text-align: center; page-break-inside: avoid; }
-            h1 { text-align: center; margin-bottom: 20px; }
+            .label { border: 1px dashed #000; padding: 10px; text-align: center; page-break-inside: avoid; }
             img { width: 100px; height: 100px; }
-            .meta { font-size: 12px; margin-top: 5px; }
+            .meta { font-size: 12px; margin-top: 5px; font-weight: bold; }
           </style>
         </head>
         <body>
-          <h1>Batch: ${batchNumber}</h1>
+          <h2 style="text-align:center;">Batch: ${batchNumber}</h2>
           <div class="grid">
             ${Array(24).fill('').map(() => `
               <div class="label">
                 <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${batchNumber}" />
-                <div class="meta">VERIFI SECURE<br/>${batchNumber}</div>
+                <div class="meta">VERIFI SECURE</div>
               </div>
             `).join('')}
           </div>
@@ -70,166 +78,186 @@ const ManufacturerInventoryScreen = () => {
     printWindow.document.close();
   };
 
-  // Handle Error State
-  if (error) return <div className="min-h-screen bg-slate-50 pt-20"><ErrorState onRetry={refetch} /></div>;
+  if (error) return <div className="min-h-screen pt-24"><ErrorState onRetry={refetch} /></div>;
+
+  const filteredBatches = batches?.filter(b => 
+    b.productName.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    b.batchNumber.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
-    <div className="min-h-screen bg-slate-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-6xl mx-auto">
+    <div className="min-h-screen w-full bg-background bg-gradient-mesh dark:bg-gradient-mesh-dark p-4 md:p-8 transition-colors duration-500">
+      <div className="max-w-7xl mx-auto pt-2 pb-20">
         
-        <div className="flex justify-between items-end mb-8">
+        {/* Header */}
+        <div className="flex flex-col md:flex-row justify-between items-end gap-4 mb-8">
           <div>
-            <h1 className="text-3xl font-extrabold text-slate-900">Product Inventory</h1>
-            <p className="text-slate-500 mt-1">Manage lifecycle and print labels.</p>
+            <h1 className="text-3xl font-display font-bold text-foreground">Inventory</h1>
+            <p className="text-muted-foreground mt-1">Manage product lifecycle and print QR labels.</p>
           </div>
-          <Link to="/register-batch" className="px-6 py-3 bg-blue-600 text-white font-bold rounded-xl shadow-lg hover:bg-blue-700 transition-all">
-            + New Batch
+          <Link to="/register-batch" className="flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground font-bold rounded-xl shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all hover:-translate-y-0.5">
+            <Plus size={20} /> New Batch
           </Link>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-          <table className="min-w-full divide-y divide-slate-100">
-            <thead className="bg-slate-50">
-              <tr>
-                <th className="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase">Product</th>
-                <th className="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase">Status</th>
-                <th className="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase">Scans / Limit</th>
-                <th className="px-6 py-4 text-right text-xs font-bold text-slate-500 uppercase">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {isLoading ? (
-                 // SKELETON ROWS
-                 [1, 2, 3, 4, 5].map((i) => (
-                   <tr key={i}>
-                     <td className="px-6 py-4"><Skeleton className="h-4 w-32 mb-2"/><Skeleton className="h-3 w-20"/></td>
-                     <td className="px-6 py-4"><Skeleton className="h-6 w-16 rounded-full"/></td>
-                     <td className="px-6 py-4"><Skeleton className="h-4 w-12"/></td>
-                     <td className="px-6 py-4"><Skeleton className="h-8 w-20 ml-auto"/></td>
-                   </tr>
-                 ))
-              ) : batches?.map((batch) => (
-                <tr key={batch._id} className="hover:bg-slate-50/50">
-                  <td className="px-6 py-4">
-                    <div className="font-bold text-slate-900">{batch.productName}</div>
-                    <div className="text-xs font-mono text-slate-500 bg-slate-100 inline-block px-1 rounded mt-1">
-                      {batch.batchNumber}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className={`px-2 py-1 rounded-full text-xs font-bold uppercase ${
-                      batch.status === 'Active' ? 'bg-emerald-100 text-emerald-700' : 
-                      batch.status === 'Recalled' ? 'bg-red-100 text-red-700' : 
-                      'bg-amber-100 text-amber-700'
-                    }`}>
-                      {batch.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-sm text-slate-600">
-                    <div className="flex items-center gap-1">
-                      <span className={`font-bold ${batch.verificationCount >= batch.maxScansAllowed ? 'text-red-600' : 'text-slate-900'}`}>
-                        {batch.verificationCount}
-                      </span>
-                      <span className="text-slate-400">/ {batch.maxScansAllowed}</span>
-                    </div>
-                    {batch.verificationCount >= batch.maxScansAllowed && (
-                      <span className="text-[10px] text-red-500 font-bold">LIMIT REACHED</span>
-                    )}
-                  </td>
-                  <td className="px-6 py-4 text-right space-x-3">
-                    <button 
-                      onClick={() => handlePrint(batch.batchNumber)}
-                      className="text-slate-400 hover:text-blue-600 transition-colors"
-                      title="Print Labels"
-                    >
-                      🖨️
-                    </button>
-                    <button 
-                      onClick={() => setEditingBatch(batch)}
-                      className="text-slate-400 hover:text-emerald-600 transition-colors"
-                      title="Edit Batch"
-                    >
-                      ✏️
-                    </button>
-                    {batch.verificationCount === 0 && (
-                      <button 
-                        onClick={() => {
-                          if(window.confirm('Are you sure? This cannot be undone.')) deleteMutation.mutate(batch._id);
-                        }}
-                        className="text-slate-400 hover:text-red-600 transition-colors"
-                        title="Delete"
-                      >
-                        🗑️
-                      </button>
-                    )}
-                  </td>
+        {/* Toolbar */}
+        <div className="glass-card p-4 mb-6 flex flex-col md:flex-row items-center gap-4">
+          <div className="relative flex-1 w-full">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" size={20} />
+            <input 
+              type="text" 
+              placeholder="Search products or batch numbers..." 
+              className="w-full bg-background/50 border border-input rounded-xl pl-11 pr-4 py-3 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+          <div className="flex items-center gap-2 text-sm font-bold text-muted-foreground px-4">
+            <Filter size={16} /> 
+            <span>{filteredBatches?.length || 0} Items</span>
+          </div>
+        </div>
+
+        {/* Table */}
+        <div className="glass-card overflow-hidden rounded-[2rem]">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b border-border/50 bg-secondary/30 text-muted-foreground text-xs uppercase tracking-wider">
+                  <th className="px-6 py-5 font-bold">Product</th>
+                  <th className="px-6 py-5 font-bold">Status</th>
+                  <th className="px-6 py-5 font-bold">Scan Velocity</th>
+                  <th className="px-6 py-5 font-bold text-right">Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-border/50">
+                {isLoading ? (
+                   [...Array(5)].map((_, i) => (
+                     <tr key={i}>
+                       <td className="px-6 py-4"><Skeleton className="h-12 w-48 rounded-lg" /></td>
+                       <td className="px-6 py-4"><Skeleton className="h-8 w-20 rounded-full" /></td>
+                       <td className="px-6 py-4"><Skeleton className="h-4 w-32" /></td>
+                       <td className="px-6 py-4"><Skeleton className="h-8 w-24 ml-auto" /></td>
+                     </tr>
+                   ))
+                ) : filteredBatches?.length > 0 ? (
+                  filteredBatches.map((batch) => (
+                    <tr key={batch._id} className="hover:bg-secondary/20 transition-colors">
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0">
+                            <Package size={20} />
+                          </div>
+                          <div>
+                            <p className="font-bold text-foreground">{batch.productName}</p>
+                            <p className="text-xs font-mono text-muted-foreground">{batch.batchNumber}</p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border uppercase tracking-wide ${
+                          batch.status === 'Active' ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' : 
+                          batch.status === 'Recalled' ? 'bg-red-500/10 text-red-600 border-red-500/20' : 
+                          'bg-amber-500/10 text-amber-600 border-amber-500/20'
+                        }`}>
+                          {batch.status === 'Active' && <CheckCircle size={12} />}
+                          {batch.status === 'Recalled' && <AlertCircle size={12} />}
+                          {batch.status}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex flex-col gap-1">
+                          <div className="flex items-center justify-between text-xs font-bold">
+                            <span className={batch.verificationCount >= batch.maxScansAllowed ? 'text-red-500' : 'text-foreground'}>
+                              {batch.verificationCount}
+                            </span>
+                            <span className="text-muted-foreground">/ {batch.maxScansAllowed}</span>
+                          </div>
+                          <div className="w-32 h-1.5 bg-secondary rounded-full overflow-hidden">
+                            <div 
+                              className={`h-full rounded-full ${batch.verificationCount >= batch.maxScansAllowed ? 'bg-red-500' : 'bg-primary'}`}
+                              style={{ width: `${Math.min((batch.verificationCount / batch.maxScansAllowed) * 100, 100)}%` }}
+                            />
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <div className="flex items-center justify-end gap-2">
+                          <button onClick={() => handlePrint(batch.batchNumber)} className="p-2 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-lg transition-colors" title="Print">
+                            <Printer size={18} />
+                          </button>
+                          <button onClick={() => setEditingBatch(batch)} className="p-2 text-muted-foreground hover:text-blue-500 hover:bg-blue-500/10 rounded-lg transition-colors" title="Edit">
+                            <Edit3 size={18} />
+                          </button>
+                          {batch.verificationCount === 0 && (
+                            <button onClick={() => { if(window.confirm('Delete?')) deleteMutation.mutate(batch._id); }} className="p-2 text-muted-foreground hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors" title="Delete">
+                              <Trash2 size={18} />
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="4" className="px-6 py-12 text-center text-muted-foreground">
+                      No batches found.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
 
       {/* Edit Modal */}
       {editingBatch && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl p-8 max-w-md w-full shadow-2xl">
-            <h3 className="text-xl font-bold text-slate-900 mb-6">Edit Batch</h3>
-            
-            <div className="space-y-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="w-full max-w-md bg-background rounded-3xl shadow-2xl border border-border overflow-hidden animate-in zoom-in-95">
+            <div className="p-6 border-b border-border flex justify-between items-center">
+              <h3 className="text-xl font-bold text-foreground">Edit Batch</h3>
+              <button onClick={() => setEditingBatch(null)} className="text-muted-foreground hover:text-foreground"><XCircle size={24} /></button>
+            </div>
+            <div className="p-6 space-y-4">
               <div>
-                <label className="block text-sm font-bold text-slate-700 mb-1">Product Name</label>
+                <label className="text-sm font-bold text-foreground mb-1.5 block">Product Name</label>
                 <input 
                   type="text" 
+                  className="w-full px-4 py-2.5 rounded-xl border border-input bg-background focus:ring-2 focus:ring-primary outline-none"
                   defaultValue={editingBatch.productName}
                   onChange={(e) => setEditingBatch({...editingBatch, productName: e.target.value})}
-                  className="w-full px-4 py-2 border border-slate-300 rounded-lg"
                 />
               </div>
-
               <div>
-                <label className="block text-sm font-bold text-slate-700 mb-1">Status</label>
+                <label className="text-sm font-bold text-foreground mb-1.5 block">Status</label>
                 <select 
+                  className="w-full px-4 py-2.5 rounded-xl border border-input bg-background focus:ring-2 focus:ring-primary outline-none"
                   value={editingBatch.status}
                   onChange={(e) => setEditingBatch({...editingBatch, status: e.target.value})}
-                  className="w-full px-4 py-2 border border-slate-300 rounded-lg bg-white"
                 >
                   <option value="Active">Active</option>
                   <option value="Recalled">Recalled (Emergency)</option>
                   <option value="Expired">Expired</option>
                 </select>
               </div>
-
               <div>
-                <label className="block text-sm font-bold text-slate-700 mb-1">Max Scan Limit</label>
+                <label className="text-sm font-bold text-foreground mb-1.5 block">Max Scan Limit</label>
                 <input 
                   type="number" 
+                  className="w-full px-4 py-2.5 rounded-xl border border-input bg-background focus:ring-2 focus:ring-primary outline-none"
                   defaultValue={editingBatch.maxScansAllowed}
                   onChange={(e) => setEditingBatch({...editingBatch, maxScansAllowed: e.target.value})}
-                  className="w-full px-4 py-2 border border-slate-300 rounded-lg"
                 />
-                <p className="text-xs text-slate-500 mt-1">Increase this if you produced more items.</p>
               </div>
             </div>
-
-            <div className="flex gap-3 mt-8">
-              <button 
-                onClick={() => setEditingBatch(null)}
-                className="flex-1 py-2 text-slate-600 font-bold hover:bg-slate-50 rounded-lg"
-              >
-                Cancel
-              </button>
-              <button 
-                onClick={() => updateMutation.mutate(editingBatch)}
-                className="flex-1 py-2 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700"
-              >
-                Save Changes
-              </button>
+            <div className="p-6 border-t border-border bg-secondary/20 flex gap-3">
+              <button onClick={() => setEditingBatch(null)} className="flex-1 py-3 font-bold text-muted-foreground hover:text-foreground transition-colors">Cancel</button>
+              <button onClick={() => updateMutation.mutate(editingBatch)} className="flex-1 py-3 bg-primary text-primary-foreground font-bold rounded-xl hover:opacity-90 transition-opacity">Save</button>
             </div>
           </div>
         </div>
       )}
-
     </div>
   );
 };

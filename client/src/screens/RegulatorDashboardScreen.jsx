@@ -1,52 +1,41 @@
 import React, { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import api from '../api';
+import useAuthStore from '../store';
 import FakeMapComponent from '../components/FakeMapComponent';
 import { Link } from 'react-router-dom';
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend,
-  Filler
-} from 'chart.js';
+import { Activity, ShieldAlert, ShieldCheck, Map as MapIcon, ListChecks } from 'lucide-react';
 import { Line } from 'react-chartjs-2';
+import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, Filler } from 'chart.js';
 
-// Register ChartJS components
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend,
-  Filler
-);
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, Filler);
 
-const StatCard = ({ title, value, color }) => (
-  <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-    <h3 className="text-slate-500 text-xs font-bold uppercase tracking-wider mb-2">{title}</h3>
-    <div className={`text-3xl font-extrabold ${color}`}>{value}</div>
+// Styled specifically like the Dashboard Trust Score card
+const StatCard = ({ title, value, icon: Icon, colorClass }) => (
+  <div className="glass-card p-6 flex flex-col justify-between relative overflow-hidden group">
+    <div className="relative z-10">
+      <div className="flex items-center gap-2 font-bold text-sm uppercase tracking-wider mb-2 text-muted-foreground">
+        <Icon size={16} /> {title}
+      </div>
+      <div className="text-4xl font-display font-extrabold text-foreground">
+        {value}
+      </div>
+    </div>
+    <div className={`absolute -bottom-4 -right-4 w-24 h-24 rounded-full blur-2xl opacity-20 ${colorClass}`} />
   </div>
 );
 
 const RegulatorDashboardScreen = () => {
+  const { userInfo } = useAuthStore();
   const { data: logs, isLoading } = useQuery({
     queryKey: ['adminLogs'],
     queryFn: async () => (await api.get('/logs')).data,
     refetchInterval: 30000
   });
 
-  // Process Data for Charts
+  // Chart Logic
   const chartData = useMemo(() => {
     if (!logs) return null;
-
-    // Group by Date (Last 7 days usually, here simple grouping)
     const dates = {};
     logs.forEach(log => {
       const date = new Date(log.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
@@ -54,27 +43,23 @@ const RegulatorDashboardScreen = () => {
       if (log.status === 'Valid') dates[date].valid++;
       else dates[date].fake++;
     });
-
-    const labels = Object.keys(dates).reverse(); // Assuming simple sort for now
-    const validData = labels.map(d => dates[d].valid);
-    const fakeData = labels.map(d => dates[d].fake);
-
+    const labels = Object.keys(dates).reverse();
     return {
       labels,
       datasets: [
         {
-          label: 'Authentic Scans',
-          data: validData,
-          borderColor: '#059669', // Emerald 600
-          backgroundColor: 'rgba(5, 150, 105, 0.1)',
+          label: 'Authentic',
+          data: labels.map(d => dates[d].valid),
+          borderColor: '#10b981',
+          backgroundColor: 'rgba(16, 185, 129, 0.1)',
           tension: 0.4,
           fill: true,
         },
         {
-          label: 'Suspicious Alerts',
-          data: fakeData,
-          borderColor: '#DC2626', // Red 600
-          backgroundColor: 'rgba(220, 38, 38, 0.1)',
+          label: 'Suspicious',
+          data: labels.map(d => dates[d].fake),
+          borderColor: '#ef4444',
+          backgroundColor: 'rgba(239, 68, 68, 0.1)',
           tension: 0.4,
           fill: true,
         },
@@ -84,94 +69,69 @@ const RegulatorDashboardScreen = () => {
 
   const chartOptions = {
     responsive: true,
-    plugins: {
-      legend: { position: 'top' },
-    },
+    maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
     scales: {
-      y: { beginAtZero: true, grid: { color: '#f1f5f9' } },
-      x: { grid: { display: false } }
+      y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { display: false } },
+      x: { grid: { display: false }, ticks: { color: '#94a3b8', font: { size: 10 } } }
     }
   };
 
-  // Stats
-  const totalScans = logs ? logs.length : 0;
-  const fakeScans = logs ? logs.filter(l => l.status === 'Fake').length : 0;
-  const validScans = logs ? logs.filter(l => l.status === 'Valid').length : 0;
+  const totalScans = logs?.length || 0;
+  const fakeScans = logs?.filter(l => l.status === 'Fake').length || 0;
+  const validScans = logs?.filter(l => l.status === 'Valid').length || 0;
 
   return (
-    <div className="min-h-screen bg-slate-50 p-4 md:p-8">
-      <header className="mb-8 flex flex-col md:flex-row justify-between items-end gap-4">
+    <div className="max-w-5xl mx-auto pb-24 pt-2">
+      
+      {/* Greeting Section (Matches Dashboard) */}
+      <div className="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
-          <div className="flex items-center space-x-3 mb-2">
-            <span className="text-3xl">👁️</span>
-            <h1 className="text-3xl font-bold text-slate-900">Oversight Dashboard</h1>
-          </div>
-          <p className="text-slate-500">Real-time surveillance of national supply chain integrity.</p>
+          <h1 className="text-3xl md:text-4xl font-display font-bold text-foreground">
+            Good {new Date().getHours() < 12 ? 'Morning' : new Date().getHours() < 18 ? 'Afternoon' : 'Evening'}, {userInfo?.firstName}.
+          </h1>
+          <p className="text-muted-foreground mt-1">National supply chain surveillance.</p>
         </div>
         
         <Link 
           to="/regulator/verification-queue"
-          className="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl shadow-lg shadow-purple-500/20 transition-all flex items-center gap-2"
+          className="px-6 py-3 bg-primary text-primary-foreground font-bold rounded-xl shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all flex items-center gap-2 shrink-0"
         >
-          <span>📋</span> Review Applications
+          <ListChecks size={20} /> Compliance Queue
         </Link>
-      </header>
-
-      {/* KPI Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <StatCard title="Total Verification Scans" value={totalScans.toLocaleString()} color="text-blue-600" />
-        <StatCard title="Valid Authentications" value={validScans.toLocaleString()} color="text-emerald-600" />
-        <StatCard title="Flagged Anomalies (Fakes)" value={fakeScans.toLocaleString()} color="text-red-600" />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+      {/* Stats Bento */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
+        <StatCard title="Total Scans" value={totalScans.toLocaleString()} icon={Activity} colorClass="bg-blue-500" />
+        <StatCard title="Authentic" value={validScans.toLocaleString()} icon={ShieldCheck} colorClass="bg-emerald-500" />
+        <StatCard title="Threats" value={fakeScans.toLocaleString()} icon={ShieldAlert} colorClass="bg-red-500" />
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
         
-        {/* Analytics Chart */}
-        <div className="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-          <h3 className="text-slate-800 font-bold mb-4">Verification Trends (Activity)</h3>
-          <div className="h-64">
-            {chartData ? <Line data={chartData} options={chartOptions} /> : <div className="h-full flex items-center justify-center text-slate-400">Collecting data...</div>}
+        {/* Chart Card */}
+        <div className="lg:col-span-2 glass rounded-[2.5rem] p-6 md:p-8">
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-xl font-bold">Verification Trends</h3>
+            <div className="flex gap-2">
+              <span className="flex items-center text-xs font-bold text-emerald-500 gap-1"><div className="w-2 h-2 rounded-full bg-emerald-500"/> Valid</span>
+              <span className="flex items-center text-xs font-bold text-red-500 gap-1"><div className="w-2 h-2 rounded-full bg-red-500"/> Fake</span>
+            </div>
+          </div>
+          <div className="h-64 w-full">
+            {chartData ? <Line data={chartData} options={chartOptions} /> : <div className="h-full flex items-center justify-center text-muted-foreground">Collecting data...</div>}
           </div>
         </div>
 
-        {/* Map Section (Smaller now) */}
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col">
-          <div className="p-4 border-b border-slate-100 flex justify-between items-center">
-            <h3 className="font-bold text-slate-900">Threat Heatmap</h3>
-            <span className="flex h-2 w-2 relative">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
-            </span>
+        {/* Map Card */}
+        <div className="glass rounded-[2.5rem] p-1 overflow-hidden flex flex-col relative">
+          <div className="absolute top-6 left-6 z-10 bg-background/80 backdrop-blur-md px-3 py-1.5 rounded-lg border border-border/50 shadow-sm">
+            <h3 className="font-bold text-xs flex items-center gap-2"><MapIcon size={14} /> Live Heatmap</h3>
           </div>
-          <div className="flex-1 min-h-[250px]">
+          <div className="flex-1 rounded-[2rem] overflow-hidden">
              <FakeMapComponent scanLogs={logs || []} />
           </div>
-        </div>
-      </div>
-
-      {/* Recent Alerts Table */}
-      <div className="mt-8">
-        <h2 className="text-lg font-bold text-slate-900 mb-4">Recent Whistleblower Reports</h2>
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="bg-slate-50 border-b border-slate-100">
-                <th className="p-4 text-xs font-bold text-slate-500 uppercase">Product</th>
-                <th className="p-4 text-xs font-bold text-slate-500 uppercase">Location</th>
-                <th className="p-4 text-xs font-bold text-slate-500 uppercase">Issue</th>
-                <th className="p-4 text-xs font-bold text-slate-500 uppercase">Status</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-               {/* Mock Data for UI - Replace with real data fetch if needed */}
-              <tr>
-                <td className="p-4 font-medium text-slate-900">Amoxicillin 500mg</td>
-                <td className="p-4 text-slate-600">Lagos, Ikeja</td>
-                <td className="p-4 text-red-600">Broken Seal / Wrong Color</td>
-                <td className="p-4"><span className="px-2 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs font-bold">Investigating</span></td>
-              </tr>
-            </tbody>
-          </table>
         </div>
       </div>
     </div>

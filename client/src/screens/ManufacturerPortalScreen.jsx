@@ -2,111 +2,151 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import useAuthStore from '../store';
 import { useUserProfile } from '../hooks/useUserProfile';
-
-const ActionCard = ({ icon, title, desc, link, linkText, color, disabled }) => (
-  <div className={`group bg-white p-8 rounded-2xl shadow-sm border border-slate-200 transition-all duration-300 ${disabled ? 'opacity-60 cursor-not-allowed' : 'hover:shadow-md hover:border-emerald-200'}`}>
-    <div className={`w-14 h-14 ${color} rounded-xl flex items-center justify-center text-3xl mb-6 ${!disabled && 'group-hover:scale-110 transition-transform'}`}>
-      {icon}
-    </div>
-    <h3 className="text-xl font-bold text-slate-900 mb-3">{title}</h3>
-    <p className="text-slate-500 mb-8 leading-relaxed min-h-[80px]">
-      {desc}
-    </p>
-    {disabled ? (
-      <span className="inline-flex items-center font-semibold text-slate-400 cursor-not-allowed">
-        🔒 Verification Required
-      </span>
-    ) : (
-      <Link
-        to={link}
-        className="inline-flex items-center font-semibold text-emerald-600 hover:text-emerald-700 transition-colors"
-      >
-        {linkText}
-        <span className="ml-2 group-hover:translate-x-1 transition-transform">→</span>
-      </Link>
-    )}
-  </div>
-);
+import { 
+  ShieldCheck, 
+  Upload, 
+  Package, 
+  AlertTriangle, 
+  ChevronRight, 
+  Factory 
+} from 'lucide-react';
 
 const ManufacturerPortalScreen = () => {
   const { userInfo } = useAuthStore();
-  // We fetch the profile again to ensure we have the latest verification status
   const { data: userProfile } = useUserProfile();
-
   const isVerified = userProfile?.organizationDetails?.isVerified || false;
 
   return (
-    <div className="min-h-screen bg-slate-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="text-center mb-12">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-slate-200 text-slate-600 text-sm font-medium mb-6">
-            <span className={`w-2 h-2 rounded-full ${isVerified ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500'}`}></span>
-            {isVerified ? 'Secure Workspace Active' : 'Action Required'}
-          </div>
-          <h1 className="text-4xl font-extrabold text-slate-900 mb-4">
-            Manufacturer Hub
+    <div className="max-w-5xl mx-auto pb-24 pt-2">
+      
+      {/* Greeting Section (Matches Dashboard) */}
+      <div className="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div>
+          <h1 className="text-3xl md:text-4xl font-display font-bold text-foreground">
+            Good {new Date().getHours() < 12 ? 'Morning' : new Date().getHours() < 18 ? 'Afternoon' : 'Evening'}, {userInfo?.firstName}.
           </h1>
+          <p className="text-muted-foreground mt-1">Manage production and supply chain integrity.</p>
+        </div>
+        
+        {/* Verification Badge */}
+        <div className={`px-4 py-2 rounded-full border text-xs font-bold uppercase tracking-wider flex items-center gap-2 shrink-0 ${
+          isVerified 
+            ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-600' 
+            : 'bg-amber-500/10 border-amber-500/20 text-amber-600'
+        }`}>
+          <span className={`w-2 h-2 rounded-full ${isVerified ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500'}`} />
+          {isVerified ? 'Workspace Verified' : 'Verification Pending'}
+        </div>
+      </div>
+
+      {/* Bento Grid Actions */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
+        
+        {/* 1. Register Batch (Primary) */}
+        <Link 
+          to={isVerified ? "/register-batch" : "#"} 
+          className={`glass-card p-6 flex flex-col justify-between group hover:ring-2 hover:ring-primary/50 transition-all relative overflow-hidden ${!isVerified && 'opacity-60 cursor-not-allowed'}`}
+        >
+          <div className="absolute -right-6 -top-6 bg-primary/10 w-32 h-32 rounded-full blur-2xl group-hover:bg-primary/20 transition-colors" />
           
-          {!isVerified && (
-            <div className="max-w-2xl mx-auto mt-6 bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-start gap-3 text-left">
-              <span className="text-2xl">⚠️</span>
-              <div>
-                <h3 className="font-bold text-amber-800">Verification Pending</h3>
-                <p className="text-amber-700 text-sm mt-1">
-                  Your organization details are currently under review. You cannot register new product batches until your business license is verified by a Regulator. 
-                  <Link to="/profile" className="underline ml-1 font-semibold">Check Profile Status</Link>
-                </p>
-              </div>
+          <div className="flex justify-between items-start relative z-10">
+            <div className="p-3 bg-primary/10 text-primary rounded-2xl">
+              <ShieldCheck size={26} />
             </div>
-          )}
+            <div className="p-2 bg-background/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
+              <ChevronRight size={16} />
+            </div>
+          </div>
+          <div className="mt-8 relative z-10">
+            <h3 className="text-xl font-bold text-foreground">Register Batch</h3>
+            <p className="text-sm text-muted-foreground mt-1">Create digital identities for new products.</p>
+          </div>
+        </Link>
+
+        {/* 2. Bulk Upload */}
+        <Link 
+          to={isVerified ? "/bulk-upload" : "#"}
+          className={`glass-card p-6 flex flex-col justify-between group hover:ring-2 hover:ring-blue-500/50 transition-all ${!isVerified && 'opacity-60 cursor-not-allowed'}`}
+        >
+          <div className="flex justify-between items-start">
+            <div className="p-3 bg-blue-500/10 text-blue-600 rounded-2xl">
+              <Upload size={26} />
+            </div>
+            <div className="p-2 bg-background/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
+              <ChevronRight size={16} />
+            </div>
+          </div>
+          <div className="mt-8">
+            <h3 className="text-xl font-bold text-foreground">Bulk Import</h3>
+            <p className="text-sm text-muted-foreground mt-1">Upload CSV manifest for mass registration.</p>
+          </div>
+        </Link>
+
+        {/* 3. Inventory Management */}
+        <Link 
+          to={isVerified ? "/manufacturer/inventory" : "#"}
+          className={`glass-card p-6 flex flex-col justify-between group hover:ring-2 hover:ring-purple-500/50 transition-all ${!isVerified && 'opacity-60 cursor-not-allowed'}`}
+        >
+          <div className="flex justify-between items-start">
+            <div className="p-3 bg-purple-500/10 text-purple-600 rounded-2xl">
+              <Package size={26} />
+            </div>
+            <div className="p-2 bg-background/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
+              <ChevronRight size={16} />
+            </div>
+          </div>
+          <div className="mt-8">
+            <h3 className="text-xl font-bold text-foreground">My Inventory</h3>
+            <p className="text-sm text-muted-foreground mt-1">Manage active batches and print labels.</p>
+          </div>
+        </Link>
+      </div>
+
+      {/* Alerts / Status Section - Styled like Dashboard "Recent Activity" */}
+      <div className="glass rounded-[2.5rem] p-6 md:p-8">
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="text-xl font-bold flex items-center gap-2">
+            <AlertTriangle size={20} className="text-muted-foreground" />
+            Brand Alerts
+          </h3>
+          <Link to="/manufacturer/reports" className="text-sm font-bold text-primary hover:underline">
+            View All
+          </Link>
         </div>
 
-        {/* Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-          <ActionCard
-            icon="🛡️"
-            color="bg-emerald-50 text-emerald-600"
-            title="Register Batch"
-            desc="Create a secure digital identity for a new product batch."
-            link="/register-batch"
-            linkText="Create Batch"
-            disabled={!isVerified}
-          />
+        <div className="space-y-3">
+          {/* Static Alert Item for visual consistency */}
+          <div className="group flex items-center justify-between p-4 rounded-2xl bg-background/40 border border-border/50 hover:bg-background/80 transition-all">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-2xl bg-blue-500/10 text-blue-600 flex items-center justify-center">
+                <Factory size={22} />
+              </div>
+              <div>
+                <p className="font-bold text-foreground">System Status</p>
+                <p className="text-xs text-muted-foreground mt-0.5">Your manufacturing node is active.</p>
+              </div>
+            </div>
+            <div className="px-3 py-1 rounded-lg text-xs font-bold bg-emerald-500/10 text-emerald-600">
+              Online
+            </div>
+          </div>
 
-          {/* Card 2: Upload */}
-          <ActionCard
-            icon="📤"
-            color="bg-blue-50 text-blue-600"
-            title="Bulk Upload"
-            desc="Import large product datasets via CSV/Excel."
-            link="/bulk-upload"
-            linkText="Upload Data"
-            disabled={!isVerified}
-          />
-
-          {/* Card 3: Inventory (NEW) */}
-          <ActionCard
-            icon="📦"
-            color="bg-purple-50 text-purple-600"
-            title="My Inventory"
-            desc="Track registered batches, monitor scans, and download QR codes."
-            link="/manufacturer/inventory"
-            linkText="Manage Items"
-            disabled={!isVerified}
-          />
-
-          {/* Card 4: Reports (NEW) */}
-          <ActionCard
-            icon="🚨"
-            color="bg-red-50 text-red-600"
-            title="Brand Alerts"
-            desc="View whistleblower reports and incidents involving your brand."
-            link="/manufacturer/reports"
-            linkText="View Incidents"
-            disabled={!isVerified}
-          />
-          
+          {!isVerified && (
+            <div className="group flex items-center justify-between p-4 rounded-2xl bg-amber-500/5 border border-amber-500/20 hover:bg-amber-500/10 transition-all">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-2xl bg-amber-500/10 text-amber-600 flex items-center justify-center">
+                  <AlertTriangle size={22} />
+                </div>
+                <div>
+                  <p className="font-bold text-foreground">Verification Required</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">Please complete your profile to unlock features.</p>
+                </div>
+              </div>
+              <Link to="/profile" className="px-3 py-1 rounded-lg text-xs font-bold bg-background border border-border hover:border-amber-500 transition-colors">
+                Complete Profile
+              </Link>
+            </div>
+          )}
         </div>
       </div>
     </div>

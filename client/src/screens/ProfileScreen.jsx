@@ -4,9 +4,21 @@ import api from '../api';
 import { toast } from 'react-toastify';
 import { useUserProfile } from '../hooks/useUserProfile';
 import useAuthStore from '../store';
+import { 
+  User, 
+  Mail, 
+  Building2, 
+  MapPin, 
+  FileBadge, 
+  Camera, 
+  Save, 
+  Loader2,
+  ShieldCheck,
+  LogOut
+} from 'lucide-react';
 
 const ProfileScreen = () => {
-  const { setCredentials } = useAuthStore();
+  const { setCredentials, logout } = useAuthStore();
   const { data: userProfile, isLoading } = useUserProfile();
   const queryClient = useQueryClient();
   const fileInputRef = useRef(null);
@@ -43,12 +55,9 @@ const ProfileScreen = () => {
   }, [userProfile]);
 
   const mutation = useMutation({
-    mutationFn: async (data) => {
-      const response = await api.put('/users/profile', data, {
+    mutationFn: async (data) => (await api.put('/users/profile', data, {
         headers: { 'Content-Type': 'multipart/form-data' }
-      });
-      return response.data;
-    },
+    })).data,
     onSuccess: (data) => {
       setCredentials(data);
       queryClient.invalidateQueries(['userProfile']);
@@ -77,7 +86,8 @@ const ProfileScreen = () => {
     submitData.append('firstName', formData.firstName);
     submitData.append('lastName', formData.lastName);
     submitData.append('email', formData.email);
-    submitData.append('role', formData.role);
+    // Role is typically not editable by user directly after reg, but kept for consistency if allowed
+    submitData.append('role', formData.role); 
     
     if (formData.password) submitData.append('password', formData.password);
     if (uploadFile) submitData.append('profileImage', uploadFile);
@@ -94,224 +104,210 @@ const ProfileScreen = () => {
     mutation.mutate(submitData);
   };
 
-  if (isLoading) return <div className="min-h-screen flex items-center justify-center bg-slate-50">Loading...</div>;
+  if (isLoading) return <div className="min-h-screen flex items-center justify-center text-muted-foreground">Loading Profile...</div>;
 
   const isManufacturer = formData.role === 'manufacturer';
-  
-  // --- FIX IS HERE ---
-  // Renamed 'profileImg' to 'serverImageUrl' to match usage in the return statement
   const serverImageUrl = userProfile?.profileImage || null;
 
   return (
-    <div className="min-h-screen bg-slate-50 py-12 px-4">
-      <div className="max-w-3xl mx-auto">
+    <div className="min-h-screen w-full bg-background bg-gradient-mesh dark:bg-gradient-mesh-dark p-4 md:p-8 transition-colors duration-500">
+      <div className="max-w-4xl mx-auto pt-6 pb-20">
         
-        <div className="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden mb-8">
-          <div className="h-32 bg-slate-900 relative">
-            <div className="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
-          </div>
+        {/* Profile Header Card */}
+        <div className="glass rounded-[2.5rem] p-8 mb-8 flex flex-col md:flex-row items-center gap-8 shadow-xl">
           
-          <div className="px-8 pb-8 relative flex flex-col md:flex-row items-start md:items-end gap-6">
-            <div className="relative -mt-12">
-              <div className="w-32 h-32 bg-white rounded-2xl border-4 border-white shadow-lg overflow-hidden flex items-center justify-center bg-slate-100">
-                {previewImage || serverImageUrl ? (
-                  <img 
-                    src={previewImage || serverImageUrl} 
-                    alt="Profile" 
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <span className="text-4xl">👤</span>
-                )}
-              </div>
-              {isEditing && (
-                <button 
-                  onClick={() => fileInputRef.current?.click()}
-                  className="absolute bottom-0 right-0 bg-blue-600 text-white p-2 rounded-full shadow-lg hover:bg-blue-700 transition-colors"
-                  type="button"
-                >
-                  📷
-                </button>
+          {/* Avatar */}
+          <div className="relative group shrink-0">
+            <div className="w-32 h-32 rounded-full border-4 border-background shadow-2xl overflow-hidden bg-secondary flex items-center justify-center">
+              {previewImage || serverImageUrl ? (
+                <img src={previewImage || serverImageUrl} alt="Profile" className="w-full h-full object-cover" />
+              ) : (
+                <User size={48} className="text-muted-foreground/50" />
               )}
-              <input ref={fileInputRef} type="file" className="hidden" onChange={handleImageChange} accept="image/*" />
             </div>
-            
-            <div className="flex-1">
-              <h1 className="text-3xl font-bold text-slate-900">{userProfile?.firstName} {userProfile?.lastName}</h1>
-              <div className="flex items-center gap-2 mt-1">
-                <span className="px-2 py-1 bg-slate-100 rounded-md text-xs font-bold uppercase tracking-wider text-slate-500">
-                  {userProfile?.role}
-                </span>
-                {userProfile?.organizationDetails?.isVerified && (
-                  <span className="px-2 py-1 bg-emerald-100 text-emerald-700 rounded-md text-xs font-bold uppercase tracking-wider">
-                    Verified ✅
-                  </span>
-                )}
-              </div>
-            </div>
+            {isEditing && (
+              <button 
+                onClick={() => fileInputRef.current?.click()}
+                className="absolute bottom-0 right-0 p-2.5 bg-primary text-primary-foreground rounded-full shadow-lg hover:scale-110 transition-transform"
+              >
+                <Camera size={18} />
+              </button>
+            )}
+            <input ref={fileInputRef} type="file" className="hidden" onChange={handleImageChange} accept="image/*" />
+          </div>
 
+          {/* Info */}
+          <div className="text-center md:text-left flex-1">
+            <h1 className="text-3xl font-display font-bold text-foreground">{userProfile?.firstName} {userProfile?.lastName}</h1>
+            <p className="text-muted-foreground flex items-center justify-center md:justify-start gap-2 mt-1">
+              <Mail size={14} /> {userProfile?.email}
+            </p>
+            
+            <div className="flex items-center justify-center md:justify-start gap-3 mt-4">
+              <span className="px-3 py-1 rounded-full bg-secondary text-secondary-foreground text-xs font-bold uppercase tracking-wider">
+                {userProfile?.role}
+              </span>
+              {userProfile?.organizationDetails?.isVerified && (
+                <span className="px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-600 text-xs font-bold uppercase tracking-wider flex items-center gap-1">
+                  <ShieldCheck size={14} /> Verified
+                </span>
+              )}
+            </div>
+          </div>
+
+          {/* Edit Toggle */}
+          <div className="flex flex-col gap-3 w-full md:w-auto">
             <button 
               onClick={() => setIsEditing(!isEditing)}
-              type="button"
-              className={`px-6 py-2.5 rounded-xl font-semibold transition-all ${isEditing ? 'bg-slate-100 text-slate-700' : 'bg-blue-600 text-white shadow-lg shadow-blue-500/30'}`}
+              className={`px-6 py-2.5 rounded-xl font-bold text-sm transition-all ${
+                isEditing 
+                  ? 'bg-secondary text-muted-foreground hover:text-foreground' 
+                  : 'bg-primary text-primary-foreground shadow-lg shadow-primary/20 hover:bg-primary/90'
+              }`}
             >
-              {isEditing ? 'Cancel' : 'Edit Profile'}
+              {isEditing ? 'Cancel Edit' : 'Edit Profile'}
             </button>
+            {!isEditing && (
+              <button onClick={logout} className="px-6 py-2.5 rounded-xl font-bold text-sm text-destructive hover:bg-destructive/10 transition-all flex items-center justify-center gap-2">
+                <LogOut size={16} /> Sign Out
+              </button>
+            )}
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="bg-white rounded-3xl shadow-sm border border-slate-200 p-8">
-          <h2 className="text-xl font-bold text-slate-900 mb-6 flex items-center gap-2">
-            <span>📝</span> Personal Information
-          </h2>
+        {/* Form Section */}
+        <form onSubmit={handleSubmit} className="space-y-8">
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-            <div>
-              <label className="block text-sm font-bold text-slate-700 mb-2">First Name</label>
-              <input 
-                type="text" 
-                disabled={!isEditing}
-                value={formData.firstName}
-                onChange={e => setFormData({...formData, firstName: e.target.value})}
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 disabled:bg-slate-50 disabled:text-slate-500 transition-all"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-bold text-slate-700 mb-2">Last Name</label>
-              <input 
-                type="text" 
-                disabled={!isEditing}
-                value={formData.lastName}
-                onChange={e => setFormData({...formData, lastName: e.target.value})}
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 disabled:bg-slate-50 disabled:text-slate-500 transition-all"
-              />
-            </div>
-          </div>
-
-          <div className="mb-8">
-            <label className="block text-sm font-bold text-slate-700 mb-2">Email Address</label>
-            <input 
-              type="email" 
-              disabled={!isEditing}
-              value={formData.email}
-              onChange={e => setFormData({...formData, email: e.target.value})}
-              className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 disabled:bg-slate-50 disabled:text-slate-500 transition-all"
-            />
-          </div>
-
-          <div className="border-t border-slate-100 pt-8 mb-8">
-            <h2 className="text-xl font-bold text-slate-900 mb-4 flex items-center gap-2">
-              <span>🏢</span> Account Type
+          {/* Personal Info */}
+          <div className="glass-card p-8">
+            <h2 className="text-xl font-bold text-foreground mb-6 flex items-center gap-2">
+              <User size={20} className="text-primary" /> Personal Information
             </h2>
-            
-            <div className="mb-6">
-              <select 
-                disabled={!isEditing}
-                value={formData.role}
-                onChange={e => setFormData({...formData, role: e.target.value})}
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white focus:ring-2 focus:ring-blue-500 disabled:bg-slate-50 transition-all cursor-pointer"
-              >
-                <option value="consumer">Consumer</option>
-                <option value="manufacturer">Manufacturer</option>
-                <option value="regulator">Regulator</option>
-              </select>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-muted-foreground">First Name</label>
+                <input 
+                  type="text" 
+                  disabled={!isEditing}
+                  value={formData.firstName}
+                  onChange={e => setFormData({...formData, firstName: e.target.value})}
+                  className="w-full px-4 py-3 rounded-xl bg-background/50 border border-input focus:ring-2 focus:ring-primary disabled:opacity-60 transition-all outline-none"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-muted-foreground">Last Name</label>
+                <input 
+                  type="text" 
+                  disabled={!isEditing}
+                  value={formData.lastName}
+                  onChange={e => setFormData({...formData, lastName: e.target.value})}
+                  className="w-full px-4 py-3 rounded-xl bg-background/50 border border-input focus:ring-2 focus:ring-primary disabled:opacity-60 transition-all outline-none"
+                />
+              </div>
+              <div className="space-y-2 md:col-span-2">
+                <label className="text-sm font-medium text-muted-foreground">Email Address</label>
+                <input 
+                  type="email" 
+                  disabled={!isEditing}
+                  value={formData.email}
+                  onChange={e => setFormData({...formData, email: e.target.value})}
+                  className="w-full px-4 py-3 rounded-xl bg-background/50 border border-input focus:ring-2 focus:ring-primary disabled:opacity-60 transition-all outline-none"
+                />
+              </div>
             </div>
+          </div>
 
-            {isManufacturer && (
-              <div className="bg-slate-50 p-6 rounded-2xl border border-slate-200 space-y-4">
-                 {!userProfile?.organizationDetails?.isVerified && (
-                   <div className="flex items-start gap-3 text-amber-700 bg-amber-50 px-4 py-3 rounded-xl border border-amber-100 mb-4">
-                      <span className="text-xl">⚠️</span>
-                      <p className="text-sm leading-relaxed">
-                        <strong>Verification Required:</strong> Complete your details below. You cannot create batches until verified.
-                      </p>
-                   </div>
-                 )}
-                 
-                 <div className="grid md:grid-cols-2 gap-6">
-                    <div>
-                        <label className="block text-sm font-bold text-slate-700 mb-2">Organization Name</label>
-                        <input 
-                          type="text" 
-                          disabled={!isEditing}
-                          value={formData.orgName}
-                          onChange={e => setFormData({...formData, orgName: e.target.value})}
-                          className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white focus:ring-2 focus:ring-blue-500"
-                        />
-                    </div>
-                    <div>
-                        <label className="block text-sm font-bold text-slate-700 mb-2">License / RC Number</label>
-                        <input 
-                          type="text" 
-                          disabled={!isEditing}
-                          value={formData.orgLicense}
-                          onChange={e => setFormData({...formData, orgLicense: e.target.value})}
-                          className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white focus:ring-2 focus:ring-blue-500"
-                        />
-                    </div>
-                 </div>
-                 <div>
-                    <label className="block text-sm font-bold text-slate-700 mb-2">Headquarters Address</label>
+          {/* Organization Info (Manufacturer Only) */}
+          {isManufacturer && (
+            <div className="glass-card p-8">
+              <h2 className="text-xl font-bold text-foreground mb-6 flex items-center gap-2">
+                <Building2 size={20} className="text-primary" /> Organization Details
+              </h2>
+              
+              {!userProfile?.organizationDetails?.isVerified && (
+                <div className="mb-6 p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-400 text-sm flex gap-3">
+                  <ShieldCheck className="shrink-0" />
+                  <p><strong>Verification Required:</strong> Accurate details are required for regulator approval. Changing these fields may re-trigger verification.</p>
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-muted-foreground">Organization Name</label>
+                  <input 
+                    type="text" 
+                    disabled={!isEditing}
+                    value={formData.orgName}
+                    onChange={e => setFormData({...formData, orgName: e.target.value})}
+                    className="w-full px-4 py-3 rounded-xl bg-background/50 border border-input focus:ring-2 focus:ring-primary disabled:opacity-60 outline-none"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-muted-foreground">License / RC Number</label>
+                  <input 
+                    type="text" 
+                    disabled={!isEditing}
+                    value={formData.orgLicense}
+                    onChange={e => setFormData({...formData, orgLicense: e.target.value})}
+                    className="w-full px-4 py-3 rounded-xl bg-background/50 border border-input focus:ring-2 focus:ring-primary disabled:opacity-60 outline-none"
+                  />
+                </div>
+                <div className="space-y-2 md:col-span-2">
+                  <label className="text-sm font-medium text-muted-foreground">Headquarters Address</label>
+                  <div className="relative">
+                    <MapPin size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
                     <input 
                       type="text" 
                       disabled={!isEditing}
                       value={formData.orgAddress}
                       onChange={e => setFormData({...formData, orgAddress: e.target.value})}
-                      className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white focus:ring-2 focus:ring-blue-500"
+                      className="w-full pl-10 pr-4 py-3 rounded-xl bg-background/50 border border-input focus:ring-2 focus:ring-primary disabled:opacity-60 outline-none"
                     />
-                 </div>
+                  </div>
+                </div>
               </div>
-            )}
-          </div>
-
-          <div className="border-t border-slate-100 pt-8">
-            <h2 className="text-xl font-bold text-slate-900 mb-6 flex items-center gap-2">
-              <span>🔒</span> Security
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-               <div>
-                  <label className="block text-sm font-bold text-slate-700 mb-2">New Password</label>
-                  <input 
-                    type="password" 
-                    disabled={!isEditing}
-                    placeholder="Leave blank to keep current"
-                    value={formData.password}
-                    onChange={e => setFormData({...formData, password: e.target.value})}
-                    className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 disabled:bg-slate-50 transition-all"
-                  />
-               </div>
-               <div>
-                  <label className="block text-sm font-bold text-slate-700 mb-2">Confirm Password</label>
-                  <input 
-                    type="password" 
-                    disabled={!isEditing}
-                    placeholder="Confirm new password"
-                    value={formData.confirmPassword}
-                    onChange={e => setFormData({...formData, confirmPassword: e.target.value})}
-                    className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 disabled:bg-slate-50 transition-all"
-                  />
-               </div>
             </div>
-          </div>
+          )}
 
+          {/* Password Reset (Optional) */}
           {isEditing && (
-            <div className="flex justify-end pt-8 mt-8 border-t border-slate-100">
-              <button 
-                type="button"
-                onClick={() => setIsEditing(false)}
-                className="px-6 py-3 mr-4 text-slate-600 font-bold hover:bg-slate-100 rounded-xl transition-colors"
-              >
-                Cancel
-              </button>
+            <div className="glass-card p-8 animate-in fade-in slide-in-from-bottom-4">
+              <h2 className="text-xl font-bold text-foreground mb-6 flex items-center gap-2">
+                <FileBadge size={20} className="text-primary" /> Security
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <input 
+                  type="password" 
+                  placeholder="New Password (leave blank to keep)"
+                  value={formData.password}
+                  onChange={e => setFormData({...formData, password: e.target.value})}
+                  className="w-full px-4 py-3 rounded-xl bg-background/50 border border-input focus:ring-2 focus:ring-primary outline-none"
+                />
+                <input 
+                  type="password" 
+                  placeholder="Confirm New Password"
+                  value={formData.confirmPassword}
+                  onChange={e => setFormData({...formData, confirmPassword: e.target.value})}
+                  className="w-full px-4 py-3 rounded-xl bg-background/50 border border-input focus:ring-2 focus:ring-primary outline-none"
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Save Button */}
+          {isEditing && (
+            <div className="flex justify-end pt-4">
               <button 
                 type="submit"
                 disabled={mutation.isPending}
-                className="bg-emerald-600 text-white px-8 py-3 rounded-xl font-bold text-lg shadow-lg shadow-emerald-500/20 hover:bg-emerald-700 transition-all transform hover:-translate-y-0.5 disabled:opacity-50"
+                className="flex items-center gap-2 px-8 py-4 bg-primary text-primary-foreground font-bold rounded-xl shadow-xl shadow-primary/20 hover:bg-primary/90 hover:-translate-y-0.5 transition-all disabled:opacity-50"
               >
-                {mutation.isPending ? 'Saving...' : 'Save Changes'}
+                {mutation.isPending ? <Loader2 className="animate-spin" /> : <Save size={20} />}
+                Save Changes
               </button>
             </div>
           )}
+
         </form>
       </div>
     </div>

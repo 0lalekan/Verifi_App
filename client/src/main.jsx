@@ -19,6 +19,7 @@ import Features from './screens/Features.jsx';
 import Pricing from './screens/Pricing.jsx';
 import Docs from './screens/Docs.jsx';
 import Contact from './screens/Contact.jsx';
+import About from './screens/About.jsx'; // Added Import
 import Privacy from './screens/Privacy.jsx';
 import Terms from './screens/Terms.jsx';
 
@@ -57,6 +58,7 @@ const router = createBrowserRouter(
       <Route path="/features" element={<Features />} />
       <Route path="/pricing" element={<Pricing />} />
       <Route path="/docs" element={<Docs />} />
+      <Route path="/about" element={<About />} /> {/* Added Route */}
       <Route path="/contact" element={<Contact />} />
       <Route path="/privacy" element={<Privacy />} />
       <Route path="/terms" element={<Terms />} />

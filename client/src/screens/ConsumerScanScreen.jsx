@@ -83,14 +83,7 @@ const ConsumerScanScreen = () => {
 
   const { ref: cameraRef } = useZxing({
     paused: !isScanning || !!verificationResult,
-    constraints: { 
-      video: { 
-        facingMode: 'environment',
-        aspectRatio: { ideal: 1 },
-        width: { min: 1280, ideal: 1920 },
-        height: { min: 720, ideal: 1080 }
-      } 
-    },
+    constraints: { video: { facingMode: 'environment' } },
     onDecodeResult: (result) => {
       if (isScanning && !verificationResult) {
         setIsScanning(false); 
@@ -127,155 +120,125 @@ const ConsumerScanScreen = () => {
   };
 
   return (
-    // 1. Static Page Container with Mesh Background
-    <div className="flex flex-col items-center justify-center h-[calc(100dvh-6rem)] px-4 w-full overflow-hidden bg-background bg-gradient-mesh dark:bg-gradient-mesh-dark bg-fixed transition-colors duration-500">
+    <div className="flex flex-col items-center justify-center min-h-[calc(100dvh-6rem)] px-4 w-full bg-background bg-gradient-mesh dark:bg-gradient-mesh-dark transition-colors duration-500">
       
       <div className="w-full max-w-md mx-auto space-y-6">
         
         {/* Header */}
-        <div className="flex items-center gap-4 shrink-0">
+        <div className="flex items-center gap-4 shrink-0 mb-2">
           <button 
             onClick={() => navigate(-1)}
-            className="p-3 rounded-2xl bg-white/50 dark:bg-black/50 hover:bg-white/80 dark:hover:bg-black/80 border border-border/50 backdrop-blur-md transition-all shadow-sm"
+            className="p-3 rounded-2xl bg-background/50 hover:bg-background/80 border border-border/50 backdrop-blur-md transition-all shadow-sm"
           >
             <ArrowLeft size={20} className="text-foreground" />
           </button>
           <div>
             <h1 className="text-2xl font-display font-bold text-foreground">Verify Product</h1>
-            <p className="text-sm text-muted-foreground">Scan or enter code to check authenticity.</p>
+            <p className="text-sm text-muted-foreground">Scan or enter code.</p>
           </div>
         </div>
 
-        {/* 2. Camera Card - THEME AWARE GLASS */}
-        <div className="relative w-full aspect-square rounded-[2.5rem] overflow-hidden shadow-2xl border-[3px] border-white/20 dark:border-zinc-700/50 bg-white/30 dark:bg-black/30 backdrop-blur-2xl flex items-center justify-center shrink-0">
+        {/* Camera Card */}
+        <div className="relative w-full aspect-square rounded-[2.5rem] overflow-hidden shadow-2xl border-[4px] border-white/20 dark:border-white/10 bg-black/90 flex items-center justify-center shrink-0">
           
-          {/* Camera Feed */}
           {!cameraError && !verificationResult && (
-            <video 
-              ref={cameraRef} 
-              className="w-full h-full object-cover opacity-100" 
-              playsInline 
-            />
+            <video ref={cameraRef} className="w-full h-full object-cover" playsInline />
           )}
 
-          {/* Error State */}
           {cameraError && (
-            <div className="flex flex-col items-center justify-center h-full p-6 text-center text-foreground">
+            <div className="flex flex-col items-center text-center p-6 text-white">
               <CameraOff size={40} className="text-destructive mb-4" />
               <p className="font-bold text-lg">Camera Disabled</p>
               <p className="text-sm opacity-60 mt-2">Enable permissions or use manual entry below.</p>
             </div>
           )}
 
-          {/* Scanning Overlay */}
+          {/* Overlay UI */}
           {isScanning && !cameraError && !verificationResult && !isProcessingImage && (
-            <div className="absolute inset-0 pointer-events-none">
-              {/* Darken edges slightly to focus attention */}
-              <div className="absolute inset-0 shadow-[inset_0_0_80px_rgba(0,0,0,0.2)]"></div>
-              
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="w-64 h-64 relative">
-                   {/* Laser */}
-                   <motion.div 
-                     className="absolute w-full h-1 bg-brand-500/80 shadow-[0_0_20px_rgba(16,185,129,1)] rounded-full"
-                     animate={{ top: ["10%", "90%", "10%"] }}
-                     transition={{ duration: 3, ease: "easeInOut", repeat: Infinity }}
-                   />
-                   {/* Corner Markers */}
-                   <div className="absolute top-0 left-0 w-10 h-10 border-t-4 border-l-4 border-brand-500 rounded-tl-3xl shadow-sm" />
-                   <div className="absolute top-0 right-0 w-10 h-10 border-t-4 border-r-4 border-brand-500 rounded-tr-3xl shadow-sm" />
-                   <div className="absolute bottom-0 left-0 w-10 h-10 border-b-4 border-l-4 border-brand-500 rounded-bl-3xl shadow-sm" />
-                   <div className="absolute bottom-0 right-0 w-10 h-10 border-b-4 border-r-4 border-brand-500 rounded-br-3xl shadow-sm" />
-                </div>
+            <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
+              <div className="w-64 h-64 relative">
+                 <motion.div 
+                   className="absolute w-full h-1 bg-brand-500/80 shadow-[0_0_20px_rgba(16,185,129,1)] rounded-full"
+                   animate={{ top: ["10%", "90%", "10%"] }}
+                   transition={{ duration: 3, ease: "easeInOut", repeat: Infinity }}
+                 />
+                 <div className="absolute top-0 left-0 w-10 h-10 border-t-4 border-l-4 border-brand-500 rounded-tl-3xl" />
+                 <div className="absolute top-0 right-0 w-10 h-10 border-t-4 border-r-4 border-brand-500 rounded-tr-3xl" />
+                 <div className="absolute bottom-0 left-0 w-10 h-10 border-b-4 border-l-4 border-brand-500 rounded-bl-3xl" />
+                 <div className="absolute bottom-0 right-0 w-10 h-10 border-b-4 border-r-4 border-brand-500 rounded-br-3xl" />
               </div>
-              <div className="absolute bottom-8 left-0 right-0 text-center">
-                <span className="px-5 py-2 rounded-full bg-black/40 dark:bg-black/60 backdrop-blur-md text-white text-xs font-bold tracking-wider border border-white/10">
-                  ALIGN CODE
-                </span>
+              <div className="absolute bottom-8 bg-black/50 backdrop-blur-md px-4 py-1.5 rounded-full border border-white/10">
+                <span className="text-white text-xs font-bold tracking-widest uppercase">Align Code</span>
               </div>
             </div>
           )}
 
-          {/* Loading State */}
           {isProcessingImage && (
-            <div className="absolute inset-0 bg-background/80 backdrop-blur-md flex flex-col items-center justify-center z-20">
+            <div className="absolute inset-0 bg-black/80 backdrop-blur-sm flex flex-col items-center justify-center z-20">
               <Loader2 size={48} className="text-brand-500 animate-spin mb-4" />
-              <p className="text-foreground font-bold">Processing...</p>
+              <p className="text-white font-bold">Processing...</p>
             </div>
           )}
         </div>
 
-        {/* 3. Controls Section - STATIC & VISIBLE */}
+        {/* Manual Input */}
         {!verificationResult && (
-          <div className="flex flex-col gap-4 shrink-0">
-            
-            {/* Manual Input - Theme Aware Glassy Background */}
-            <form onSubmit={(e) => { e.preventDefault(); handleVerify(batchNumber); }} className="flex gap-3">
-              <div className="relative flex-1">
-                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground">
-                  <ScanLine size={20} />
-                </div>
-                <input 
-                  type="text" 
-                  placeholder="Enter Batch Number"
-                  className="w-full h-14 pl-12 pr-4 rounded-2xl 
-                             bg-white/60 dark:bg-black/60 backdrop-blur-md 
-                             border-2 border-border focus:border-brand-500 
-                             text-foreground placeholder:text-muted-foreground/70 
-                             font-bold text-lg shadow-sm transition-all outline-none"
-                  value={batchNumber}
-                  onChange={e => setBatchNumber(e.target.value)}
-                />
-              </div>
-              <button 
-                type="submit"
-                disabled={!batchNumber}
-                className="h-14 w-14 flex items-center justify-center bg-brand-600 text-white rounded-2xl shadow-lg shadow-brand-500/20 hover:bg-brand-500 hover:scale-105 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <Zap size={24} fill="currentColor" />
-              </button>
-            </form>
-
-            {/* Gallery Button - Matches Theme */}
+          <div className="glass p-1.5 rounded-[1.5rem] flex items-center gap-2">
+            <div className="relative flex-1">
+              <ScanLine size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
+              <input 
+                type="text" 
+                placeholder="Enter Batch Number"
+                className="w-full h-14 pl-12 pr-4 rounded-2xl bg-transparent border-none text-foreground font-bold text-lg focus:ring-0 outline-none"
+                value={batchNumber}
+                onChange={e => setBatchNumber(e.target.value)}
+              />
+            </div>
+            <button 
+              onClick={() => handleVerify(batchNumber)}
+              disabled={!batchNumber}
+              className="h-14 px-6 bg-primary text-primary-foreground rounded-2xl font-bold shadow-lg hover:bg-primary/90 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Verify
+            </button>
             <button 
               onClick={() => fileInputRef.current?.click()}
-              className="w-full py-4 rounded-2xl border-2 border-dashed border-muted-foreground/25 hover:border-brand-500/50 hover:bg-accent/50 text-muted-foreground hover:text-brand-600 transition-all flex items-center justify-center gap-2.5 font-semibold"
+              className="h-14 w-14 flex items-center justify-center bg-secondary text-foreground rounded-2xl hover:bg-secondary/80 transition-all"
             >
-              <ImageIcon size={20} />
-              Upload from Gallery
+              <ImageIcon size={24} />
             </button>
             <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
           </div>
         )}
 
-        {/* 4. Result Modal */}
+        {/* Result Modal */}
         <AnimatePresence>
           {verificationResult && (
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm"
+              className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md"
             >
-              <div className="w-full max-w-md bg-background/90 dark:bg-zinc-900/90 backdrop-blur-xl p-8 text-center rounded-[2.5rem] border border-white/20 shadow-2xl">
+              <div className="w-full max-w-sm bg-background rounded-[2.5rem] shadow-2xl border border-border p-8 text-center relative overflow-hidden">
                 {verificationResult.status === 'Valid' ? (
                   <>
-                    <Confetti numberOfPieces={100} recycle={false} className="!absolute !inset-0 !w-full !h-full pointer-events-none" />
-                    <div className="w-20 h-20 bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg shadow-emerald-500/10">
-                      <CheckCircle2 size={40} />
+                    <Confetti numberOfPieces={200} recycle={false} className="!absolute !inset-0 !w-full !h-full pointer-events-none" />
+                    <div className="w-20 h-20 bg-emerald-500/10 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-6 ring-8 ring-emerald-500/5">
+                      <CheckCircle2 size={40} strokeWidth={3} />
                     </div>
-                    <h2 className="text-3xl font-display font-bold text-emerald-600 dark:text-emerald-400 mb-1">Authentic</h2>
-                    <p className="text-muted-foreground mb-8 text-lg">{verificationResult.product?.productName}</p>
+                    <h2 className="text-3xl font-display font-bold text-emerald-600 mb-2">Authentic</h2>
+                    <p className="text-lg font-semibold text-foreground mb-8">{verificationResult.product?.productName}</p>
                     
-                    <div className="bg-secondary/50 rounded-2xl p-5 border border-border space-y-3 mb-8 text-left shadow-inner">
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm font-medium text-muted-foreground">Batch</span>
-                        <span className="font-mono font-bold text-foreground bg-background px-2 py-1 rounded-md border border-border/50">{batchNumber}</span>
+                    <div className="bg-secondary/50 rounded-2xl p-5 border border-border space-y-3 mb-8 text-left">
+                      <div className="flex justify-between">
+                        <span className="text-xs font-bold text-muted-foreground uppercase">Batch</span>
+                        <span className="text-sm font-mono font-bold text-foreground">{batchNumber}</span>
                       </div>
-                      <div className="h-px bg-border/60" />
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm font-medium text-muted-foreground">Expiry</span>
-                        <span className="font-bold text-foreground">
+                      <div className="h-px bg-border/50" />
+                      <div className="flex justify-between">
+                        <span className="text-xs font-bold text-muted-foreground uppercase">Expiry</span>
+                        <span className="text-sm font-bold text-foreground">
                           {verificationResult.product?.expiryDate ? new Date(verificationResult.product.expiryDate).toLocaleDateString() : 'N/A'}
                         </span>
                       </div>
@@ -283,16 +246,16 @@ const ConsumerScanScreen = () => {
                   </>
                 ) : (
                   <>
-                    <div className="w-20 h-20 bg-red-100 dark:bg-red-500/20 text-red-600 dark:text-red-400 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg animate-pulse">
-                      <XCircle size={40} />
+                    <div className="w-20 h-20 bg-red-500/10 text-red-600 rounded-full flex items-center justify-center mx-auto mb-6 ring-8 ring-red-500/5 animate-pulse">
+                      <XCircle size={40} strokeWidth={3} />
                     </div>
-                    <h2 className="text-3xl font-display font-bold text-destructive mb-2">Warning</h2>
-                    <p className="text-muted-foreground mb-8 text-lg leading-relaxed">
+                    <h2 className="text-3xl font-display font-bold text-red-600 mb-2">Warning</h2>
+                    <p className="text-muted-foreground mb-8">
                       This code is <strong>not recognized</strong>. It may be a counterfeit product.
                     </p>
                     <button 
                       onClick={() => navigate('/report')}
-                      className="w-full py-4 bg-destructive hover:bg-destructive/90 text-white rounded-2xl font-bold shadow-lg shadow-destructive/20 mb-4 transition-transform active:scale-95"
+                      className="w-full py-3.5 bg-red-600 hover:bg-red-700 text-white rounded-xl font-bold shadow-lg shadow-red-500/20 mb-3"
                     >
                       Report Issue
                     </button>
@@ -301,9 +264,9 @@ const ConsumerScanScreen = () => {
 
                 <button 
                   onClick={() => { setVerificationResult(null); setIsScanning(true); setBatchNumber(''); }}
-                  className="w-full py-4 bg-foreground text-background rounded-2xl font-bold hover:opacity-90 transition-opacity"
+                  className="w-full py-3.5 bg-secondary hover:bg-secondary/80 text-foreground rounded-xl font-bold"
                 >
-                  Scan Next Item
+                  Scan Next
                 </button>
               </div>
             </motion.div>
