@@ -1,203 +1,159 @@
 # Verifi - Product Verification and Tracking System
 
-Verifi is a comprehensive product verification and tracking platform designed to combat counterfeit products in the market. The system enables consumers to verify product authenticity through QR code scanning, manufacturers to manage their product inventory, and regulators to monitor and enforce compliance.
+Verifi is a comprehensive product verification and tracking platform designed to combat counterfeit products in the global supply chain. By combining cryptographic product serialization with a decentralized verification network, Verifi empowers consumers, manufacturers, and regulators to ensure product authenticity in real-time.
+
+## 🚀 Live Demo
+
+**Live URL:** [https://verifi-five.vercel.app/](https://verifi-five.vercel.app/)
+
+### Test Credentials
+Use the following credentials to explore the different user roles and dashboards:
+
+| Role | Email | Password | Capability Focus |
+| :--- | :--- | :--- | :--- |
+| **Consumer** | `consumertest@verifi.com` | `password123` | Product scanning, reporting, loyalty points |
+| **Manufacturer** | `manufacturertest@verifi.com` | `password123` | Batch registration, inventory, analytics |
+| **Regulator** | `regulatortest@verifi.com` | `password123` | Oversight, alerts, manufacturer approval |
+
+---
 
 ## Features
 
-### 🛡️ **Consumer Features**
-- **Product Verification**: Scan QR codes to verify product authenticity, expiration, and status
-- **Real-time Alerts**: Instant notifications about product validity (Valid, Expired, Fake)
-- **Reporting System**: Report suspicious or counterfeit products
-- **Rewards Program**: Earn points for successful verifications
-- **Consumer Dashboard**: View verification history and personal reports
+### 🛡️ Consumer Features
+* **Instant Verification**: Scan QR codes via the PWA interface to instantly verify product authenticity, expiration date, and recall status.
+* **Real-time Feedback**: Receive immediate visual feedback (Valid/Fake/Expired) with confetti animations for authentic products.
+* **Report Issues**: Flag suspicious products directly to regulators with GPS location tagging and photo evidence.
+* **Trust Points**: Earn loyalty rewards for every valid scan, incentivizing community vigilance.
 
-### 🏭 **Manufacturer Features**
-- **Account Verification**: Secure manufacturer account verification system
-- **Product Registration**: Register individual product batches with detailed information
-- **Bulk Upload**: Upload multiple products via CSV files
-- **Inventory Management**: Comprehensive inventory tracking and management
-- **Analytics Dashboard**: View verification statistics and product performance
+### 🏭 Manufacturer Features
+* **Secure Onboarding**: Business verification workflow (RC Number/License) required before accessing the network.
+* **Batch Management**: Register product batches with metadata (manufacturing date, expiry, SKU) and define scan velocity limits.
+* **Bulk Operations**: Upload large inventories via CSV templates for mass serialization.
+* **Anti-Clone Alerts**: Receive automated warnings when specific batch numbers exceed their maximum scan threshold.
 
-### 🏛️ **Regulator Features**
-- **Real-time Monitoring**: Live alerts for counterfeit detection
-- **Manufacturer Verification**: Approve manufacturer accounts and organizations
-- **Verification Queue**: Manage pending manufacturer verifications
-- **Admin Analytics**: Comprehensive reporting and analytics dashboard
-- **Compliance Tracking**: Monitor product authenticity across the system
+### 🏛️ Regulator Features
+* **God-Mode Dashboard**: A "control tower" view of national supply chain activity.
+* **Heatmap Visualization**: Interactive maps pinpointing hotspots for counterfeit reports and failed scans.
+* **Compliance Queue**: Review and approve/reject manufacturer license applications.
+* **Incident Management**: Triage whistleblower reports and update case statuses (Investigating/Resolved).
+
+---
 
 ## Tech Stack
 
 ### Frontend
-- **React 19** - Modern React with hooks and functional components
-- **Vite** - Fast build tool and development server
-- **React Router** - Client-side routing
-- **Tailwind CSS** - Utility-first CSS framework
-- **React Query** - Server state management
-- **React Toast** - Notification system
-- **Chart.js** - Data visualization
-- **React Leaflet** - Interactive maps
-- **Socket.io Client** - Real-time communication
-- **QR Code Scanner** - Product verification interface
+* **React 19** - Modern UI with hooks and functional components.
+* **Vite** - Next-generation frontend tooling.
+* **Tailwind CSS** - Utility-first styling with custom brand configurations.
+* **React Query** - Efficient server state management and caching.
+* **Zustand** - Lightweight global client state management.
+* **Framer Motion** - Smooth UI transitions and animations.
+* **React Leaflet** - Interactive maps for geospatial data.
+* **ZXing** - Browser-based multi-format barcode/QR scanner.
 
 ### Backend
-- **Node.js** - JavaScript runtime
-- **Express.js** - Web application framework
-- **MongoDB** - NoSQL database
-- **Mongoose** - MongoDB object modeling
-- **Socket.io** - Real-time communication
-- **JWT** - Authentication tokens
-- **Bcrypt** - Password hashing
-- **Multer** - File upload handling
-- **CSV Parser** - Bulk data processing
+* **Node.js & Express** - Robust RESTful API architecture.
+* **MongoDB & Mongoose** - Flexible NoSQL database for storing user profiles, logs, and batch data.
+* **Socket.io** - Real-time bidirectional communication for immediate fraud alerts.
+* **JWT (JSON Web Tokens)** - Secure, stateless authentication via HTTP-only cookies.
+* **Multer & Cloudinary** - Handling file uploads for evidence images.
 
-### Development Tools
-- **ESLint** - Code linting
-- **Vite Plugin PWA** - Progressive Web App support
-- **Nodemon** - Development server auto-restart
+---
 
 ## Project Structure
 
-```
-ogamed/
-├── client/                 # React frontend
+```bash
+verifi/
+├── client/                 # React Frontend
 │   ├── src/
-│   │   ├── components/     # Reusable UI components
-│   │   ├── screens/        # Page components and routes
-│   │   ├── hooks/          # Custom React hooks
-│   │   └── store.js        # State management (Zustand)
+│   │   ├── components/     # Reusable UI (Header, Footer, Maps, etc.)
+│   │   ├── screens/        # Page views (Dashboards, Scanning, Reporting)
+│   │   ├── hooks/          # Custom hooks (useUserProfile, useTheme)
+│   │   └── store.js        # State management
+│   ├── public/             # Static assets (Logos, manifest.json)
 │   └── package.json
-├── server/                 # Express backend
-│   ├── controllers/        # Business logic handlers
-│   ├── models/            # MongoDB schemas
-│   ├── routes/            # API route definitions
-│   ├── middleware/        # Custom middleware
-│   └── server.js          # Main server file
+├── server/                 # Express Backend
+│   ├── controllers/        # Business logic (Auth, Products, Logs)
+│   ├── models/             # Mongoose schemas
+│   ├── routes/             # API endpoints
+│   ├── middleware/         # Auth & Validation middleware
+│   ├── config/             # DB & Cloudinary config
+│   └── server.js           # Entry point
 └── README.md
 ```
 
-## Prerequisites
-
-- **Node.js** (v16 or higher)
-- **MongoDB** (local or cloud instance)
-- **npm** or **yarn**
-
 ## Installation & Setup
 
-### Environment Setup
+To run this project locally:
 
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/0lalekan/Verifi_App.git
-   cd Verifi_App
-   ```
+### 1. Clone the repository
 
-2. **Environment Variables**
-   - Copy `.env.example` to `.env` in the server directory
-   - Update the following variables:
-     ```env
-     MONGO_URI=
-     PORT=5000
-     JWT_SECRET=your-jwt-secret-key
-     ```
+```bash
+git clone https://github.com/0lalekan/Verifi_App.git
+cd Verifi_App
+```
 
-### Backend Setup
+### 2. Backend Setup
 
-1. **Install server dependencies**
-   ```bash
-   cd server
-   npm install
-   ```
+Navigate to the server directory, install dependencies, and configure the environment.
 
-2. **Start the backend server**
-   ```bash
-   npm run dev
-   ```
+```bash
+cd server
+npm install
+```
 
-   The server will run on `http://localhost:5000`
+Create a `.env` file in the server root:
 
-### Frontend Setup
+```env
+PORT=5000
+MONGO_URI=your_mongodb_connection_string
+JWT_SECRET=your_super_secret_key
+CLIENT_URL=http://localhost:5173
+CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_API_KEY=your_api_key
+CLOUDINARY_API_SECRET=your_api_secret
+SMTP_EMAIL=your_email_service
+SMTP_PASSWORD=your_email_password
+```
 
-1. **Install client dependencies**
-   ```bash
-   cd ../client
-   npm install
-   ```
+Start the server:
 
-2. **Start the frontend development server**
-   ```bash
-   npm run dev
-   ```
+```bash
+npm run dev
+```
 
-   The app will be available at `http://localhost:5173`
+### 3. Frontend Setup
 
-## Usage
+Navigate to the client directory and install dependencies.
 
-### User Roles and Permissions
+```bash
+cd ../client
+npm install
+```
 
-1. **Consumer Registration**
-   - Register with basic information
-   - Start scanning products immediately
+Start the development server:
 
-2. **Manufacturer Registration**
-   - Register with organization details
-   - Submit documentation for verification
-   - Wait for regulator approval
+```bash
+npm run dev
+```
 
-3. **Regulator Access**
-   - Requires special access permissions
-   - Monitor system-wide activity
+The app will be available at http://localhost:5173.
 
-### Core Workflows
+## Usage Guide
 
-1. **Product Verification Flow**
-   - Consumer scans QR code
-   - System validates batch number
-   - Returns status (Valid/Expired/Fake)
-   - Awards points for legitimate scans
+### Verification
+Access the `/verify-product` route (or "Scan" on mobile) to test the scanner. If on desktop, you can manually enter a Batch Number.
 
-2. **Manufacturer Onboarding**
-   - Register account with organization details
-   - Submit for verification
-   - Once approved, access manufacturer features
+### Simulate a Fake
+Try scanning a random QR code or entering a non-existent batch number to see the error handling.
 
-3. **Regulator Oversight**
-   - Review pending manufacturer verifications
-   - Receive real-time alerts for fake detections
-   - Access comprehensive analytics
-
-## API Documentation
-
-### Main Endpoints
-
-#### Authentication
-- `POST /api/users/register` - User registration
-- `POST /api/users/login` - User authentication
-- `GET /api/users/profile` - Get user profile
-
-#### Product Management
-- `POST /api/products/verify` - Verify product batch
-- `POST /api/products` - Create product batch
-- `POST /api/products/bulk-upload` - Bulk upload batches
-- `GET /api/products/my-inventory` - Get manufacturer inventory
-
-#### Reporting
-- `GET /api/reports/dashboard` - Dashboard statistics
-- `GET /api/reports/consumer` - Consumer reports
-- `GET /api/reports/manufacturer` - Manufacturer reports
-- `GET /api/reports/admin` - Admin reports
+### Simulate Cloning
+Manufacturers can set a "Max Scan Limit" for a batch. If that limit is exceeded by consumers, the system flags the batch as "Suspicious."
 
 ## Contributing
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+Contributions are welcome! Please fork the repository and create a pull request for any feature enhancements or bug fixes.
 
 ## License
 
 This project is licensed under the ISC License.
-
-## Contact
-
-For questions or support, please contact the development team or create an issue in the repository.

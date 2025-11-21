@@ -80,7 +80,7 @@ const Pricing = () => {
           
           <PricingCard 
             tier="Manufacturer"
-            price="₦50,000"
+            price="₦150,000"
             recommended={true}
             description="For brands looking to secure their products and gain supply chain visibility."
             features={[
