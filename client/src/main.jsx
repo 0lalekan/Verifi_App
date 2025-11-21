@@ -40,6 +40,8 @@ import ManufacturerReportsScreen from './screens/ManufacturerReportsScreen.jsx'
 import RegulatorDashboardScreen from './screens/RegulatorDashboardScreen.jsx'
 import AdminReportsScreen from './screens/AdminReportsScreen.jsx'
 import VerificationQueueScreen from './screens/VerificationQueueScreen.jsx'
+import RegulatorInventoryScreen from './screens/RegulatorInventoryScreen.jsx';
+import RegulatorLogScreen from './screens/RegulatorLogScreen.jsx';
 
 const queryClient = new QueryClient()
 
@@ -83,6 +85,8 @@ const router = createBrowserRouter(
       <Route path="/regulator/dashboard" element={<RegulatorDashboardScreen />} />
       <Route path="/regulator/verification-queue" element={<VerificationQueueScreen />} />
       <Route path="/admin/reports" element={<AdminReportsScreen />} />
+      <Route path="/regulator/registry" element={<RegulatorInventoryScreen />} />
+      <Route path="/regulator/logs" element={<RegulatorLogScreen />} />
       
     </Route>
   ),

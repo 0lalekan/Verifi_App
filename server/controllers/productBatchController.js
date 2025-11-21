@@ -290,3 +290,13 @@ export const deleteProductBatch = asyncHandler(async (req, res) => {
   await batch.deleteOne();
   res.json({ message: 'Batch removed' });
 });
+
+// @desc    Get ALL batches system-wide (Regulator Only)
+// @route   GET /api/products/all-inventory
+// @access  Protected (Regulator)
+export const getAllBatches = asyncHandler(async (req, res) => {
+  const batches = await ProductBatch.find({})
+    .populate('manufacturer', 'firstName lastName organizationDetails.orgName') // Show who made it
+    .sort({ createdAt: -1 });
+  res.json(batches);
+});

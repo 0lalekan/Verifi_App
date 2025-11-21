@@ -67,6 +67,8 @@ const Header = () => {
     if (userInfo?.role === 'regulator') {
       return [
         { to: '/regulator/dashboard', label: 'Oversight', icon: <LayoutDashboard size={20} /> },
+        { to: '/regulator/registry', label: 'Registry', icon: <ShieldCheck size={20} /> }, // NEW
+        { to: '/regulator/logs', label: 'Audit Logs', icon: <History size={20} /> },       // NEW
         { to: '/admin/reports', label: 'Cases', icon: <FileText size={20} /> },
         { to: '/regulator/verification-queue', label: 'Queue', icon: <ListChecks size={20} /> },
       ];
