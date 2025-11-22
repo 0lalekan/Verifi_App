@@ -15,19 +15,22 @@ import {
   CheckCircle, 
   XCircle,
   Search,
-  Filter
+  Filter,
+  ListChecks
 } from 'lucide-react';
 
 const ManufacturerInventoryScreen = () => {
   const queryClient = useQueryClient();
   const [editingBatch, setEditingBatch] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedIds, setSelectedIds] = useState(new Set());
 
   const { data: batches, isLoading, error, refetch } = useQuery({
     queryKey: ['myInventory'],
     queryFn: async () => (await api.get('/products/my-inventory')).data
   });
 
+  // Individual Actions
   const deleteMutation = useMutation({
     mutationFn: async (id) => await api.delete(`/products/${id}`),
     onSuccess: () => {
@@ -46,6 +49,40 @@ const ManufacturerInventoryScreen = () => {
     },
     onError: () => toast.error('Update failed')
   });
+
+  // Bulk Actions
+  const bulkUpdateMutation = useMutation({
+    mutationFn: async ({ ids, status }) => await api.put('/products/bulk-update', { ids, status }),
+    onSuccess: (data) => {
+      toast.success(data.data.message);
+      setSelectedIds(new Set()); // Clear selection
+      queryClient.invalidateQueries(['myInventory']);
+    },
+    onError: () => toast.error('Bulk update failed')
+  });
+
+  // Bulk Delete (Optional - would require a new backend endpoint for true bulk delete, 
+  // or we can loop on client. For safety, let's stick to status updates for now 
+  // or just loop delete for small selections).
+  const handleBulkDelete = async () => {
+    if (!window.confirm(`Delete ${selectedIds.size} items? (Only unused batches will be deleted)`)) return;
+    
+    // Execute sequentially to handle errors individually or Promise.all
+    const ids = Array.from(selectedIds);
+    let successCount = 0;
+    
+    for (const id of ids) {
+        try {
+            await api.delete(`/products/${id}`);
+            successCount++;
+        } catch (e) {
+            // ignore errors for used batches
+        }
+    }
+    toast.success(`Deleted ${successCount} batches`);
+    setSelectedIds(new Set());
+    queryClient.invalidateQueries(['myInventory']);
+  };
 
   const handlePrint = (batchNumber) => {
     const printWindow = window.open('', '_blank');
@@ -85,6 +122,30 @@ const ManufacturerInventoryScreen = () => {
     b.batchNumber.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  // --- SELECTION LOGIC ---
+  const toggleSelect = (id) => {
+    const newSet = new Set(selectedIds);
+    if (newSet.has(id)) newSet.delete(id);
+    else newSet.add(id);
+    setSelectedIds(newSet);
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedIds.size === filteredBatches?.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(filteredBatches.map(b => b._id)));
+    }
+  };
+
+  const handleBulkStatus = (status) => {
+    if (!window.confirm(`Set ${selectedIds.size} items to ${status}?`)) return;
+    bulkUpdateMutation.mutate({ 
+      ids: Array.from(selectedIds), 
+      status 
+    });
+  };
+
   return (
     <div className="min-h-screen w-full bg-background bg-gradient-mesh dark:bg-gradient-mesh-dark p-4 md:p-8 transition-colors duration-500">
       <div className="max-w-7xl mx-auto pt-2 pb-20">
@@ -99,6 +160,38 @@ const ManufacturerInventoryScreen = () => {
             <Plus size={20} /> New Batch
           </Link>
         </div>
+
+        {/* --- BULK ACTION BAR --- */}
+        {selectedIds.size > 0 && (
+          <div className="fixed bottom-6 left-4 right-4 md:left-1/2 md:-translate-x-1/2 md:w-auto md:min-w-[400px] z-50 animate-in slide-in-from-bottom-4 duration-300">
+            <div className="bg-foreground text-background p-4 rounded-2xl shadow-2xl flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3 font-bold pl-2">
+                <span className="bg-background/20 px-2 py-0.5 rounded text-sm">{selectedIds.size}</span>
+                <span>Selected</span>
+              </div>
+              <div className="flex gap-2">
+                <button 
+                  onClick={() => handleBulkStatus('Active')}
+                  className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold text-sm flex items-center gap-2 transition-colors"
+                >
+                  <CheckCircle size={16} /> Active
+                </button>
+                <button 
+                  onClick={() => handleBulkStatus('Recalled')}
+                  className="px-4 py-2 bg-amber-600 hover:bg-amber-500 text-white rounded-xl font-bold text-sm flex items-center gap-2 transition-colors"
+                >
+                  <AlertCircle size={16} /> Recall
+                </button>
+                <button 
+                  onClick={handleBulkDelete}
+                  className="px-4 py-2 bg-red-600 hover:bg-red-500 text-white rounded-xl font-bold text-sm flex items-center gap-2 transition-colors"
+                >
+                  <Trash2 size={16} />
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Toolbar */}
         <div className="glass-card p-4 mb-6 flex flex-col md:flex-row items-center gap-4">
@@ -124,6 +217,14 @@ const ManufacturerInventoryScreen = () => {
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="border-b border-border/50 bg-secondary/30 text-muted-foreground text-xs uppercase tracking-wider">
+                  <th className="px-6 py-5 w-12 text-center">
+                    <input 
+                      type="checkbox" 
+                      className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary cursor-pointer"
+                      checked={selectedIds.size === filteredBatches?.length && filteredBatches?.length > 0}
+                      onChange={toggleSelectAll}
+                    />
+                  </th>
                   <th className="px-6 py-5 font-bold">Product</th>
                   <th className="px-6 py-5 font-bold">Status</th>
                   <th className="px-6 py-5 font-bold">Scan Velocity</th>
@@ -134,6 +235,7 @@ const ManufacturerInventoryScreen = () => {
                 {isLoading ? (
                    [...Array(5)].map((_, i) => (
                      <tr key={i}>
+                       <td className="px-6 py-4"><Skeleton className="h-6 w-6 rounded" /></td>
                        <td className="px-6 py-4"><Skeleton className="h-12 w-48 rounded-lg" /></td>
                        <td className="px-6 py-4"><Skeleton className="h-8 w-20 rounded-full" /></td>
                        <td className="px-6 py-4"><Skeleton className="h-4 w-32" /></td>
@@ -142,7 +244,18 @@ const ManufacturerInventoryScreen = () => {
                    ))
                 ) : filteredBatches?.length > 0 ? (
                   filteredBatches.map((batch) => (
-                    <tr key={batch._id} className="hover:bg-secondary/20 transition-colors">
+                    <tr 
+                      key={batch._id} 
+                      className={`transition-colors ${selectedIds.has(batch._id) ? 'bg-primary/5' : 'hover:bg-secondary/20'}`}
+                    >
+                      <td className="px-6 py-4 text-center">
+                        <input 
+                          type="checkbox" 
+                          className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary cursor-pointer"
+                          checked={selectedIds.has(batch._id)}
+                          onChange={() => toggleSelect(batch._id)}
+                        />
+                      </td>
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0">
@@ -200,7 +313,7 @@ const ManufacturerInventoryScreen = () => {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan="4" className="px-6 py-12 text-center text-muted-foreground">
+                    <td colSpan="5" className="px-6 py-12 text-center text-muted-foreground">
                       No batches found.
                     </td>
                   </tr>

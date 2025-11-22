@@ -10,7 +10,8 @@ import {
   ListChecks, 
   User,
   History,
-  Globe
+  Globe,
+  Building2,
 } from 'lucide-react';
 
 const BottomNav = () => {
@@ -48,8 +49,8 @@ const BottomNav = () => {
       { to: '/regulator/logs', label: 'Logs', icon: <Globe size={20} /> },
       // FAB: Primary Action
       { to: '/regulator/registry', label: 'Registry', icon: <ShieldCheck size={28} />, isFab: true },
+      { to: '/regulator/manufacturers', label: 'Entities', icon: <Building2 size={20} /> },
       { to: '/admin/reports', label: 'Cases', icon: <FileText size={20} /> },
-      { to: '/regulator/verification-queue', label: 'Queue', icon: <ListChecks size={20} /> },
     ];
   }
 

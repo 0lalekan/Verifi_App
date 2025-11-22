@@ -6,7 +6,6 @@ import Report from '../models/ReportModel.js';
 import generateToken from '../utils/generateToken.js';
 import sendEmail from '../utils/sendEmail.js';
 
-// ... (keep registerUser and authUser as is) ...
 
 const registerUser = asyncHandler(async (req, res) => {
   const { firstName, lastName, email, password, role } = req.body;
@@ -33,7 +32,17 @@ const registerUser = asyncHandler(async (req, res) => {
 const authUser = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
   const user = await User.findOne({ email });
+
+  // Check if user exists and password matches
   if (user && (await user.matchPassword(password))) {
+    
+    // --- NEW CHECK: Block Suspended Users ---
+    if (!user.isActive) {
+      res.status(403); // Forbidden
+      throw new Error('Your account has been suspended. Contact a regulator.');
+    }
+    // ----------------------------------------
+
     generateToken(res, user._id);
     res.json({ 
       _id: user._id, 
@@ -258,6 +267,64 @@ const verifyManufacturer = asyncHandler(async (req, res) => {
   }
 });
 
+// @desc    Get ALL manufacturers (Verified & Pending)
+// @route   GET /api/users/manufacturers
+// @access  Regulator
+const getAllManufacturers = asyncHandler(async (req, res) => {
+  const manufacturers = await User.find({ role: 'manufacturer' })
+    .select('-password') // Don't send passwords
+    .sort({ createdAt: -1 });
+  res.json(manufacturers);
+});
+
+// @desc    Revoke verification (License) & Flag Products
+// @route   PUT /api/users/revoke/:id
+// @access  Regulator
+const revokeManufacturer = asyncHandler(async (req, res) => {
+  const user = await User.findById(req.params.id);
+
+  if (user) {
+    // 1. Revoke the License
+    user.organizationDetails.isVerified = false;
+    await user.save();
+
+    // 2. BULK ACTION: Flag all their products as 'Suspicious'
+    // This ensures all existing QR codes in the market will now scan as "Fake/Suspicious"
+    const result = await ProductBatch.updateMany(
+      { manufacturer: user._id },
+      { $set: { status: 'Suspicious' } }
+    );
+
+    res.json({ 
+      message: `License for ${user.organizationDetails.orgName || 'User'} revoked.`,
+      details: `${result.modifiedCount} product batches have been flagged as Suspicious.`
+    });
+  } else {
+    res.status(404);
+    throw new Error('User not found');
+  }
+});
+
+// @desc    Toggle Active Status (Flag/Suspend User)
+// @route   PUT /api/users/toggle-status/:id
+// @access  Regulator
+const toggleUserStatus = asyncHandler(async (req, res) => {
+  const user = await User.findById(req.params.id);
+  if (user) {
+    user.isActive = !user.isActive; // Toggle true/false
+    await user.save();
+    res.json({ 
+      message: `User ${user.isActive ? 'Activated' : 'Suspended'}`, 
+      isActive: user.isActive 
+    });
+  } else {
+    res.status(404);
+    throw new Error('User not found');
+  }
+});
+
+
+
 export { 
   registerUser, 
   authUser, 
@@ -267,5 +334,8 @@ export {
   resetPassword, 
   getDashboardStats,
   getPendingVerifications,
-  verifyManufacturer
+  verifyManufacturer,
+  getAllManufacturers,
+  revokeManufacturer,
+  toggleUserStatus
 };

@@ -7,8 +7,11 @@ import {
   forgotPassword, 
   resetPassword, 
   getDashboardStats,
-  getPendingVerifications, // Import
-  verifyManufacturer       // Import
+  getPendingVerifications,
+  verifyManufacturer,
+  getAllManufacturers,
+  revokeManufacturer,
+  toggleUserStatus,
 } from '../controllers/userController.js';
 import { protect, restrictTo } from '../middleware/authMiddleware.js';
 import { validateRegistration } from '../middleware/validationMiddleware.js';
@@ -30,5 +33,10 @@ router.post('/reset-password/:token', resetPassword);
 // --- New Regulator Routes ---
 router.get('/pending-verifications', protect, restrictTo('regulator'), getPendingVerifications);
 router.put('/verify/:id', protect, restrictTo('regulator'), verifyManufacturer);
+
+// --- REGULATOR: Manufacturer Management ---
+router.get('/manufacturers', protect, restrictTo('regulator'), getAllManufacturers);
+router.put('/revoke/:id', protect, restrictTo('regulator'), revokeManufacturer);
+router.put('/toggle-status/:id', protect, restrictTo('regulator'), toggleUserStatus);
 
 export default router;

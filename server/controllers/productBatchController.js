@@ -300,3 +300,25 @@ export const getAllBatches = asyncHandler(async (req, res) => {
     .sort({ createdAt: -1 });
   res.json(batches);
 });
+
+// @desc    Bulk update product batches (e.g., Suspend selected)
+// @route   PUT /api/products/bulk-update
+// @access  Regulator (and Manufacturer if needed)
+export const bulkUpdateProductBatches = asyncHandler(async (req, res) => {
+  const { ids, status } = req.body; // Expects { ids: ['id1', 'id2'], status: 'Suspicious' }
+
+  if (!ids || !Array.isArray(ids) || ids.length === 0) {
+    res.status(400);
+    throw new Error('No items selected');
+  }
+
+  const result = await ProductBatch.updateMany(
+    { _id: { $in: ids } },
+    { $set: { status } }
+  );
+
+  res.json({ 
+    message: `Updated ${result.modifiedCount} products to ${status}`,
+    count: result.modifiedCount 
+  });
+});

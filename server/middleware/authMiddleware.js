@@ -9,8 +9,6 @@ export const protect = asyncHandler(async (req, res, next) => {
   if (token) {
     try {
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      
-      // Fetch user
       req.user = await User.findById(decoded.userId).select('-password');
 
       // --- FIX: Check if user actually exists ---
@@ -18,7 +16,14 @@ export const protect = asyncHandler(async (req, res, next) => {
         res.status(401);
         throw new Error('Not authorized, user not found');
       }
-      // ------------------------------------------
+      
+   // --- NEW CHECK: Kick out suspended users immediately ---
+      if (!req.user.isActive) {
+        res.status(403);
+        // Clear the cookie so they are logged out on the client side too
+        res.clearCookie('jwt'); 
+        throw new Error('Account suspended');
+      }
 
       next();
     } catch (error) {

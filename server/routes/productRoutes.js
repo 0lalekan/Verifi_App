@@ -4,13 +4,14 @@ import {
   createProductBatch, 
   uploadBatchList, 
   getManufacturerBatches,
-  updateProductBatch, // Import
+  updateProductBatch,
   deleteProductBatch,
-  getAllBatches  // Import
+  getAllBatches,
+  bulkUpdateProductBatches
 } from '../controllers/productBatchController.js';
 import { protect, restrictTo } from '../middleware/authMiddleware.js';
 import { validateProductBatch } from '../middleware/validationMiddleware.js';
-import { upload, localUpload } from '../multerConfig.js';
+import { localUpload } from '../multerConfig.js';
 
 const router = express.Router();
 
@@ -23,6 +24,8 @@ router.post('/bulk-upload', protect, restrictTo('manufacturer', 'regulator'), lo
 router.get('/my-inventory', protect, restrictTo('manufacturer'), getManufacturerBatches);
 
 router.get('/all-inventory', protect, restrictTo('regulator'), getAllBatches);
+
+router.put('/bulk-update', protect, restrictTo('regulator', 'manufacturer'), bulkUpdateProductBatches);
 
 // --- NEW ROUTES ---
 router.route('/:id')
