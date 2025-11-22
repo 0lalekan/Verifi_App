@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import Header from './components/Header';
 import Footer from './components/Footer';
+import BottomNav from './components/BottomNav';
 import { Outlet } from 'react-router-dom';
 import { ToastContainer, toast } from 'react-toastify';
 import useAuthStore from './store';
@@ -42,10 +43,8 @@ const App = () => {
       {/* Header is Fixed/Sticky */}
       <Header />
       
-      {/* LAYOUT FIX:
-         - pt-20: Enough for the 16-unit mobile header (64px)
-         - md:pt-44: Enough for the 24-unit desktop header (96px) + top-6 offset (24px) + breathing room
-         - pb-24: Keeps mobile content above the bottom nav bar
+      {/* Main Content 
+         pb-24 is critical here: it reserves space so the BottomNav doesn't cover content 
       */}
       <main className="flex-grow relative z-0 pt-20 md:pt-44 pb-24 md:pb-0 min-h-screen bg-background transition-colors duration-300">
         <div className="container mx-auto px-4 md:px-6">
@@ -53,11 +52,16 @@ const App = () => {
         </div>
       </main>
       
+      {/* Desktop Footer */}
       <div className="hidden md:block">
         <Footer userRole={userInfo?.role} />
       </div>
+
+      {/* Mobile Bottom Navigation */}
+      <BottomNav /> {/* <--- Add this line */}
       
-      <ToastContainer position="bottom-center" theme="colored" />
+      {/* Ensure Toast doesn't get hidden behind the nav */}
+      <ToastContainer position="top-center" theme="colored" className="mb-20 md:mb-0" />
     </>
   );
 };
