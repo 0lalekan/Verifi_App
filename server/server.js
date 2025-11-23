@@ -38,6 +38,8 @@ process.on('unhandledRejection', (reason) => {
 
 const app = express();
 
+app.set('trust proxy', 1);
+
 // --- SECURITY CONFIGURATION ---
 // 1. CORS: Allow your frontend to talk to this backend
 app.use(cors({

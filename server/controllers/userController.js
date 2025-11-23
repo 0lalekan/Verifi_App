@@ -8,13 +8,26 @@ import sendEmail from '../utils/sendEmail.js';
 
 
 const registerUser = asyncHandler(async (req, res) => {
-  const { firstName, lastName, email, password, role } = req.body;
+  // 1. Extract organizationDetails from the request body
+  const { firstName, lastName, email, password, role, organizationDetails } = req.body;
+  
   const userExists = await User.findOne({ email });
   if (userExists) {
     res.status(400);
     throw new Error('User already exists');
   }
-  const user = await User.create({ firstName, lastName, email, password, role });
+
+  // 2. Include it in the create call
+  const user = await User.create({ 
+    firstName, 
+    lastName, 
+    email, 
+    password, 
+    role,
+    // Only save org details if the role is manufacturer
+    organizationDetails: role === 'manufacturer' ? organizationDetails : undefined
+  });
+
   if (user) {
     generateToken(res, user._id);
     res.status(201).json({ 

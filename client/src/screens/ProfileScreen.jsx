@@ -14,12 +14,17 @@ import {
   Save, 
   Loader2,
   ShieldCheck,
-  LogOut
+  LogOut,
+  AlertCircle,
+  RefreshCw
 } from 'lucide-react';
 
 const ProfileScreen = () => {
   const { setCredentials, logout } = useAuthStore();
-  const { data: userProfile, isLoading } = useUserProfile();
+  
+  // 1. Destructure error and refetch from the hook
+  const { data: userProfile, isLoading, error, refetch } = useUserProfile();
+  
   const queryClient = useQueryClient();
   const fileInputRef = useRef(null);
 
@@ -86,7 +91,6 @@ const ProfileScreen = () => {
     submitData.append('firstName', formData.firstName);
     submitData.append('lastName', formData.lastName);
     submitData.append('email', formData.email);
-    // Role is typically not editable by user directly after reg, but kept for consistency if allowed
     submitData.append('role', formData.role); 
     
     if (formData.password) submitData.append('password', formData.password);
@@ -104,7 +108,37 @@ const ProfileScreen = () => {
     mutation.mutate(submitData);
   };
 
-  if (isLoading) return <div className="min-h-screen flex items-center justify-center text-muted-foreground">Loading Profile...</div>;
+  // 2. Error Handling UI
+  if (error) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-background">
+        <div className="glass-card p-8 text-center max-w-md border-red-500/20 bg-red-500/5">
+          <div className="w-16 h-16 bg-red-500/10 text-red-500 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <AlertCircle size={32} />
+          </div>
+          <h3 className="font-bold text-xl text-foreground mb-2">Unable to load profile</h3>
+          <p className="text-sm text-muted-foreground mb-6">
+            {error?.response?.data?.message || error.message || "We couldn't connect to the server. Please try again."}
+          </p>
+          <button 
+            onClick={() => refetch()}
+            className="flex items-center justify-center gap-2 w-full py-3 bg-red-600 hover:bg-red-700 text-white rounded-xl font-bold transition-all"
+          >
+            <RefreshCw size={18} /> Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center text-muted-foreground gap-4">
+        <Loader2 size={40} className="animate-spin text-primary" />
+        <p className="font-medium">Loading Profile...</p>
+      </div>
+    );
+  }
 
   const isManufacturer = formData.role === 'manufacturer';
   const serverImageUrl = userProfile?.profileImage || null;
@@ -138,7 +172,9 @@ const ProfileScreen = () => {
 
           {/* Info */}
           <div className="text-center md:text-left flex-1">
-            <h1 className="text-3xl font-display font-bold text-foreground">{userProfile?.firstName} {userProfile?.lastName}</h1>
+            <h1 className="text-3xl font-display font-bold text-foreground">
+              {userProfile?.firstName} {userProfile?.lastName}
+            </h1>
             <p className="text-muted-foreground flex items-center justify-center md:justify-start gap-2 mt-1">
               <Mail size={14} /> {userProfile?.email}
             </p>
@@ -148,7 +184,7 @@ const ProfileScreen = () => {
                 {userProfile?.role}
               </span>
               {userProfile?.organizationDetails?.isVerified && (
-                <span className="px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-600 text-xs font-bold uppercase tracking-wider flex items-center gap-1">
+                <span className="px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-600 text-xs font-bold uppercase tracking-wider flex items-center gap-1 border border-emerald-500/20">
                   <ShieldCheck size={14} /> Verified
                 </span>
               )}
