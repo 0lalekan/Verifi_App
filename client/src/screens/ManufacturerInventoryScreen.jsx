@@ -15,8 +15,7 @@ import {
   CheckCircle, 
   XCircle,
   Search,
-  Filter,
-  ListChecks
+  Filter
 } from 'lucide-react';
 
 const ManufacturerInventoryScreen = () => {
@@ -61,13 +60,9 @@ const ManufacturerInventoryScreen = () => {
     onError: () => toast.error('Bulk update failed')
   });
 
-  // Bulk Delete (Optional - would require a new backend endpoint for true bulk delete, 
-  // or we can loop on client. For safety, let's stick to status updates for now 
-  // or just loop delete for small selections).
   const handleBulkDelete = async () => {
     if (!window.confirm(`Delete ${selectedIds.size} items? (Only unused batches will be deleted)`)) return;
     
-    // Execute sequentially to handle errors individually or Promise.all
     const ids = Array.from(selectedIds);
     let successCount = 0;
     
@@ -84,36 +79,64 @@ const ManufacturerInventoryScreen = () => {
     queryClient.invalidateQueries(['myInventory']);
   };
 
+  // --- UPDATED: Barcode Printing Logic ---
   const handlePrint = (batchNumber) => {
     const printWindow = window.open('', '_blank');
     printWindow.document.write(`
       <html>
         <head>
-          <title>Label - ${batchNumber}</title>
+          <title>Labels - ${batchNumber}</title>
+          <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
           <style>
             body { font-family: sans-serif; padding: 20px; }
-            .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; }
-            .label { border: 1px dashed #000; padding: 10px; text-align: center; page-break-inside: avoid; }
-            img { width: 100px; height: 100px; }
-            .meta { font-size: 12px; margin-top: 5px; font-weight: bold; }
+            .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+            .label { 
+              border: 2px dashed #000; 
+              padding: 15px; 
+              text-align: center; 
+              page-break-inside: avoid; 
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              justify-content: center;
+            }
+            svg { width: 100%; max-height: 80px; margin-bottom: 5px; }
+            .meta { font-size: 12px; font-weight: bold; letter-spacing: 1px; margin-top: 5px; }
+            .brand { font-size: 10px; color: #666; }
           </style>
         </head>
         <body>
-          <h2 style="text-align:center;">Batch: ${batchNumber}</h2>
+          <h2 style="text-align:center; margin-bottom: 30px;">Batch: ${batchNumber}</h2>
           <div class="grid">
-            ${Array(24).fill('').map(() => `
+            ${Array(21).fill('').map(() => `
               <div class="label">
-                <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${batchNumber}" />
-                <div class="meta">VERIFI SECURE</div>
+                <svg class="barcode"></svg>
+                <div class="meta">${batchNumber}</div>
+                <div class="brand">VERIFI SECURE</div>
               </div>
             `).join('')}
           </div>
-          <script>window.print();</script>
+          <script>
+            // Generate Barcodes
+            JsBarcode(".barcode", "${batchNumber}", {
+              format: "CODE128",
+              lineColor: "#000",
+              width: 2,
+              height: 60,
+              displayValue: false // We display it manually in .meta for better styling
+            });
+            
+            // Auto-print
+            window.onload = function() {
+              window.print();
+            }
+          </script>
         </body>
       </html>
     `);
     printWindow.document.close();
   };
+  // ---------------------------------------
 
   if (error) return <div className="min-h-screen pt-24"><ErrorState onRetry={refetch} /></div>;
 
@@ -154,7 +177,7 @@ const ManufacturerInventoryScreen = () => {
         <div className="flex flex-col md:flex-row justify-between items-end gap-4 mb-8">
           <div>
             <h1 className="text-3xl font-display font-bold text-foreground">Inventory</h1>
-            <p className="text-muted-foreground mt-1">Manage product lifecycle and print QR labels.</p>
+            <p className="text-muted-foreground mt-1">Manage product lifecycle and print labels.</p>
           </div>
           <Link to="/register-batch" className="flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground font-bold rounded-xl shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all hover:-translate-y-0.5">
             <Plus size={20} /> New Batch
@@ -296,7 +319,7 @@ const ManufacturerInventoryScreen = () => {
                       </td>
                       <td className="px-6 py-4 text-right">
                         <div className="flex items-center justify-end gap-2">
-                          <button onClick={() => handlePrint(batch.batchNumber)} className="p-2 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-lg transition-colors" title="Print">
+                          <button onClick={() => handlePrint(batch.batchNumber)} className="p-2 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-lg transition-colors" title="Print Barcode">
                             <Printer size={18} />
                           </button>
                           <button onClick={() => setEditingBatch(batch)} className="p-2 text-muted-foreground hover:text-blue-500 hover:bg-blue-500/10 rounded-lg transition-colors" title="Edit">
