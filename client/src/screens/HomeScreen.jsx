@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   ShieldCheck, 
   Zap, 
@@ -10,7 +10,10 @@ import {
   Smartphone, 
   ScanLine, 
   CheckCircle2,
-  Play
+  Play,
+  Truck,
+  Layers,
+  ShoppingBag
 } from 'lucide-react';
 
 const FeaturePill = ({ icon: Icon, text }) => (
@@ -29,11 +32,110 @@ const StepCard = ({ number, title, description }) => (
   </div>
 );
 
+// --- NEW: Video Showcase Component ---
+const VideoShowcase = () => {
+  const [activeTab, setActiveTab] = useState('consumer'); // 'consumer' | 'business'
+
+  const content = {
+    consumer: {
+      title: "Scan. Verify. Earn.",
+      description: "See how easy it is for a shopper to verify a product in seconds using the Verifi mobile app.",
+      // Replace with your actual YouTube/Vimeo thumbnail or video URL later
+      videoPlaceholder: "bg-gradient-to-br from-emerald-900 to-black", 
+      icon: <Smartphone size={20} />,
+      color: "text-emerald-500"
+    },
+    business: {
+      title: "Track. Manage. Secure.",
+      description: "Watch how Manufacturers and Distributors track inventory movement and spot counterfeits in real-time.",
+      videoPlaceholder: "bg-gradient-to-br from-blue-900 to-black",
+      icon: <Factory size={20} />,
+      color: "text-blue-500"
+    }
+  };
+
+  return (
+    <section className="py-24 px-6 relative overflow-hidden">
+      <div className="max-w-7xl mx-auto">
+        
+        <div className="text-center mb-12">
+          <h2 className="text-3xl md:text-5xl font-display font-bold text-foreground mb-4">See Verifi in Action</h2>
+          <p className="text-muted-foreground">Experience the platform from every angle.</p>
+          
+          {/* Toggle Switch */}
+          <div className="inline-flex items-center bg-secondary/50 p-1.5 rounded-full border border-border/50 mt-8 backdrop-blur-md">
+            <button 
+              onClick={() => setActiveTab('consumer')}
+              className={`flex items-center gap-2 px-6 py-2.5 rounded-full text-sm font-bold transition-all ${
+                activeTab === 'consumer' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              <Smartphone size={16} /> For Consumers
+            </button>
+            <button 
+              onClick={() => setActiveTab('business')}
+              className={`flex items-center gap-2 px-6 py-2.5 rounded-full text-sm font-bold transition-all ${
+                activeTab === 'business' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              <Layers size={16} /> For Partners
+            </button>
+          </div>
+        </div>
+
+        {/* Video Container */}
+        <div className="relative max-w-5xl mx-auto">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeTab}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+              className="glass p-2 rounded-[2.5rem] border-white/10 shadow-2xl"
+            >
+              <div className={`aspect-video rounded-[2rem] overflow-hidden relative flex items-center justify-center group cursor-pointer ${content[activeTab].videoPlaceholder}`}>
+                
+                {/* Simulated UI Elements (Replace with real video/image later) */}
+                <div className="absolute inset-0 opacity-30 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
+                
+                {/* Play Button Overlay */}
+                <div className="w-20 h-20 bg-white/10 backdrop-blur-md border border-white/20 rounded-full flex items-center justify-center transition-transform group-hover:scale-110 z-10">
+                  <div className="w-14 h-14 bg-white rounded-full flex items-center justify-center shadow-lg">
+                    <Play size={24} className="fill-current text-black ml-1" />
+                  </div>
+                </div>
+
+                <div className="absolute bottom-8 left-8 right-8 flex justify-between items-end">
+                  <div className="text-white max-w-md">
+                    <div className={`flex items-center gap-2 mb-2 font-bold ${content[activeTab].color}`}>
+                      {content[activeTab].icon} {activeTab === 'consumer' ? 'Consumer App' : 'Logistics Portal'}
+                    </div>
+                    <h3 className="text-2xl font-bold mb-2">{content[activeTab].title}</h3>
+                    <p className="text-white/70 text-sm leading-relaxed">{content[activeTab].description}</p>
+                  </div>
+                </div>
+
+              </div>
+            </motion.div>
+          </AnimatePresence>
+          
+          {/* Decorative Glow */}
+          <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full max-w-3xl blur-[120px] -z-10 transition-colors duration-700 ${
+            activeTab === 'consumer' ? 'bg-emerald-500/20' : 'bg-blue-500/20'
+          }`} />
+        </div>
+
+      </div>
+    </section>
+  );
+};
+
 const HomeScreen = () => {
   return (
     <div className="min-h-screen w-full bg-background bg-gradient-mesh dark:bg-gradient-mesh-dark transition-colors duration-500 overflow-x-hidden">
       
-      {/* --- HERO SECTION (Redesigned) --- */}
+      {/* --- HERO SECTION --- */}
       <section className="relative pt-32 pb-20 px-6 md:pt-40 md:pb-32 max-w-7xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           
@@ -76,7 +178,6 @@ const HomeScreen = () => {
             <div className="border-t border-border/50 pt-6">
               <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-4">Trusted by industry leaders</p>
               <div className="flex gap-6 opacity-50 grayscale mix-blend-luminosity">
-                {/* Placeholders for Logos */}
                 <div className="h-8 w-20 bg-foreground/20 rounded"></div>
                 <div className="h-8 w-20 bg-foreground/20 rounded"></div>
                 <div className="h-8 w-20 bg-foreground/20 rounded"></div>
@@ -87,20 +188,16 @@ const HomeScreen = () => {
 
           {/* Right: Dynamic 3D Visual */}
           <div className="relative z-10 lg:h-[600px] flex items-center justify-center">
-            {/* Background Glow */}
             <div className="absolute inset-0 bg-gradient-to-tr from-emerald-500/20 to-blue-500/20 rounded-full blur-[100px] opacity-60 animate-pulse" />
             
-            {/* Floating Card Container */}
             <motion.div 
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ duration: 1 }}
               className="relative w-full max-w-md"
             >
-              {/* Main Glass Card */}
               <div className="glass p-6 rounded-[2.5rem] border-white/20 shadow-2xl relative overflow-hidden">
                 
-                {/* Header of Mock App */}
                 <div className="flex justify-between items-center mb-8 opacity-50">
                   <div className="w-12 h-4 bg-foreground/20 rounded-full" />
                   <div className="flex gap-2">
@@ -109,18 +206,15 @@ const HomeScreen = () => {
                   </div>
                 </div>
 
-                {/* QR Scanning Zone */}
                 <div className="relative aspect-square bg-black/5 dark:bg-black/40 rounded-[2rem] border-2 border-dashed border-border mb-6 overflow-hidden flex items-center justify-center">
                   <ScanLine size={64} className="text-muted-foreground/20" />
                   
-                  {/* Animated Laser Line */}
                   <motion.div 
                     className="absolute top-0 left-0 right-0 h-1 bg-emerald-500 shadow-[0_0_20px_rgba(16,185,129,0.8)]"
                     animate={{ top: ["10%", "90%", "10%"] }}
                     transition={{ duration: 3, ease: "easeInOut", repeat: Infinity }}
                   />
 
-                  {/* Success Popup Animation */}
                   <motion.div
                     initial={{ scale: 0.8, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
@@ -135,14 +229,13 @@ const HomeScreen = () => {
                   </motion.div>
                 </div>
 
-                {/* Footer of Mock App */}
                 <div className="space-y-3">
                   <div className="h-12 w-full bg-primary/10 rounded-xl animate-pulse" />
                   <div className="h-12 w-full bg-secondary/50 rounded-xl" />
                 </div>
               </div>
 
-              {/* Floating Element: Stats Card */}
+              {/* Floating Stats */}
               <motion.div 
                 animate={{ y: [0, -10, 0] }}
                 transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
@@ -159,7 +252,6 @@ const HomeScreen = () => {
                 </div>
               </motion.div>
 
-              {/* Floating Element: Security Badge */}
               <motion.div 
                 animate={{ y: [0, 10, 0] }}
                 transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
@@ -198,13 +290,16 @@ const HomeScreen = () => {
         </div>
       </div>
 
+      {/* --- VIDEO SHOWCASE (New) --- */}
+      <VideoShowcase />
+
       {/* --- HOW IT WORKS --- */}
-      <section className="py-24 relative">
+      <section className="py-24 relative bg-secondary/30 border-y border-border/50">
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-5xl font-display font-bold text-foreground mb-4">Simple Integration. Powerful Results.</h2>
+            <h2 className="text-3xl md:text-5xl font-display font-bold text-foreground mb-4">Simple Integration.</h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
-              We've simplified supply chain security into three steps. No specialized hardware required—just your smartphone.
+              We've simplified supply chain security into three steps. No specialized hardware required.
             </p>
           </div>
 
@@ -228,58 +323,54 @@ const HomeScreen = () => {
         </div>
       </section>
 
-      {/* --- DUAL VALUE PROP --- */}
-      <section className="py-24 px-6 bg-secondary/20">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
-          
-          {/* For Brands */}
-          <div className="glass-card p-10 rounded-[2.5rem] hover:border-blue-500/30 transition-all duration-300 group relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/5 rounded-full blur-3xl -mr-16 -mt-16 transition-opacity opacity-50 group-hover:opacity-100" />
-            <div className="relative z-10">
-              <div className="w-14 h-14 bg-blue-500/10 text-blue-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                <Factory size={32} />
-              </div>
-              <h3 className="text-3xl font-bold text-foreground mb-4">For Manufacturers</h3>
-              <ul className="space-y-4 mb-8">
-                {['Stop revenue leakage from counterfeits', 'Real-time gray market detection', 'Direct consumer engagement channel'].map((item, i) => (
-                  <li key={i} className="flex items-center gap-3 text-muted-foreground">
-                    <CheckCircle2 size={18} className="text-blue-500 shrink-0" /> {item}
-                  </li>
-                ))}
-              </ul>
-              <Link to="/register" className="inline-flex items-center gap-2 text-blue-600 font-bold hover:gap-3 transition-all">
-                Create Brand Account <ChevronRight size={16} />
-              </Link>
-            </div>
+      {/* --- ECOSYSTEM SECTION (Updated) --- */}
+      <section className="py-24 px-6">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-display font-bold text-foreground">A Unified Ecosystem</h2>
+            <p className="text-muted-foreground">Connecting every stakeholder in the supply chain.</p>
           </div>
 
-          {/* For Consumers */}
-          <div className="glass-card p-10 rounded-[2.5rem] hover:border-emerald-500/30 transition-all duration-300 group relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/5 rounded-full blur-3xl -mr-16 -mt-16 transition-opacity opacity-50 group-hover:opacity-100" />
-            <div className="relative z-10">
-              <div className="w-14 h-14 bg-emerald-500/10 text-emerald-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                <Smartphone size={32} />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            
+            {/* Manufacturers */}
+            <div className="glass-card p-8 rounded-[2rem] hover:border-blue-500/30 transition-colors group">
+              <div className="w-12 h-12 bg-blue-500/10 text-blue-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                <Factory size={24} />
               </div>
-              <h3 className="text-3xl font-bold text-foreground mb-4">For Consumers</h3>
-              <ul className="space-y-4 mb-8">
-                {['Instant verification of medicine & goods', 'Earn Trust Points for every scan', 'Report suspicious items to regulators'].map((item, i) => (
-                  <li key={i} className="flex items-center gap-3 text-muted-foreground">
-                    <CheckCircle2 size={18} className="text-emerald-500 shrink-0" /> {item}
-                  </li>
-                ))}
-              </ul>
-              <Link to="/register" className="inline-flex items-center gap-2 text-emerald-600 font-bold hover:gap-3 transition-all">
-                Join as Consumer <ChevronRight size={16} />
-              </Link>
+              <h3 className="text-xl font-bold text-foreground mb-2">Manufacturers</h3>
+              <p className="text-sm text-muted-foreground mb-4">Protect revenue and brand equity with anti-clone technology.</p>
+              <Link to="/register" className="text-blue-600 text-sm font-bold hover:underline flex items-center gap-1">Brand Access <ChevronRight size={14}/></Link>
             </div>
-          </div>
 
+            {/* Distributors */}
+            <div className="glass-card p-8 rounded-[2rem] hover:border-purple-500/30 transition-colors group">
+              <div className="w-12 h-12 bg-purple-500/10 text-purple-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                <Truck size={24} />
+              </div>
+              <h3 className="text-xl font-bold text-foreground mb-2">Distributors & Retail</h3>
+              <p className="text-sm text-muted-foreground mb-4">
+                Secure your imports. Verify incoming stock via the Chain of Custody and source authentic goods from the Trade Hub.
+              </p>
+              <Link to="/register" className="text-purple-600 text-sm font-bold hover:underline flex items-center gap-1">Partner Access <ChevronRight size={14}/></Link>
+            </div>
+
+            {/* Consumers */}
+            <div className="glass-card p-8 rounded-[2rem] hover:border-emerald-500/30 transition-colors group">
+              <div className="w-12 h-12 bg-emerald-500/10 text-emerald-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                <Smartphone size={24} />
+              </div>
+              <h3 className="text-xl font-bold text-foreground mb-2">Consumers</h3>
+              <p className="text-sm text-muted-foreground mb-4">Verify goods instantly, find safe pharmacies nearby, and earn rewards.</p>
+              <Link to="/register" className="text-emerald-600 text-sm font-bold hover:underline flex items-center gap-1">Join Free <ChevronRight size={14}/></Link>
+            </div>
+
+          </div>
         </div>
       </section>
 
       {/* --- FINAL CTA --- */}
       <section className="py-32 px-6 text-center relative overflow-hidden">
-        {/* Background Mesh for CTA */}
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-primary/5 to-transparent pointer-events-none" />
         
         <div className="max-w-4xl mx-auto glass p-12 rounded-[3rem] shadow-2xl relative z-10 border-t-2 border-white/20">

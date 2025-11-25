@@ -418,3 +418,37 @@ export const bulkUpdateProductBatches = asyncHandler(async (req, res) => {
     count: result.modifiedCount 
   });
 });
+
+// @desc    Transfer custody (Manufacturer -> Distributor -> Retailer)
+// @route   POST /api/products/transfer
+// @access  Manufacturer, Distributor, Retailer
+export const transferCustody = asyncHandler(async (req, res) => {
+  const { batchNumber, action, location, notes, recipientEmail } = req.body;
+  
+  // 1. Find Batch
+  const batch = await ProductBatch.findOne({ batchNumber });
+  if (!batch) {
+    res.status(404);
+    throw new Error('Batch not found');
+  }
+
+  // 2. Validation: Only allowed if you are the CURRENT owner?
+  // For MVP, we trust any authorized "Distributor" account to scan it in.
+  // In V2, we would check if req.user._id matches the last "recipient".
+
+  // 3. Log the Event
+  batch.custodyChain.push({
+    handler: req.user._id,
+    action, // e.g., "Received"
+    location,
+    notes
+  });
+
+  // Optional: If 'Shipped', you might set status to 'In-Transit'
+  if (action === 'Shipped') batch.status = 'In-Transit';
+  if (action === 'Received') batch.status = 'Active';
+
+  await batch.save();
+
+  res.json({ message: `Custody updated: ${action}`, chain: batch.custodyChain });
+});

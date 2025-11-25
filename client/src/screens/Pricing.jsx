@@ -74,7 +74,7 @@ const Pricing = () => {
               "Max 500 items per batch",
               "Basic Audit Logs",
               "Manual Data Entry",
-              "Email Support"
+              "View-Only Marketplace"
             ]}
             buttonText="Start Free"
             link="/register"
@@ -86,13 +86,13 @@ const Pricing = () => {
             price="₦50,000"
             color="text-blue-600"
             recommended={true}
-            description="For growing brands requiring automation and security."
+            description="For growing brands requiring automation and distribution."
             features={[
               "100 Batches / month",
               "Max 10,000 items per batch",
               "Bulk CSV Upload",
-              "Real-time Fraud Alerts",
-              "Priority Support"
+              "Post 50 Market Listings",
+              "Real-time Fraud Alerts"
             ]}
             buttonText="Get Started"
             link="/register"
@@ -103,13 +103,13 @@ const Pricing = () => {
             tier="Scale"
             price="₦150,000"
             color="text-purple-600"
-            description="For industrial operations requiring maximum throughput."
+            description="For industrial operations requiring full supply chain visibility."
             features={[
               "Unlimited Batches",
-              "Unlimited Items",
-              "Advanced Analytics & Heatmaps",
-              "Dedicated Account Manager",
-              "API Access"
+              "Unlimited Market Listings",
+              "Full Chain of Custody",
+              "Advanced Heatmaps & Analytics",
+              "Dedicated Account Manager"
             ]}
             buttonText="Contact Sales"
             link="/contact"

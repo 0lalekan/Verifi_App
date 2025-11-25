@@ -8,7 +8,8 @@ import {
   updateProductBatch,
   deleteProductBatch,
   getAllBatches,
-  bulkUpdateProductBatches
+  bulkUpdateProductBatches,
+  transferCustody,
 } from '../controllers/productBatchController.js';
 import { protect, restrictTo } from '../middleware/authMiddleware.js';
 import { validateProductBatch } from '../middleware/validationMiddleware.js';
@@ -40,6 +41,8 @@ router.get('/my-inventory', protect, restrictTo('manufacturer'), getManufacturer
 router.get('/all-inventory', protect, restrictTo('regulator'), getAllBatches);
 
 router.put('/bulk-update', protect, restrictTo('regulator', 'manufacturer'), bulkUpdateProductBatches);
+
+router.post('/transfer', protect, restrictTo('manufacturer', 'distributor', 'retailer'), transferCustody);
 
 router.route('/:id')
   .put(protect, restrictTo('manufacturer', 'regulator'), updateProductBatch)

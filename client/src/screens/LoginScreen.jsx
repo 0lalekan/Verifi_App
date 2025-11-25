@@ -17,6 +17,7 @@ const LoginScreen = () => {
     switch (role) {
       case 'manufacturer': return '/manufacturer/portal';
       case 'regulator': return '/regulator/dashboard';
+      case 'distributor': case 'retailer': return '/market'; // New
       case 'consumer': return '/dashboard';
       default: return '/dashboard';
     }
@@ -49,10 +50,8 @@ const LoginScreen = () => {
       
       <div className="w-full max-w-md animate-in zoom-in-95 duration-500">
         
-        {/* Card */}
         <div className="glass rounded-[2.5rem] p-8 md:p-10 shadow-2xl border border-white/20">
           
-          {/* Brand Header */}
           <div className="text-center mb-8">
             <div className="w-16 h-16 bg-emerald-500/10 rounded-2xl flex items-center justify-center mx-auto mb-6 border border-emerald-500/20 shadow-lg shadow-emerald-500/10">
               <ShieldCheck size={32} className="text-emerald-500" />
@@ -65,7 +64,6 @@ const LoginScreen = () => {
 
           <form onSubmit={submitHandler} className="space-y-5">
             
-            {/* Email */}
             <div className="space-y-2">
               <label className="text-sm font-bold text-foreground ml-1" htmlFor="email">
                 Email Address
@@ -84,7 +82,6 @@ const LoginScreen = () => {
               </div>
             </div>
 
-            {/* Password */}
             <div className="space-y-2">
               <div className="flex items-center justify-between ml-1">
                 <label className="text-sm font-bold text-foreground" htmlFor="password">
@@ -115,7 +112,6 @@ const LoginScreen = () => {
               </div>
             </div>
 
-            {/* Submit */}
             <button
               type="submit"
               disabled={mutation.isPending}
@@ -133,7 +129,6 @@ const LoginScreen = () => {
             </button>
           </form>
 
-          {/* Footer */}
           <div className="relative mt-8">
             <div className="absolute inset-0 flex items-center">
               <span className="w-full border-t border-border/60" />

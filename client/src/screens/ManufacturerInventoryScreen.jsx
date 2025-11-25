@@ -15,12 +15,15 @@ import {
   CheckCircle, 
   XCircle,
   Search,
-  Filter
+  Filter,
+  Truck,
+  MapPin
 } from 'lucide-react';
 
 const ManufacturerInventoryScreen = () => {
   const queryClient = useQueryClient();
   const [editingBatch, setEditingBatch] = useState(null);
+  const [historyBatch, setHistoryBatch] = useState(null); // State for History Modal
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedIds, setSelectedIds] = useState(new Set());
 
@@ -79,7 +82,7 @@ const ManufacturerInventoryScreen = () => {
     queryClient.invalidateQueries(['myInventory']);
   };
 
-  // --- UPDATED: Barcode Printing Logic ---
+  // --- Barcode Printing Logic ---
   const handlePrint = (batchNumber) => {
     const printWindow = window.open('', '_blank');
     printWindow.document.write(`
@@ -123,7 +126,7 @@ const ManufacturerInventoryScreen = () => {
               lineColor: "#000",
               width: 2,
               height: 60,
-              displayValue: false // We display it manually in .meta for better styling
+              displayValue: false 
             });
             
             // Auto-print
@@ -136,7 +139,6 @@ const ManufacturerInventoryScreen = () => {
     `);
     printWindow.document.close();
   };
-  // ---------------------------------------
 
   if (error) return <div className="min-h-screen pt-24"><ErrorState onRetry={refetch} /></div>;
 
@@ -319,6 +321,15 @@ const ManufacturerInventoryScreen = () => {
                       </td>
                       <td className="px-6 py-4 text-right">
                         <div className="flex items-center justify-end gap-2">
+                          {/* History Button */}
+                          <button 
+                            onClick={() => setHistoryBatch(batch)} 
+                            className="p-2 text-muted-foreground hover:text-purple-500 hover:bg-purple-500/10 rounded-lg transition-colors" 
+                            title="View History"
+                          >
+                            <Truck size={18} />
+                          </button>
+                          
                           <button onClick={() => handlePrint(batch.batchNumber)} className="p-2 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-lg transition-colors" title="Print Barcode">
                             <Printer size={18} />
                           </button>
@@ -391,6 +402,53 @@ const ManufacturerInventoryScreen = () => {
               <button onClick={() => setEditingBatch(null)} className="flex-1 py-3 font-bold text-muted-foreground hover:text-foreground transition-colors">Cancel</button>
               <button onClick={() => updateMutation.mutate(editingBatch)} className="flex-1 py-3 bg-primary text-primary-foreground font-bold rounded-xl hover:opacity-90 transition-opacity">Save</button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Chain of Custody Modal (NEW) */}
+      {historyBatch && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={() => setHistoryBatch(null)}>
+          <div className="w-full max-w-lg bg-background rounded-[2rem] shadow-2xl border border-border overflow-hidden animate-in zoom-in-95" onClick={e => e.stopPropagation()}>
+            
+            <div className="p-6 border-b border-border flex justify-between items-center bg-secondary/20">
+              <div>
+                <h3 className="text-lg font-bold text-foreground">Chain of Custody</h3>
+                <p className="text-xs text-muted-foreground font-mono">{historyBatch.batchNumber}</p>
+              </div>
+              <button onClick={() => setHistoryBatch(null)} className="p-2 hover:bg-background rounded-full"><XCircle size={24} /></button>
+            </div>
+
+            <div className="p-6 max-h-[60vh] overflow-y-auto space-y-6">
+              {historyBatch.custodyChain && historyBatch.custodyChain.length > 0 ? (
+                historyBatch.custodyChain.map((event, index) => (
+                  <div key={index} className="relative pl-8 border-l-2 border-border last:border-transparent">
+                    <div className={`absolute -left-[9px] top-0 w-4 h-4 rounded-full border-2 border-background ${
+                      event.action === 'Created' ? 'bg-emerald-500' : 
+                      event.action === 'Shipped' ? 'bg-blue-500' : 
+                      event.action === 'Received' ? 'bg-purple-500' : 'bg-gray-400'
+                    }`} />
+                    
+                    <div className="mb-1 flex items-center justify-between">
+                      <span className="font-bold text-sm text-foreground">{event.action}</span>
+                      <span className="text-xs text-muted-foreground">{new Date(event.timestamp).toLocaleString()}</span>
+                    </div>
+                    
+                    <div className="bg-secondary/30 p-3 rounded-xl text-xs space-y-1">
+                      <p className="font-medium text-foreground">Handler ID: <span className="font-mono opacity-70">{event.handler}</span></p>
+                      {event.location && <p className="flex items-center gap-1 text-muted-foreground"><MapPin size={10} /> {event.location}</p>}
+                      {event.notes && <p className="italic opacity-80">"{event.notes}"</p>}
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="text-center text-muted-foreground py-8">
+                  <p>No movement history recorded.</p>
+                  <span className="text-xs bg-secondary/50 px-2 py-1 rounded mt-2 inline-block">Origin: Manufacturer</span>
+                </div>
+              )}
+            </div>
+
           </div>
         </div>
       )}

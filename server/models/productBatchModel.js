@@ -31,7 +31,7 @@ const productBatchSchema = new Schema(
     },
     status: {
       type: String,
-      enum: ['Active', 'Expired', 'Recalled', 'Investigating', 'Suspicious'], // Added 'Suspicious'
+      enum: ['Active', 'Expired', 'Recalled', 'Investigating', 'Suspicious', 'In-Transit'],
       default: 'Active',
     },
     verificationCount: {
@@ -55,7 +55,18 @@ const productBatchSchema = new Schema(
         scannedAt: { type: Date, default: Date.now },
         location: { type: String }
       }
-    ]
+    ],
+
+    custodyChain: [
+      {
+        handler: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+        action: { type: String, enum: ['Created', 'Shipped', 'Received', 'Sold'] },
+        location: { type: String }, // GPS or Warehouse Name
+        timestamp: { type: Date, default: Date.now },
+        notes: String
+      }
+    ],
+    
   },
   {
     timestamps: true,

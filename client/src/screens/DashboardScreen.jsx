@@ -14,7 +14,8 @@ import {
   ChevronRight, 
   Trophy,
   MapPin,
-  ArrowRight
+  ArrowRight,
+  Map,
 } from 'lucide-react';
 
 const DashboardScreen = () => {
@@ -119,6 +120,27 @@ const DashboardScreen = () => {
           </div>
           <div className="absolute -bottom-4 -right-4 w-24 h-24 bg-red-500/10 rounded-full blur-2xl group-hover:bg-red-500/20 transition-colors" />
         </Link>
+
+        {/* 4. Safe Map Action (New) */}
+        <Link 
+          to="/consumer/map" 
+          className="glass-card p-6 flex flex-col justify-between group hover:ring-2 hover:ring-emerald-500/50 transition-all relative overflow-hidden"
+        >
+          <div className="flex justify-between items-start relative z-10">
+            <div className="p-3 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-2xl">
+              <Map size={26} />
+            </div>
+            <div className="p-2 bg-background/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
+              <ChevronRight size={16} />
+            </div>
+          </div>
+          <div className="mt-4 relative z-10">
+            <h3 className="text-xl font-bold text-foreground">Find Safe Stores</h3>
+            <p className="text-sm text-muted-foreground mt-1">Locate verified retailers nearby.</p>
+          </div>
+          <div className="absolute -bottom-4 -right-4 w-24 h-24 bg-emerald-500/10 rounded-full blur-2xl group-hover:bg-emerald-500/20 transition-colors" />
+        </Link>
+        
       </div>
 
       {/* Recent Activity Feed */}

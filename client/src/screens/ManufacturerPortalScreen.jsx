@@ -11,7 +11,8 @@ import {
   Factory,
   Ban,
   XCircle,
-  Crown
+  Crown,
+  Store,
 } from 'lucide-react';
 
 const ManufacturerPortalScreen = () => {
@@ -105,6 +106,40 @@ const ManufacturerPortalScreen = () => {
         </Link>
 
         <Link 
+          to={isVerified ? "/manufacturer/inventory" : "#"}
+          className={`glass-card p-6 flex flex-col justify-between group hover:ring-2 hover:ring-purple-500/50 transition-all ${!isVerified && 'opacity-60 cursor-not-allowed'}`}
+        >
+          <div className="flex justify-between items-start">
+            <div className="p-3 bg-purple-500/10 text-purple-600 rounded-2xl"><Package size={26} /></div>
+            <div className="p-2 bg-background/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"><ChevronRight size={16} /></div>
+          </div>
+          <div className="mt-8">
+            <h3 className="text-xl font-bold text-foreground">My Inventory</h3>
+            <p className="text-sm text-muted-foreground mt-1">Manage active batches and print labels.</p>
+          </div>
+        </Link>
+
+        <Link 
+          to={isVerified ? "/market" : "#"}
+          className={`glass-card p-6 flex flex-col justify-between group hover:ring-2 hover:ring-cyan-500/50 transition-all ${!isVerified && 'opacity-60 cursor-not-allowed'}`}
+        >
+          <div className="flex justify-between items-start">
+            <div className="p-3 bg-cyan-500/10 text-cyan-600 rounded-2xl">
+              <Store size={26} />
+            </div>
+            <div className="p-2 bg-background/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
+              <ChevronRight size={16} />
+            </div>
+          </div>
+          <div className="mt-8">
+            <h3 className="text-xl font-bold text-foreground">Trade Hub</h3>
+            <p className="text-sm text-muted-foreground mt-1">
+              Connect with verified distributors.
+            </p>
+          </div>
+        </Link>
+
+        <Link 
           to={isVerified ? "/subscription" : "#"}
           className={`glass-card p-6 flex flex-col justify-between group hover:ring-2 hover:ring-amber-500/50 transition-all ${!isVerified && 'opacity-60 cursor-not-allowed'}`}
         >
@@ -124,19 +159,6 @@ const ManufacturerPortalScreen = () => {
           </div>
         </Link>
 
-        <Link 
-          to={isVerified ? "/manufacturer/inventory" : "#"}
-          className={`glass-card p-6 flex flex-col justify-between group hover:ring-2 hover:ring-purple-500/50 transition-all ${!isVerified && 'opacity-60 cursor-not-allowed'}`}
-        >
-          <div className="flex justify-between items-start">
-            <div className="p-3 bg-purple-500/10 text-purple-600 rounded-2xl"><Package size={26} /></div>
-            <div className="p-2 bg-background/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"><ChevronRight size={16} /></div>
-          </div>
-          <div className="mt-8">
-            <h3 className="text-xl font-bold text-foreground">My Inventory</h3>
-            <p className="text-sm text-muted-foreground mt-1">Manage active batches and print labels.</p>
-          </div>
-        </Link>
       </div>
 
       {/* Alerts / Status Section */}

@@ -28,6 +28,7 @@ import DashboardScreen from './screens/DashboardScreen.jsx'
 import ConsumerScanScreen from './screens/ConsumerScanScreen.jsx' 
 import ReportScreen from './screens/ReportScreen.jsx'
 import ConsumerReportsScreen from './screens/ConsumerReportsScreen.jsx'
+import SafeMapScreen from './screens/SafeMapScreen.jsx'
 
 // Manufacturer Screens
 import ManufacturerPortalScreen from './screens/ManufacturerPortalScreen.jsx'
@@ -45,6 +46,9 @@ import VerificationQueueScreen from './screens/VerificationQueueScreen.jsx'
 import RegulatorInventoryScreen from './screens/RegulatorInventoryScreen.jsx';
 import RegulatorLogScreen from './screens/RegulatorLogScreen.jsx';
 import RegulatorManufacturersScreen from './screens/RegulatorManufacturersScreen.jsx';
+
+import MarketplaceScreen from './screens/MarketplaceScreen.jsx'
+import ScanStockScreen from './screens/ScanStockScreen.jsx'
 
 const queryClient = new QueryClient()
 
@@ -74,11 +78,13 @@ const router = createBrowserRouter(
 
       {/* === Consumer Routes === */}
       <Route path="/verify-product" element={<ConsumerScanScreen />} />
+      <Route path="/consumer/map" element={<SafeMapScreen />} />
       <Route path="/report" element={<ReportScreen />} />
       <Route path="/consumer/reports" element={<ConsumerReportsScreen />} />
 
       {/* === Manufacturer Routes === */}
       <Route path="/manufacturer/portal" element={<ManufacturerPortalScreen />} />
+      <Route path="/market" element={<MarketplaceScreen />} />
       <Route path="/register-batch" element={<RegisterBatchScreen />} />
       <Route path="/bulk-upload" element={<BatchUploadScreen />} />
       <Route path="/manufacturer/inventory" element={<ManufacturerInventoryScreen />} />
@@ -94,6 +100,9 @@ const router = createBrowserRouter(
       <Route path="/regulator/registry" element={<RegulatorInventoryScreen />} />
       <Route path="/regulator/logs" element={<RegulatorLogScreen />} />
       <Route path="/regulator/manufacturers" element={<RegulatorManufacturersScreen />} />
+
+      <Route path="/market" element={<MarketplaceScreen />} />
+      <Route path="/scan-stock" element={<ScanStockScreen />} />
       
     </Route>
   ),

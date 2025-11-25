@@ -14,7 +14,9 @@ import {
   Building2,
   Zap,
   LogIn,
-  Download // Import Download Icon
+  Download,
+  Map,
+  Store
 } from 'lucide-react';
 
 const BottomNav = () => {
@@ -40,7 +42,7 @@ const BottomNav = () => {
   else if (userInfo.role === 'manufacturer') {
     links = [
       { to: '/manufacturer/portal', label: 'Home', icon: <LayoutDashboard size={20} /> },
-      { to: '/manufacturer/inventory', label: 'Stock', icon: <ShieldCheck size={20} /> },
+      { to: '/market', label: 'Market', icon: <Store size={20} /> },
       { to: '/register-batch', label: 'Add', icon: <PlusCircle size={28} />, isFab: true },
       { to: '/manufacturer/reports', label: 'Alerts', icon: <FileText size={20} /> },
       { to: '/profile', label: 'Profile', icon: <User size={20} /> },
@@ -50,7 +52,7 @@ const BottomNav = () => {
   else if (userInfo.role === 'consumer') {
     links = [
       { to: '/dashboard', label: 'Home', icon: <LayoutDashboard size={20} /> },
-      { to: '/consumer/reports', label: 'History', icon: <History size={20} /> },
+      { to: '/consumer/map', label: 'Safe Map', icon: <Map size={20} /> },
       { to: '/verify-product', label: 'Scan', icon: <ScanLine size={28} />, isFab: true },
       { to: '/report', label: 'Report', icon: <FileText size={20} /> },
       { to: '/profile', label: 'Profile', icon: <User size={20} /> },
@@ -64,6 +66,16 @@ const BottomNav = () => {
       { to: '/regulator/registry', label: 'Registry', icon: <ShieldCheck size={28} />, isFab: true },
       { to: '/regulator/manufacturers', label: 'Entities', icon: <Building2 size={20} /> },
       { to: '/admin/reports', label: 'Cases', icon: <FileText size={20} /> },
+    ];
+  }
+
+  // 5. Distributors (New Role!) & Retailers
+  else if (['distributor', 'retailer'].includes(userInfo.role)) {
+    links = [
+      { to: '/market', label: 'Market', icon: <Store size={20} /> }, // Main screen for them
+      { to: '/orders', label: 'Orders', icon: <ListChecks size={20} /> }, // Future feature
+      { to: '/scan-stock', label: 'Receive', icon: <ScanLine size={28} />, isFab: true }, // Chain of Custody scan
+      { to: '/profile', label: 'Profile', icon: <User size={20} /> },
     ];
   }
 

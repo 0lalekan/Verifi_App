@@ -36,7 +36,7 @@ const userSchema = new Schema(
     profileImage: { type: String },
     role: {
       type: String,
-      enum: ['consumer', 'manufacturer', 'regulator'],
+      enum: ['consumer', 'manufacturer', 'regulator', 'distributor', 'retailer'],
       default: 'consumer',
     },
     isActive: { type: Boolean, default: true },

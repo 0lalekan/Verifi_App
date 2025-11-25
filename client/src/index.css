@@ -2,24 +2,36 @@
 
 @layer base {
   :root {
+    /* Light Mode: Force Pure White & Pure Black */
     --background: 0 0% 100%;
-    --foreground: 240 10% 3.9%;
+    --foreground: 0 0% 0%; 
+    
     --card: 0 0% 100%;
-    --card-foreground: 240 10% 3.9%;
+    --card-foreground: 0 0% 0%;
+    
     --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 3.9%;
+    --popover-foreground: 0 0% 0%;
+    
+    /* Keep Primary (Emerald) */
     --primary: 142.1 76.2% 36.3%;
     --primary-foreground: 355.7 100% 97.3%;
-    --secondary: 240 4.8% 95.9%;
+    
+    /* Make Secondary lighter (Off-White) for contrast */
+    --secondary: 240 4.8% 96%;
     --secondary-foreground: 240 5.9% 10%;
-    --muted: 240 4.8% 95.9%;
-    --muted-foreground: 240 3.8% 46.1%;
-    --accent: 240 4.8% 95.9%;
+    
+    --muted: 240 4.8% 96%;
+    --muted-foreground: 240 3.8% 40%; /* Darker muted text */
+    
+    --accent: 240 4.8% 96%;
     --accent-foreground: 240 5.9% 10%;
+    
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
-    --border: 240 5.9% 90%;
-    --input: 240 5.9% 90%;
+    
+    --border: 240 5.9% 85%; /* Darker border for visibility */
+    --input: 240 5.9% 85%;
+    
     --ring: 142.1 76.2% 36.3%;
     --radius: 0.5rem;
   }
@@ -27,22 +39,31 @@
   .dark {
     --background: 240 10% 3.9%;
     --foreground: 0 0% 98%;
+    
     --card: 240 10% 3.9%;
     --card-foreground: 0 0% 98%;
+    
     --popover: 240 10% 3.9%;
     --popover-foreground: 0 0% 98%;
+    
     --primary: 142.1 70.6% 45.3%;
     --primary-foreground: 144.9 80.4% 10%;
+    
     --secondary: 240 3.7% 15.9%;
     --secondary-foreground: 0 0% 98%;
+    
     --muted: 240 3.7% 15.9%;
     --muted-foreground: 240 5% 64.9%;
+    
     --accent: 240 3.7% 15.9%;
     --accent-foreground: 0 0% 98%;
+    
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
+    
     --border: 240 3.7% 15.9%;
     --input: 240 3.7% 15.9%;
+    
     --ring: 142.4 71.8% 29.2%;
   }
 }
@@ -66,25 +87,26 @@
 
 @layer utilities {
   .glass {
-    /* More transparent white for true glass feel */
-    background-color: rgba(255, 255, 255, 0.6);
-    @apply backdrop-blur-2xl border border-white/40 shadow-xl;
+    /* FIX: Increased opacity (0.6 -> 0.9) to prevent background bleed-through */
+    background-color: rgba(255, 255, 255, 0.9);
+    @apply backdrop-blur-xl border border-gray-200 shadow-xl;
   }
 
   .dark .glass {
     background-color: rgba(0, 0, 0, 0.6);
-    @apply border-white/10;
+    @apply border-white/10 border-gray-800;
   }
   
   .glass-card {
-    @apply relative overflow-hidden rounded-2xl border border-white/20 dark:border-white/5 bg-white/40 dark:bg-zinc-900/40 backdrop-blur-md shadow-lg transition-all duration-300 hover:shadow-xl hover:bg-white/50 dark:hover:bg-zinc-900/60;
+    /* FIX: Using solid white/90 for cards in light mode */
+    @apply relative overflow-hidden rounded-2xl border border-gray-200 dark:border-white/5 bg-white/90 dark:bg-zinc-900/40 backdrop-blur-md shadow-sm transition-all duration-300 hover:shadow-md hover:bg-white dark:hover:bg-zinc-900/60;
   }
 
   .text-gradient {
     background-clip: text;
     -webkit-background-clip: text;
     color: transparent;
-    background-image: linear-gradient(135deg, #022c22 0%, #059669 50%, #2563eb 100%);
+    background-image: linear-gradient(135deg, #059669 0%, #2563eb 100%);
   }
 
   .dark .text-gradient {

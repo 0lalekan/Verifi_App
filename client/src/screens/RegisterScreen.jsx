@@ -4,7 +4,7 @@ import { useMutation } from '@tanstack/react-query';
 import api from '../api'; 
 import useAuthStore from '../store';
 import { toast } from 'react-toastify';
-import { Eye, EyeOff, CheckCircle2, User, Factory, ShieldCheck, Loader2 } from 'lucide-react';
+import { Eye, EyeOff, CheckCircle2, User, Factory, ShieldCheck, Loader2, Truck, Store } from 'lucide-react';
 
 const RegisterScreen = () => {
   const navigate = useNavigate();
@@ -19,10 +19,33 @@ const RegisterScreen = () => {
     role: 'consumer'
   });
 
+  const RoleCard = ({ id, title, desc, icon: Icon, color }) => (
+    <div 
+      onClick={() => setFormData({ ...formData, role: id })}
+      className={`relative flex flex-col gap-2 p-4 rounded-2xl border-2 cursor-pointer transition-all duration-200 ${
+        formData.role === id 
+          ? `border-${color} bg-${color.split('-')[0]}-50 dark:bg-${color.split('-')[0]}-900/20` 
+          : 'border-border bg-background/50 hover:border-foreground/20'
+      }`}
+    >
+      <div className="flex justify-between items-start">
+        <div className={`p-2 rounded-full ${formData.role === id ? `bg-${color} text-white` : 'bg-secondary text-muted-foreground'}`}>
+          <Icon size={18} />
+        </div>
+        {formData.role === id && <CheckCircle2 size={18} className={`text-${color}`} />}
+      </div>
+      <div>
+        <h3 className={`font-bold text-sm ${formData.role === id ? `text-${color}` : 'text-foreground'}`}>{title}</h3>
+        <p className="text-[10px] text-muted-foreground leading-tight mt-1">{desc}</p>
+      </div>
+    </div>
+  );
+
   const getRedirectPath = (role) => {
     switch (role) {
       case 'manufacturer': return '/manufacturer/portal';
       case 'regulator': return '/regulator/dashboard';
+      case 'distributor': case 'retailer': return '/market';
       case 'consumer': default: return '/dashboard';
     }
   };
@@ -48,10 +71,6 @@ const RegisterScreen = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const selectRole = (role) => {
-    setFormData({ ...formData, role });
-  };
-
   const submitHandler = (e) => {
     e.preventDefault();
     mutation.mutate(formData);
@@ -64,7 +83,6 @@ const RegisterScreen = () => {
         
         <div className="glass rounded-[2.5rem] p-8 md:p-12 shadow-2xl border border-white/20">
           
-          {/* Header */}
           <div className="text-center mb-10">
             <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-6 border border-primary/20 shadow-lg shadow-primary/10">
               <ShieldCheck size={32} className="text-primary" />
@@ -75,51 +93,17 @@ const RegisterScreen = () => {
 
           <form onSubmit={submitHandler} className="space-y-6">
             
-            {/* Role Selection */}
             <div className="space-y-3">
               <label className="text-sm font-bold text-foreground ml-1">I am a...</label>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                
-                <div 
-                  onClick={() => selectRole('consumer')}
-                  className={`relative flex items-start gap-3 p-4 rounded-2xl border-2 cursor-pointer transition-all duration-200 ${
-                    formData.role === 'consumer' 
-                      ? 'border-primary bg-primary/10' 
-                      : 'border-border bg-background/50 hover:border-primary/50'
-                  }`}
-                >
-                  <div className={`mt-0.5 p-2 rounded-full ${formData.role === 'consumer' ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground'}`}>
-                    <User size={18} />
-                  </div>
-                  <div>
-                    <h3 className={`font-bold text-sm ${formData.role === 'consumer' ? 'text-primary' : 'text-foreground'}`}>Consumer</h3>
-                    <p className="text-xs text-muted-foreground mt-1">I want to verify products.</p>
-                  </div>
-                  {formData.role === 'consumer' && <div className="absolute top-4 right-4 text-primary"><CheckCircle2 size={18} /></div>}
-                </div>
-
-                <div 
-                  onClick={() => selectRole('manufacturer')}
-                  className={`relative flex items-start gap-3 p-4 rounded-2xl border-2 cursor-pointer transition-all duration-200 ${
-                    formData.role === 'manufacturer' 
-                      ? 'border-primary bg-primary/10' 
-                      : 'border-border bg-background/50 hover:border-primary/50'
-                  }`}
-                >
-                  <div className={`mt-0.5 p-2 rounded-full ${formData.role === 'manufacturer' ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground'}`}>
-                    <Factory size={18} />
-                  </div>
-                  <div>
-                    <h3 className={`font-bold text-sm ${formData.role === 'manufacturer' ? 'text-primary' : 'text-foreground'}`}>Manufacturer</h3>
-                    <p className="text-xs text-muted-foreground mt-1">I want to register products.</p>
-                  </div>
-                  {formData.role === 'manufacturer' && <div className="absolute top-4 right-4 text-primary"><CheckCircle2 size={18} /></div>}
-                </div>
-
+              <div className="grid grid-cols-2 gap-3">
+                <RoleCard id="consumer" title="Consumer" desc="Verify products." icon={User} color="emerald-500" />
+                <RoleCard id="manufacturer" title="Manufacturer" desc="Register products." icon={Factory} color="blue-500" />
+                {/* UPDATED: Specific Distributor Role */}
+                <RoleCard id="distributor" title="Distributor" desc="Import & Wholesale." icon={Truck} color="purple-500" />
+                <RoleCard id="retailer" title="Retailer" desc="Sell to consumers." icon={Store} color="orange-500" />
               </div>
             </div>
 
-            {/* Name Inputs */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
               <div className="space-y-2">
                 <label className="text-sm font-bold text-foreground ml-1">First Name</label>
@@ -147,7 +131,6 @@ const RegisterScreen = () => {
               </div>
             </div>
 
-            {/* Email */}
             <div className="space-y-2">
               <label className="text-sm font-bold text-foreground ml-1">Email</label>
               <input
@@ -161,7 +144,6 @@ const RegisterScreen = () => {
               />
             </div>
 
-            {/* Password */}
             <div className="space-y-2">
               <label className="text-sm font-bold text-foreground ml-1">Password</label>
               <div className="relative">
@@ -179,7 +161,7 @@ const RegisterScreen = () => {
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                 >
-                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
               </div>
             </div>
@@ -187,7 +169,7 @@ const RegisterScreen = () => {
             <button
               type="submit"
               disabled={mutation.isPending}
-              className="w-full py-4 bg-primary hover:bg-primary/90 text-primary-foreground font-bold rounded-xl shadow-lg shadow-primary/20 transition-all hover:-translate-y-0.5 disabled:opacity-50 flex items-center justify-center gap-2 mt-4"
+              className="w-full py-3.5 bg-primary hover:bg-primary/90 text-primary-foreground font-bold rounded-xl shadow-lg shadow-primary/20 transition-all hover:-translate-y-0.5 disabled:opacity-50 flex items-center justify-center gap-2 mt-4"
             >
               {mutation.isPending ? <Loader2 className="animate-spin" /> : 'Create Account'}
             </button>

@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   ShieldCheck, 
   Zap, 
@@ -7,7 +8,13 @@ import {
   Smartphone, 
   BarChart3, 
   ScanLine, 
-  Users 
+  Users,
+  Map,
+  Store,
+  Truck,
+  Play,
+  Layers,
+  Factory
 } from 'lucide-react';
 
 const FeatureCard = ({ icon: Icon, title, description, className }) => (
@@ -22,13 +29,111 @@ const FeatureCard = ({ icon: Icon, title, description, className }) => (
   </div>
 );
 
+// --- Video Showcase Component (Shared) ---
+const VideoShowcase = () => {
+  const [activeTab, setActiveTab] = useState('consumer'); // 'consumer' | 'business'
+
+  const content = {
+    consumer: {
+      title: "Scan. Verify. Earn.",
+      description: "See how easy it is for a shopper to verify a product in seconds using the Verifi mobile app.",
+      videoPlaceholder: "bg-gradient-to-br from-emerald-900 to-black", 
+      icon: <Smartphone size={20} />,
+      color: "text-emerald-500"
+    },
+    business: {
+      title: "Track. Manage. Secure.",
+      description: "Watch how Manufacturers and Distributors track inventory movement and spot counterfeits in real-time.",
+      videoPlaceholder: "bg-gradient-to-br from-blue-900 to-black",
+      icon: <Factory size={20} />,
+      color: "text-blue-500"
+    }
+  };
+
+  return (
+    <section className="py-20 relative overflow-hidden">
+      <div className="max-w-7xl mx-auto">
+        
+        <div className="text-center mb-12">
+          <h2 className="text-3xl md:text-4xl font-display font-bold text-foreground mb-4">Platform Walkthrough</h2>
+          <p className="text-muted-foreground">Switch views to see how Verifi works for different users.</p>
+          
+          {/* Toggle Switch */}
+          <div className="inline-flex items-center bg-secondary/50 p-1.5 rounded-full border border-border/50 mt-8 backdrop-blur-md">
+            <button 
+              onClick={() => setActiveTab('consumer')}
+              className={`flex items-center gap-2 px-6 py-2.5 rounded-full text-sm font-bold transition-all ${
+                activeTab === 'consumer' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              <Smartphone size={16} /> For Consumers
+            </button>
+            <button 
+              onClick={() => setActiveTab('business')}
+              className={`flex items-center gap-2 px-6 py-2.5 rounded-full text-sm font-bold transition-all ${
+                activeTab === 'business' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              <Layers size={16} /> For Partners
+            </button>
+          </div>
+        </div>
+
+        {/* Video Container */}
+        <div className="relative max-w-5xl mx-auto">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeTab}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+              className="glass p-2 rounded-[2.5rem] border-white/10 shadow-2xl"
+            >
+              <div className={`aspect-video rounded-[2rem] overflow-hidden relative flex items-center justify-center group cursor-pointer ${content[activeTab].videoPlaceholder}`}>
+                
+                {/* Simulated UI Elements */}
+                <div className="absolute inset-0 opacity-30 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
+                
+                {/* Play Button Overlay */}
+                <div className="w-20 h-20 bg-white/10 backdrop-blur-md border border-white/20 rounded-full flex items-center justify-center transition-transform group-hover:scale-110 z-10">
+                  <div className="w-14 h-14 bg-white rounded-full flex items-center justify-center shadow-lg">
+                    <Play size={24} className="fill-current text-black ml-1" />
+                  </div>
+                </div>
+
+                <div className="absolute bottom-8 left-8 right-8 flex justify-between items-end">
+                  <div className="text-white max-w-md">
+                    <div className={`flex items-center gap-2 mb-2 font-bold ${content[activeTab].color}`}>
+                      {content[activeTab].icon} {activeTab === 'consumer' ? 'Consumer App' : 'Logistics Portal'}
+                    </div>
+                    <h3 className="text-2xl font-bold mb-2">{content[activeTab].title}</h3>
+                    <p className="text-white/70 text-sm leading-relaxed">{content[activeTab].description}</p>
+                  </div>
+                </div>
+
+              </div>
+            </motion.div>
+          </AnimatePresence>
+          
+          {/* Decorative Glow */}
+          <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full max-w-3xl blur-[120px] -z-10 transition-colors duration-700 ${
+            activeTab === 'consumer' ? 'bg-emerald-500/20' : 'bg-blue-500/20'
+          }`} />
+        </div>
+
+      </div>
+    </section>
+  );
+};
+
 const Features = () => {
   return (
     <div className="min-h-screen w-full bg-background bg-gradient-mesh dark:bg-gradient-mesh-dark p-4 md:p-8 pt-24 transition-colors duration-500">
       <div className="max-w-7xl mx-auto">
         
         {/* Hero Section */}
-        <div className="text-center max-w-3xl mx-auto mb-20">
+        <div className="text-center max-w-3xl mx-auto mb-12">
           <h1 className="text-4xl md:text-6xl font-display font-extrabold text-foreground mb-6 tracking-tight">
             Built for <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 to-blue-600">Trust</span>.
           </h1>
@@ -37,10 +142,13 @@ const Features = () => {
           </p>
         </div>
 
+        {/* Video Showcase Section */}
+        <VideoShowcase />
+
         {/* Bento Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-24">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-24 mt-12">
           
-          {/* Large Card 1 */}
+          {/* Large Card 1: Anti-Clone */}
           <div className="md:col-span-2 glass-card p-10 flex flex-col md:flex-row items-center gap-8 relative overflow-hidden group">
             <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full blur-3xl -mr-16 -mt-16 transition-opacity opacity-50 group-hover:opacity-100" />
             <div className="flex-1 relative z-10">
@@ -49,7 +157,7 @@ const Features = () => {
               </div>
               <h3 className="text-2xl font-display font-bold text-foreground mb-4">Anti-Clone Technology</h3>
               <p className="text-muted-foreground leading-relaxed">
-                Our intelligent algorithms detect scan velocity anomalies in real-time. If a single QR code is scanned in multiple disparate locations simultaneously, it's instantly flagged as a potential clone, alerting both the manufacturer and regulator.
+                Our intelligent algorithms detect scan velocity anomalies in real-time. If a single QR code is scanned in multiple disparate locations simultaneously, it's instantly flagged as a potential clone.
               </p>
             </div>
             <div className="w-full md:w-1/3 bg-background/50 rounded-2xl h-48 border border-border/50 flex items-center justify-center backdrop-blur-sm shadow-inner">
@@ -60,36 +168,36 @@ const Features = () => {
             </div>
           </div>
 
-          {/* Card 2 */}
+          {/* Card 2: Safe Map */}
           <FeatureCard 
-            icon={Globe}
-            title="Global Ledger"
-            description="Regulators get a 'God View' map of all product scans. Identify hotspots for fake goods and deploy enforcement teams with precision."
+            icon={Map}
+            title="Verified Safe Map"
+            description="Consumers can locate trusted pharmacies and retailers nearby using our GPS heatmap of valid scans. Drive foot traffic to legitimate businesses."
           />
 
-          {/* Card 3 */}
+          {/* Card 3: Trade Hub */}
           <FeatureCard 
-            icon={Lock}
-            title="Batch Serialization"
-            description="Cryptographically secure batch IDs. Manufacturers can manage millions of SKUs with bulk CSV uploads and instant blockchain registration."
+            icon={Store}
+            title="B2B Trade Hub"
+            description="A closed marketplace connecting Manufacturers directly to verified Distributors. Eliminate middlemen and reduce the risk of grey market diversion."
           />
 
-          {/* Large Card 2 */}
+          {/* Large Card 2: Logistics */}
           <div className="md:col-span-2 glass-card p-10 flex flex-col md:flex-row-reverse items-center gap-8 relative overflow-hidden group">
             <div className="absolute bottom-0 left-0 w-64 h-64 bg-purple-500/10 rounded-full blur-3xl -ml-16 -mb-16 transition-opacity opacity-50 group-hover:opacity-100" />
             <div className="flex-1 relative z-10">
               <div className="w-14 h-14 rounded-2xl bg-purple-500/10 text-purple-600 flex items-center justify-center mb-6">
-                <Users size={32} />
+                <Truck size={32} />
               </div>
-              <h3 className="text-2xl font-display font-bold text-foreground mb-4">Consumer Rewards</h3>
+              <h3 className="text-2xl font-display font-bold text-foreground mb-4">Chain of Custody</h3>
               <p className="text-muted-foreground leading-relaxed">
-                Incentivize verification. Consumers earn loyalty points for every legitimate product scanned, which can be redeemed for discounts or donated to charity.
+                Secure product movement from Factory to Warehouse to Retailer. Distributors scan stock upon receipt to create an immutable digital handover record.
               </p>
             </div>
             <div className="w-full md:w-1/3 bg-background/50 rounded-2xl h-48 border border-border/50 flex items-center justify-center backdrop-blur-sm shadow-inner">
                <div className="text-center">
-                <span className="text-4xl font-extrabold text-foreground block mb-1">500+</span>
-                <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Points Earned</span>
+                <span className="text-4xl font-extrabold text-foreground block mb-1">100%</span>
+                <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Traceability</span>
               </div>
             </div>
           </div>
@@ -110,9 +218,9 @@ const Features = () => {
 
           {/* Card 6 */}
           <FeatureCard 
-            icon={Zap}
-            title="Lightning Fast"
-            description="Optimized for low-bandwidth environments. Verification happens in milliseconds, ensuring a smooth user experience."
+            icon={Lock}
+            title="Batch Serialization"
+            description="Cryptographically secure batch IDs. Manage millions of SKUs with bulk CSV uploads and instant ledger registration."
           />
 
         </div>
