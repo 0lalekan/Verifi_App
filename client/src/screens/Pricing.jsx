@@ -1,24 +1,24 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Check } from 'lucide-react';
+import { Check, Shield, Zap, Crown } from 'lucide-react';
 
-const PricingCard = ({ tier, price, description, features, recommended, buttonText, link }) => (
+const PricingCard = ({ tier, price, description, features, recommended, buttonText, link, color }) => (
   <div className={`relative p-8 rounded-[2.5rem] flex flex-col h-full transition-all duration-300 ${
     recommended 
-      ? 'bg-background border-2 border-primary shadow-2xl scale-105 z-10' 
+      ? 'bg-background border-2 border-primary shadow-2xl md:scale-105 z-10' 
       : 'glass-card hover:border-primary/30'
   }`}>
     {recommended && (
-      <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-primary text-primary-foreground text-xs font-bold uppercase tracking-wide px-4 py-1.5 rounded-full shadow-lg">
+      <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-primary text-primary-foreground text-xs font-bold uppercase tracking-wide px-4 py-1.5 rounded-full shadow-lg whitespace-nowrap">
         Most Popular
       </div>
     )}
     
     <div className="mb-8">
-      <h3 className="text-lg font-bold text-muted-foreground uppercase tracking-wider mb-2">{tier}</h3>
+      <h3 className={`text-lg font-bold uppercase tracking-wider mb-2 ${color}`}>{tier}</h3>
       <div className="flex items-baseline gap-1">
         <span className="text-4xl font-display font-extrabold text-foreground">{price}</span>
-        {price !== 'Free' && <span className="text-muted-foreground font-medium">/month</span>}
+        {price !== 'Free' && <span className="text-muted-foreground font-medium text-sm">/mo</span>}
       </div>
       <p className="text-sm text-muted-foreground mt-4 leading-relaxed">{description}</p>
     </div>
@@ -26,7 +26,7 @@ const PricingCard = ({ tier, price, description, features, recommended, buttonTe
     <ul className="space-y-4 mb-8 flex-1">
       {features.map((feature, index) => (
         <li key={index} className="flex items-start gap-3 text-sm text-foreground/80">
-          <div className="mt-0.5 p-0.5 rounded-full bg-emerald-500/10 text-emerald-500 shrink-0">
+          <div className={`mt-0.5 p-0.5 rounded-full bg-opacity-10 shrink-0 ${color.replace('text-', 'bg-').replace('600', '500')} ${color}`}>
             <Check size={14} strokeWidth={3} />
           </div>
           {feature}
@@ -54,63 +54,75 @@ const Pricing = () => {
         
         <div className="text-center max-w-3xl mx-auto mb-20">
           <h1 className="text-4xl md:text-6xl font-display font-extrabold text-foreground mb-6 tracking-tight">
-            Transparent <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">Pricing</span>
+            Simple, Transparent <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">Pricing</span>
           </h1>
           <p className="text-lg text-muted-foreground">
-            Start securing your supply chain today. No hidden fees. Cancel anytime.
+            Start small and scale your production security as you grow. Consumers always verify for free.
           </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto items-start">
           
+          {/* Starter Plan */}
           <PricingCard 
-            tier="Consumer"
+            tier="Starter"
             price="Free"
-            description="For individuals who want to verify products and ensure their safety."
+            color="text-slate-500"
+            description="For small businesses and startups testing the waters."
             features={[
-              "Unlimited Product Scans",
-              "Fraud Reporting",
-              "Earn Loyalty Points",
-              "Personal Scan History",
-              "Community Alerts"
+              "5 Batches / month",
+              "Max 500 items per batch",
+              "Basic Audit Logs",
+              "Manual Data Entry",
+              "Email Support"
+            ]}
+            buttonText="Start Free"
+            link="/register"
+          />
+          
+          {/* Growth Plan */}
+          <PricingCard 
+            tier="Growth"
+            price="₦50,000"
+            color="text-blue-600"
+            recommended={true}
+            description="For growing brands requiring automation and security."
+            features={[
+              "100 Batches / month",
+              "Max 10,000 items per batch",
+              "Bulk CSV Upload",
+              "Real-time Fraud Alerts",
+              "Priority Support"
             ]}
             buttonText="Get Started"
             link="/register"
           />
-          
-          <PricingCard 
-            tier="Manufacturer"
-            price="₦150,000"
-            recommended={true}
-            description="For brands looking to secure their products and gain supply chain visibility."
-            features={[
-              "Up to 100,000 Batches/mo",
-              "Real-time Analytics Dashboard",
-              "Bulk CSV Upload",
-              "Dynamic QR Code Generation",
-              "Brand Protection Alerts",
-              "Priority Email Support"
-            ]}
-            buttonText="Start Free Trial"
-            link="/register"
-          />
 
+          {/* Scale Plan */}
           <PricingCard 
-            tier="Enterprise"
-            price="Custom"
-            description="For large organizations and regulators requiring dedicated infrastructure."
+            tier="Scale"
+            price="₦150,000"
+            color="text-purple-600"
+            description="For industrial operations requiring maximum throughput."
             features={[
               "Unlimited Batches",
-              "Regulator Oversight Tools",
-              "API Access & Webhooks",
-              "Custom Domain Integration",
+              "Unlimited Items",
+              "Advanced Analytics & Heatmaps",
               "Dedicated Account Manager",
-              "99.9% SLA Guarantee"
+              "API Access"
             ]}
             buttonText="Contact Sales"
             link="/contact"
           />
         </div>
+
+        {/* Consumer Note */}
+        <div className="mt-20 text-center">
+          <p className="text-muted-foreground text-sm bg-secondary/50 inline-block px-6 py-2 rounded-full border border-border">
+            Looking for the Consumer App? <Link to="/register" className="text-primary font-bold hover:underline">Sign up for free</Link> to verify products and earn points.
+          </p>
+        </div>
+
       </div>
     </div>
   );

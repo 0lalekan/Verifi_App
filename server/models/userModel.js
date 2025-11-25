@@ -9,7 +9,20 @@ const organizationDetailsSchema = new Schema(
     orgAddress: { type: String, default: '' },
     orgLicense: { type: String, default: '' },
     isVerified: { type: Boolean, default: false },
-    subscriptionStatus: { type: String, enum: ['free', 'paid'], default: 'free' }
+    licenseStatus: { 
+      type: String, 
+      enum: ['Pending', 'Verified', 'Revoked'], 
+      default: 'Pending' 
+    },
+    // --- NEW SUBSCRIPTION FIELDS ---
+    plan: { 
+      type: String, 
+      enum: ['Starter', 'Growth', 'Scale'], 
+      default: 'Starter' 
+    },
+    planExpiresAt: { type: Date, default: null }, 
+    paymentReference: { type: String } // Transaction ID from Flutterwave
+    // -------------------------------
   },
   { _id: false }
 );
@@ -30,18 +43,12 @@ const userSchema = new Schema(
     points: { type: Number, default: 0 },
     resetPasswordToken: { type: String },
     resetPasswordExpire: { type: Date },
-    // Ensure this defaults to an empty object so fields exist
     organizationDetails: { type: organizationDetailsSchema, default: () => ({}) },
   },
   { timestamps: true }
 );
 
-userSchema.set('toJSON', {
-  transform(doc, ret) {
-    delete ret.password;
-    return ret;
-  },
-});
+// ... (methods matchPassword etc. remain the same)
 
 userSchema.pre('save', async function (next) {
   if (!this.isModified('password')) return next();
@@ -60,5 +67,4 @@ userSchema.methods.matchPassword = async function (enteredPassword) {
 };
 
 const User = mongoose.models.User || mongoose.model('User', userSchema);
-
 export default User;

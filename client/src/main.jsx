@@ -34,7 +34,9 @@ import ManufacturerPortalScreen from './screens/ManufacturerPortalScreen.jsx'
 import RegisterBatchScreen from './screens/RegisterBatchScreen.jsx'
 import BatchUploadScreen from './screens/BatchUploadScreen.jsx'
 import ManufacturerInventoryScreen from './screens/ManufacturerInventoryScreen.jsx'
-import ManufacturerReportsScreen from './screens/ManufacturerReportsScreen.jsx' 
+import ManufacturerReportsScreen from './screens/ManufacturerReportsScreen.jsx'
+import SubscriptionScreen from './screens/SubscriptionScreen.jsx';
+import PaymentCallbackScreen from './screens/PaymentCallbackScreen.jsx'
 
 // Regulator/Admin Screens
 import RegulatorDashboardScreen from './screens/RegulatorDashboardScreen.jsx'
@@ -81,6 +83,9 @@ const router = createBrowserRouter(
       <Route path="/bulk-upload" element={<BatchUploadScreen />} />
       <Route path="/manufacturer/inventory" element={<ManufacturerInventoryScreen />} />
       <Route path="/manufacturer/reports" element={<ManufacturerReportsScreen />} />
+      <Route path="/subscription" element={<SubscriptionScreen />} />
+      <Route path="/payment/callback" element={<PaymentCallbackScreen />} />
+
 
       {/* === Regulator/Admin Routes === */}
       <Route path="/regulator/dashboard" element={<RegulatorDashboardScreen />} />

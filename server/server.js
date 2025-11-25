@@ -14,6 +14,7 @@ import userRoutes from './routes/userRoutes.js'
 import productRoutes from './routes/productRoutes.js';
 import logRoutes from './routes/logRoutes.js';
 import reportRoutes from './routes/reportRoutes.js';
+import paymentRoutes from './routes/paymentRoutes.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -66,6 +67,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/logs', logRoutes);
 app.use('/api/reports', reportRoutes);
+app.use('/api/payment', paymentRoutes);
 
 const httpServer = createServer(app);
 
