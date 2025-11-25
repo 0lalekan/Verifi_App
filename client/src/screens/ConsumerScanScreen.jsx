@@ -221,6 +221,7 @@ const ConsumerScanScreen = () => {
               className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md"
             >
               <div className="w-full max-w-sm bg-background rounded-[2.5rem] shadow-2xl border border-border p-8 text-center relative overflow-hidden">
+                
                 {verificationResult.status === 'Valid' ? (
                   <>
                     <Confetti numberOfPieces={200} recycle={false} className="!absolute !inset-0 !w-full !h-full pointer-events-none" />
@@ -246,13 +247,24 @@ const ConsumerScanScreen = () => {
                   </>
                 ) : (
                   <>
-                    <div className="w-20 h-20 bg-red-500/10 text-red-600 rounded-full flex items-center justify-center mx-auto mb-6 ring-8 ring-red-500/5 animate-pulse">
-                      <XCircle size={40} strokeWidth={3} />
+                    {/* DYNAMIC ERROR STATE */}
+                    <div className={`w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 ring-8 animate-pulse ${
+                      verificationResult.status === 'Expired' ? 'bg-amber-500/10 text-amber-600 ring-amber-500/5' : 'bg-red-500/10 text-red-600 ring-red-500/5'
+                    }`}>
+                      {verificationResult.status === 'Expired' ? <Zap size={40} /> : <XCircle size={40} strokeWidth={3} />}
                     </div>
-                    <h2 className="text-3xl font-display font-bold text-red-600 mb-2">Warning</h2>
-                    <p className="text-muted-foreground mb-8">
-                      This code is <strong>not recognized</strong>. It may be a counterfeit product.
+                    
+                    <h2 className={`text-3xl font-display font-bold mb-2 ${
+                      verificationResult.status === 'Expired' ? 'text-amber-600' : 'text-red-600'
+                    }`}>
+                      {verificationResult.status}
+                    </h2>
+                    
+                    <p className="text-muted-foreground mb-8 leading-relaxed">
+                      {/* Display the specific warning message from backend, or a default fallback */}
+                      {verificationResult.message || "This code is not recognized. It may be a counterfeit product."}
                     </p>
+                    
                     <button 
                       onClick={() => navigate('/report')}
                       className="w-full py-3.5 bg-red-600 hover:bg-red-700 text-white rounded-xl font-bold shadow-lg shadow-red-500/20 mb-3"

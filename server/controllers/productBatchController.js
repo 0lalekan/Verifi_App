@@ -1,4 +1,9 @@
 import asyncHandler from 'express-async-handler';
+import mongoose from 'mongoose';
+import Joi from 'joi';
+import geoip from 'geoip-lite';
+import requestIp from 'request-ip';
+import sendEmail from '../utils/sendEmail.js';
 import ProductBatch from '../models/productBatchModel.js';
 import VerificationLog from '../models/VerificationLogModel.js';
 import User from '../models/userModel.js';
@@ -6,107 +11,186 @@ import csv from 'csv-parser';
 import fs from 'fs/promises';
 import fsSync from 'fs';
 
+// Helper: Calculate distance between two coordinates (Haversine Formula)
+const getDistanceFromLatLonInKm = (lat1, lon1, lat2, lon2) => {
+  const R = 6371; // Radius of the earth in km
+  const dLat = deg2rad(lat2 - lat1);
+  const dLon = deg2rad(lon2 - lon1);
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) *
+    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c; // Distance in km
+};
+
+const deg2rad = (deg) => deg * (Math.PI / 180);
+
 // @desc    Verify a product batch
 // @route   POST /api/products/verify
 // @access  Public
 export const verifyProductBatch = asyncHandler(async (req, res) => {
   const { batchNumber, latitude, longitude, accuracy } = req.body;
+  
+  // Get Client IP
+  const clientIp = requestIp.getClientIp(req); 
+  const geo = geoip.lookup(clientIp);
 
-  const productBatch = await ProductBatch.findOne({ batchNumber });
-  const now = new Date();
+  // 1. Start Session
+  const session = await mongoose.startSession();
+  session.startTransaction();
 
-  let status;
-  let warningMessage = null;
+  try {
+    const productBatch = await ProductBatch.findOne({ batchNumber }).session(session);
+    const now = new Date();
 
-  // 1. Check Existence
-  if (!productBatch) {
-    status = 'Fake';
-    // ... (Keep your existing Socket.io alert logic here) ...
-  } 
-  // 2. Check Recall / Manual Flags
-  else if (['Recalled', 'Investigating', 'Suspicious'].includes(productBatch.status)) {
-    status = productBatch.status; // Return the bad status directly
-    warningMessage = `This batch is marked as ${productBatch.status}. Do not use.`;
-  }
-  // 3. Check Expiry
-  else if (productBatch.expiryDate < now) {
-    status = 'Expired';
-  }
-  // 4. HARDENING: Check Scan Velocity (Anti-Cloning)
-  else if (productBatch.verificationCount >= productBatch.maxScansAllowed) {
-    status = 'Suspicious';
-    warningMessage = "Abnormal scan activity detected. This code may have been cloned.";
-    
-    // Optionally auto-update DB to flag it permanently
-    if (productBatch.status === 'Active') {
-        productBatch.status = 'Suspicious';
-        await productBatch.save();
-    }
-    
-    // Trigger Alert for Manufacturer/Regulator
-    if (req.io) {
-      req.io.emit('admin_alert', {
-        type: 'CLONE_DETECTED',
-        message: `⚠️ Clone Suspected! Batch ${batchNumber} exceeded scan limit.`,
-        timestamp: new Date()
-      });
-    }
-  } 
-  // 5. Valid
-  else {
-    status = 'Valid';
-  }
+    let status;
+    let warningMessage = null;
 
-  // Log the scan
-  await VerificationLog.create({
-    productBatch: batchNumber,
-    scannedBy: req.user ? req.user._id : null,
-    status,
-    location: { latitude, longitude, locationAccuracy: accuracy },
-    deviceInfo: req.headers['user-agent'] || 'Unknown Device',
-  });
-
-  // Increment count only if product exists
-  if (productBatch) {
-    // We don't await this save to keep response fast, unless strict consistency is needed
-    ProductBatch.updateOne(
-        { _id: productBatch._id }, 
-        { $inc: { verificationCount: 1 } }
-    ).exec();
-  }
-
-  // Award Points logic
-  let pointsEarned = 0;
-  if (status === 'Valid' && req.user) {
-    const priorLog = await VerificationLog.findOne({
-      scannedBy: req.user._id,
-      productBatch: batchNumber,
-      status: 'Valid',
-    });
-
-    if (!priorLog) {
-      const user = await User.findById(req.user._id);
-      if (user) {
-        user.points += 5;
-        await user.save();
-        pointsEarned = 5;
+    // --- LOCATION SPOOFING CHECK ---
+    // We accept a margin of error (e.g., 500km) because Mobile IPs can be routed far away.
+    // But if IP is in London and GPS is in Lagos (~5000km), that's a spoof.
+    let isSpoofed = false;
+    if (geo && latitude && longitude) {
+      const distance = getDistanceFromLatLonInKm(geo.ll[0], geo.ll[1], latitude, longitude);
+      if (distance > 1000) { // 1000km threshold (Conservative)
+        isSpoofed = true;
       }
     }
-  }
 
-  res.status(200).json({ 
-    status, 
-    product: status === 'Valid' ? productBatch : null, 
-    message: warningMessage, // Send warning to frontend
-    pointsEarned: status === 'Valid' ? 5 : 0 
-  });
+    // --- CORE VERIFICATION LOGIC ---
+    
+    if (!productBatch) {
+      status = 'Fake';
+    } 
+    else if (['Recalled', 'Investigating', 'Suspicious'].includes(productBatch.status)) {
+      status = productBatch.status;
+      warningMessage = `This batch is marked as ${productBatch.status}. Do not use.`;
+    }
+    else if (productBatch.expiryDate < now) {
+      status = 'Expired';
+    }
+    // 🚨 Security: Check Spoofing
+    else if (isSpoofed) {
+      status = 'Suspicious';
+      warningMessage = "Location mismatch detected. This scan appears to be spoofed.";
+      
+      if (req.io) {
+        req.io.emit('admin_alert', {
+          type: 'SPOOF_DETECTED',
+          message: `⚠️ Geo-Spoofing! IP (${geo.city}) vs GPS (${latitude.toFixed(2)},${longitude.toFixed(2)}) mismatch.`,
+          timestamp: new Date()
+        });
+      }
+    }
+    // 🚨 Security: Check Cloning (Velocity)
+    else if (productBatch.verificationCount >= productBatch.maxScansAllowed) {
+      status = 'Suspicious';
+      warningMessage = "Abnormal scan activity detected. This code may have been cloned.";
+      
+      // Auto-flag
+      if (productBatch.status === 'Active') {
+        productBatch.status = 'Suspicious';
+        await productBatch.save({ session });
+      }
+      
+      if (req.io) {
+        req.io.emit('admin_alert', {
+          type: 'CLONE_DETECTED',
+          message: `⚠️ Clone Suspected! Batch ${batchNumber} exceeded scan limit.`,
+          timestamp: new Date()
+        });
+      }
+
+      (async () => {
+        try {
+          // Find Manufacturer Email
+          const manufacturer = await User.findById(productBatch.manufacturer);
+          if (manufacturer) {
+            await sendEmail({
+              email: manufacturer.email,
+              subject: `🚨 SECURITY ALERT: Clone Detected - ${productBatch.productName}`,
+              message: `
+                URGENT: A product batch has exceeded its maximum safe scan limit.
+                
+                Product: ${productBatch.productName}
+                Batch: ${batchNumber}
+                Scan Count: ${productBatch.verificationCount + 1} / ${productBatch.maxScansAllowed}
+                
+                This batch has been automatically flagged as SUSPICIOUS. 
+                Please login to the Verifi Portal to review this incident.
+              `
+            });
+          }
+        } catch (err) {
+          console.error('Failed to send alert email:', err);
+        }
+      })();
+      
+    } 
+    else {
+      status = 'Valid';
+    }
+
+    // 2. Create Log
+    await VerificationLog.create([{
+      productBatch: batchNumber,
+      scannedBy: req.user ? req.user._id : null,
+      status,
+      location: { latitude, longitude, locationAccuracy: accuracy },
+      deviceInfo: req.headers['user-agent'] || 'Unknown Device',
+      // Optional: Save the inferred IP location for audit
+      ipLocation: geo ? `${geo.city}, ${geo.country}` : 'Unknown' 
+    }], { session });
+
+    // 3. Update Count
+    if (productBatch) {
+      await ProductBatch.updateOne(
+          { _id: productBatch._id }, 
+          { $inc: { verificationCount: 1 } }
+      ).session(session);
+    }
+
+    await session.commitTransaction();
+
+    // --- REWARD LOGIC ---
+    let pointsEarned = 0;
+    if (status === 'Valid' && req.user) {
+      const priorLog = await VerificationLog.findOne({
+        scannedBy: req.user._id,
+        productBatch: batchNumber,
+        status: 'Valid',
+      });
+
+      if (!priorLog) {
+        const user = await User.findById(req.user._id);
+        if (user) {
+          user.points += 5;
+          await user.save();
+          pointsEarned = 5;
+        }
+      }
+    }
+
+    res.status(200).json({ 
+      status, 
+      product: status === 'Valid' ? productBatch : null, 
+      message: warningMessage,
+      pointsEarned 
+    });
+
+  } catch (error) {
+    await session.abortTransaction();
+    throw error;
+  } finally {
+    session.endSession();
+  }
 });
 
 // @desc    Create a new product batch
 // @route   POST /api/products
 // @access  Protected (Manufacturer Only)
 export const createProductBatch = asyncHandler(async (req, res) => {
-  // 1. Security Check: Is Manufacturer Verified?
   if (req.user.role === 'manufacturer' && !req.user.organizationDetails?.isVerified) {
     res.status(403);
     throw new Error('Action Forbidden: Your organization account is pending verification.');
@@ -118,7 +202,7 @@ export const createProductBatch = asyncHandler(async (req, res) => {
     expiryDate, 
     manufacturingDate, 
     productAttributes,
-    quantity // Manufacturer should send this
+    quantity 
   } = req.body;
   
   const manufacturer = req.user._id;
@@ -129,11 +213,8 @@ export const createProductBatch = asyncHandler(async (req, res) => {
     throw new Error('Batch number already exists');
   }
 
-  // 2. Calculate Safe Scan Limit
-  // If I produce 1000 bottles, it's impossible to have 5000 scans.
-  // We allow a buffer (e.g., 1.5x or 2x) for user error/rescans.
   const estimatedQuantity = quantity ? parseInt(quantity) : 1000; 
-  const maxScansAllowed = Math.ceil(estimatedQuantity * 2); // 2x buffer
+  const maxScansAllowed = Math.ceil(estimatedQuantity * 2);
 
   const newProduct = await ProductBatch.create({
     batchNumber,
@@ -167,7 +248,6 @@ export const getManufacturerBatches = asyncHandler(async (req, res) => {
 // @route   POST /api/products/bulk-upload
 // @access  Protected (Manufacturer Only)
 export const uploadBatchList = asyncHandler(async (req, res) => {
-  // 1. Security Check
   if (req.user.role === 'manufacturer' && !req.user.organizationDetails?.isVerified) {
     if (req.file) await fs.unlink(req.file.path);
     res.status(403);
@@ -182,35 +262,39 @@ export const uploadBatchList = asyncHandler(async (req, res) => {
   const filePath = req.file.path;
   const manufacturer = req.user._id;
   const dataArray = [];
+  const errors = [];
+
+  const rowSchema = Joi.object({
+    batchNumber: Joi.string().required(),
+    productName: Joi.string().required(),
+    quantity: Joi.number().integer().min(1).optional(),
+    expiryDate: Joi.date().required(),
+    manufacturingDate: Joi.date().required(),
+    description: Joi.string().allow('').optional()
+  });
 
   try {
     await new Promise((resolve, reject) => {
       fsSync.createReadStream(filePath)
         .pipe(csv())
         .on('data', (row) => {
-          if (row.batchNumber && row.productName) {
+          const { error, value } = rowSchema.validate(row, { allowUnknown: true });
+          
+          if (error) {
+            errors.push(`Row Error (${row.batchNumber || 'Unknown'}): ${error.message}`);
+          } else {
+            const quantity = value.quantity ? parseInt(value.quantity) : 1000;
             
-            // --- NEW LOGIC START ---
-            // 1. Parse Quantity (Default to 1000 if missing)
-            const quantity = row.quantity ? parseInt(row.quantity) : 1000;
-            
-            // 2. Calculate Max Scans (e.g., 2x buffer)
-            const maxScansAllowed = Math.ceil(quantity * 2);
-            // --- NEW LOGIC END ---
-
             dataArray.push({
-              batchNumber: row.batchNumber,
-              productName: row.productName,
+              batchNumber: value.batchNumber,
+              productName: value.productName,
               manufacturer,
-              expiryDate: row.expiryDate ? new Date(row.expiryDate) : new Date(),
-              manufacturingDate: row.manufacturingDate ? new Date(row.manufacturingDate) : new Date(),
-              // Add the limit to the database object
-              maxScansAllowed: maxScansAllowed, 
-              productAttributes: {
-                description: row.description || ''
-              },
+              expiryDate: new Date(value.expiryDate),
+              manufacturingDate: new Date(value.manufacturingDate),
+              maxScansAllowed: Math.ceil(quantity * 2),
+              productAttributes: { description: value.description || '' },
               verificationCount: 0,
-              status: 'Active' // Explicitly set status
+              status: 'Active'
             });
           }
         })
@@ -219,14 +303,18 @@ export const uploadBatchList = asyncHandler(async (req, res) => {
     });
 
     if (dataArray.length > 0) {
-      // Use ordered: false so one duplicate doesn't fail the whole batch
       await ProductBatch.insertMany(dataArray, { ordered: false }).catch(err => {
-        console.log('Some duplicates skipped');
+        console.log('Duplicate entries skipped');
       });
     }
 
     await fs.unlink(filePath);
-    res.status(201).json({ message: 'Batch list processed.', count: dataArray.length });
+    
+    res.status(201).json({ 
+      message: 'Batch processing complete.', 
+      count: dataArray.length,
+      errors: errors.length > 0 ? errors : undefined
+    });
 
   } catch (error) {
     if (fsSync.existsSync(filePath)) await fs.unlink(filePath);
@@ -235,7 +323,7 @@ export const uploadBatchList = asyncHandler(async (req, res) => {
   }
 });
 
-// @desc    Update a batch (e.g., fix typos or recall product)
+// @desc    Update a batch
 // @route   PUT /api/products/:id
 // @access  Protected (Manufacturer Only)
 export const updateProductBatch = asyncHandler(async (req, res) => {
@@ -249,13 +337,11 @@ export const updateProductBatch = asyncHandler(async (req, res) => {
     throw new Error('Batch not found');
   }
 
-  // Ensure ownership
   if (batch.manufacturer.toString() !== req.user._id.toString() && req.user.role !== 'regulator') {
     res.status(401);
     throw new Error('Not authorized to edit this batch');
   }
 
-  // Update allowed fields
   batch.productName = productName || batch.productName;
   batch.expiryDate = expiryDate || batch.expiryDate;
   batch.status = status || batch.status;
@@ -265,7 +351,7 @@ export const updateProductBatch = asyncHandler(async (req, res) => {
   res.json(updatedBatch);
 });
 
-// @desc    Delete a batch (Only if it has 0 scans)
+// @desc    Delete a batch
 // @route   DELETE /api/products/:id
 // @access  Protected (Manufacturer Only)
 export const deleteProductBatch = asyncHandler(async (req, res) => {
@@ -281,35 +367,45 @@ export const deleteProductBatch = asyncHandler(async (req, res) => {
     throw new Error('Not authorized');
   }
 
-  // Safety Check: Don't delete if it's already in the market
   if (batch.verificationCount > 0) {
     res.status(400);
-    throw new Error('Cannot delete a batch that has already been scanned by consumers. Mark it as "Recalled" instead.');
+    throw new Error('Cannot delete active batch. Use "Recall" status instead.');
   }
 
   await batch.deleteOne();
   res.json({ message: 'Batch removed' });
 });
 
-// @desc    Get ALL batches system-wide (Regulator Only)
+// @desc    Get all batches (Regulator)
 // @route   GET /api/products/all-inventory
 // @access  Protected (Regulator)
 export const getAllBatches = asyncHandler(async (req, res) => {
   const batches = await ProductBatch.find({})
-    .populate('manufacturer', 'firstName lastName organizationDetails.orgName') // Show who made it
+    .populate('manufacturer', 'firstName lastName organizationDetails.orgName')
     .sort({ createdAt: -1 });
   res.json(batches);
 });
 
-// @desc    Bulk update product batches (e.g., Suspend selected)
+// @desc    Bulk update
 // @route   PUT /api/products/bulk-update
-// @access  Regulator (and Manufacturer if needed)
+// @access  Regulator / Manufacturer
 export const bulkUpdateProductBatches = asyncHandler(async (req, res) => {
-  const { ids, status } = req.body; // Expects { ids: ['id1', 'id2'], status: 'Suspicious' }
+  const { ids, status } = req.body;
 
   if (!ids || !Array.isArray(ids) || ids.length === 0) {
     res.status(400);
     throw new Error('No items selected');
+  }
+
+  if (req.user.role === 'manufacturer') {
+    const ownedCount = await ProductBatch.countDocuments({
+      _id: { $in: ids },
+      manufacturer: req.user._id
+    });
+    if (ownedCount !== ids.length) {
+      res.status(403);
+      throw new Error('You can only update your own products');
+    }
   }
 
   const result = await ProductBatch.updateMany(
