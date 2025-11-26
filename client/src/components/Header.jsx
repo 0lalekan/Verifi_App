@@ -138,14 +138,15 @@ const Header = () => {
               animate={{ x: 0 }} 
               exit={{ x: '100%' }} 
               transition={{ type: "spring", damping: 25, stiffness: 200 }} 
-              className="md:hidden fixed inset-y-0 right-0 z-50 w-[75%] max-w-xs bg-background border-l border-border shadow-2xl flex flex-col"
+              // UPDATED: Applied 'glass' class and 'z-[100]' to fix light mode visibility
+              className="md:hidden fixed inset-y-0 right-0 z-[100] w-[75%] max-w-xs glass border-l border-border shadow-2xl flex flex-col"
             >
               {/* Drawer Header */}
-              <div className="flex items-center justify-between p-6 border-b border-border">
+              <div className="flex items-center justify-between p-6 border-b border-border/50">
                 <span className="font-display font-bold text-lg text-foreground">Menu</span>
                 <button 
                   onClick={() => setIsMobileMenuOpen(false)} 
-                  className="p-2 rounded-full hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors"
+                  className="p-2 rounded-full hover:bg-secondary/50 text-muted-foreground hover:text-foreground transition-colors"
                 >
                   <X size={24} />
                 </button>
@@ -161,7 +162,7 @@ const Header = () => {
                     className={`flex items-center gap-4 p-3.5 rounded-xl text-sm font-bold transition-all ${
                       isActive(link.to) 
                         ? 'bg-primary/10 text-primary' 
-                        : 'text-muted-foreground hover:bg-secondary hover:text-foreground'
+                        : 'text-muted-foreground hover:bg-secondary/50 hover:text-foreground'
                     }`}
                   >
                     {link.icon} {link.label}
@@ -170,7 +171,7 @@ const Header = () => {
               </div>
 
               {/* Drawer Footer */}
-              <div className="p-6 border-t border-border space-y-4 bg-secondary/10">
+              <div className="p-6 border-t border-border/50 space-y-4 bg-secondary/10">
                 {/* Mobile Install Button */}
                 {isInstallable && (
                   <button 
@@ -187,7 +188,7 @@ const Header = () => {
                   </Link>
                 ) : (
                   <>
-                    <Link to="/profile" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-3 p-3.5 rounded-xl bg-secondary text-foreground font-bold text-sm">
+                    <Link to="/profile" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-3 p-3.5 rounded-xl bg-secondary/50 text-foreground font-bold text-sm">
                       <UserCircle size={20} /> My Profile
                     </Link>
                     <button onClick={logoutHandler} className="flex items-center justify-center gap-2 w-full p-3.5 rounded-xl border border-destructive/30 text-destructive font-bold text-sm hover:bg-destructive/10 transition-colors">

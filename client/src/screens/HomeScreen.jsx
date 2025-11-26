@@ -40,7 +40,6 @@ const VideoShowcase = () => {
     consumer: {
       title: "Scan. Verify. Earn.",
       description: "See how easy it is for a shopper to verify a product in seconds using the Verifi mobile app.",
-      // Replace with your actual YouTube/Vimeo thumbnail or video URL later
       videoPlaceholder: "bg-gradient-to-br from-emerald-900 to-black", 
       icon: <Smartphone size={20} />,
       color: "text-emerald-500"
@@ -66,16 +65,20 @@ const VideoShowcase = () => {
           <div className="inline-flex items-center bg-secondary/50 p-1.5 rounded-full border border-border/50 mt-8 backdrop-blur-md">
             <button 
               onClick={() => setActiveTab('consumer')}
-              className={`flex items-center gap-2 px-6 py-2.5 rounded-full text-sm font-bold transition-all ${
-                activeTab === 'consumer' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
+              className={`flex items-center gap-2 px-6 py-2.5 rounded-full text-sm font-bold transition-all duration-300 ${
+                activeTab === 'consumer' 
+                  ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/25 scale-105' // UPDATED: High contrast active state
+                  : 'text-muted-foreground hover:text-foreground hover:bg-background/50'
               }`}
             >
               <Smartphone size={16} /> For Consumers
             </button>
             <button 
               onClick={() => setActiveTab('business')}
-              className={`flex items-center gap-2 px-6 py-2.5 rounded-full text-sm font-bold transition-all ${
-                activeTab === 'business' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
+              className={`flex items-center gap-2 px-6 py-2.5 rounded-full text-sm font-bold transition-all duration-300 ${
+                activeTab === 'business' 
+                  ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/25 scale-105' // UPDATED: High contrast active state
+                  : 'text-muted-foreground hover:text-foreground hover:bg-background/50'
               }`}
             >
               <Layers size={16} /> For Partners
@@ -96,7 +99,7 @@ const VideoShowcase = () => {
             >
               <div className={`aspect-video rounded-[2rem] overflow-hidden relative flex items-center justify-center group cursor-pointer ${content[activeTab].videoPlaceholder}`}>
                 
-                {/* Simulated UI Elements (Replace with real video/image later) */}
+                {/* Simulated UI Elements */}
                 <div className="absolute inset-0 opacity-30 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
                 
                 {/* Play Button Overlay */}

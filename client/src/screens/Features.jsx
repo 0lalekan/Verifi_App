@@ -62,16 +62,20 @@ const VideoShowcase = () => {
           <div className="inline-flex items-center bg-secondary/50 p-1.5 rounded-full border border-border/50 mt-8 backdrop-blur-md">
             <button 
               onClick={() => setActiveTab('consumer')}
-              className={`flex items-center gap-2 px-6 py-2.5 rounded-full text-sm font-bold transition-all ${
-                activeTab === 'consumer' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
+              className={`flex items-center gap-2 px-6 py-2.5 rounded-full text-sm font-bold transition-all duration-300 ${
+                activeTab === 'consumer' 
+                  ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/25 scale-105' 
+                  : 'text-muted-foreground hover:text-foreground hover:bg-background/50'
               }`}
             >
               <Smartphone size={16} /> For Consumers
             </button>
             <button 
               onClick={() => setActiveTab('business')}
-              className={`flex items-center gap-2 px-6 py-2.5 rounded-full text-sm font-bold transition-all ${
-                activeTab === 'business' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
+              className={`flex items-center gap-2 px-6 py-2.5 rounded-full text-sm font-bold transition-all duration-300 ${
+                activeTab === 'business' 
+                  ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/25 scale-105'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-background/50'
               }`}
             >
               <Layers size={16} /> For Partners

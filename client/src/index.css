@@ -91,12 +91,12 @@
     In Dark Mode, it remains transparent (0.6) for the glow effect.
   */
   .glass {
-    background-color: rgba(255, 255, 255, 0.95);
+    background-color: rgba(255, 255, 255, 0.5);
     @apply backdrop-blur-xl border border-gray-200 shadow-xl;
   }
 
   .dark .glass {
-    background-color: rgba(0, 0, 0, 0.6);
+    background-color: rgba(0, 0, 0, 0.4);
     @apply border-white/10;
   }
   
