@@ -133,7 +133,7 @@ const VideoShowcase = () => {
 
 const HomeScreen = () => {
   return (
-    <div className="min-h-screen w-full bg-background bg-gradient-mesh dark:bg-gradient-mesh-dark transition-colors duration-500 overflow-x-hidden">
+    <div className="min-h-screen w-full bg-background dark:bg-gradient-mesh-dark transition-colors duration-500 overflow-x-hidden">
       
       {/* --- HERO SECTION --- */}
       <section className="relative pt-32 pb-20 px-6 md:pt-40 md:pb-32 max-w-7xl mx-auto">

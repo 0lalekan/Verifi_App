@@ -2,26 +2,28 @@
 
 @layer base {
   :root {
-    /* Light Mode: Force Pure White & Pure Black */
+    /* --- LIGHT MODE: SOLID & CLEAN --- */
+    /* Pure White Background */
     --background: 0 0% 100%;
-    --foreground: 0 0% 0%; 
+    /* Pure Black Text for maximum contrast */
+    --foreground: 240 10% 3.9%; 
     
     --card: 0 0% 100%;
-    --card-foreground: 0 0% 0%;
+    --card-foreground: 240 10% 3.9%;
     
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 0%;
+    --popover-foreground: 240 10% 3.9%;
     
-    /* Keep Primary (Emerald) */
+    /* Emerald Primary */
     --primary: 142.1 76.2% 36.3%;
     --primary-foreground: 355.7 100% 97.3%;
     
-    /* Make Secondary lighter (Off-White) for contrast */
+    /* Very Light Grey for Secondary areas */
     --secondary: 240 4.8% 96%;
     --secondary-foreground: 240 5.9% 10%;
     
     --muted: 240 4.8% 96%;
-    --muted-foreground: 240 3.8% 40%; /* Darker muted text */
+    --muted-foreground: 240 3.8% 45%;
     
     --accent: 240 4.8% 96%;
     --accent-foreground: 240 5.9% 10%;
@@ -29,14 +31,16 @@
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
     
-    --border: 240 5.9% 85%; /* Darker border for visibility */
-    --input: 240 5.9% 85%;
+    /* Darker border for better visibility in light mode */
+    --border: 240 5.9% 90%;
+    --input: 240 5.9% 90%;
     
     --ring: 142.1 76.2% 36.3%;
     --radius: 0.5rem;
   }
 
   .dark {
+    /* --- DARK MODE: DEEP & GLOWING --- */
     --background: 240 10% 3.9%;
     --foreground: 0 0% 98%;
     
@@ -79,34 +83,37 @@
     font-feature-settings: "rlig" 1, "calt" 1;
     @apply antialiased transition-colors duration-300;
   }
-
-  h1, h2, h3, h4 {
-    @apply font-sans tracking-tight;
-  }
 }
 
 @layer utilities {
+  /* FIX: In Light Mode, 'glass' is now mostly solid white (0.95 opacity).
+    This prevents the "Grey/Muddy" look.
+    In Dark Mode, it remains transparent (0.6) for the glow effect.
+  */
   .glass {
-    /* FIX: Increased opacity (0.6 -> 0.9) to prevent background bleed-through */
-    background-color: rgba(255, 255, 255, 0.9);
+    background-color: rgba(255, 255, 255, 0.95);
     @apply backdrop-blur-xl border border-gray-200 shadow-xl;
   }
 
   .dark .glass {
     background-color: rgba(0, 0, 0, 0.6);
-    @apply border-white/10 border-gray-800;
+    @apply border-white/10;
   }
   
   .glass-card {
-    /* FIX: Using solid white/90 for cards in light mode */
-    @apply relative overflow-hidden rounded-2xl border border-gray-200 dark:border-white/5 bg-white/90 dark:bg-zinc-900/40 backdrop-blur-md shadow-sm transition-all duration-300 hover:shadow-md hover:bg-white dark:hover:bg-zinc-900/60;
+    /* Solid white for cards in light mode */
+    @apply relative overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm transition-all duration-300 hover:shadow-md;
+  }
+  
+  .dark .glass-card {
+    @apply border-white/5 bg-zinc-900/40 backdrop-blur-md hover:bg-zinc-900/60;
   }
 
   .text-gradient {
     background-clip: text;
     -webkit-background-clip: text;
     color: transparent;
-    background-image: linear-gradient(135deg, #059669 0%, #2563eb 100%);
+    background-image: linear-gradient(135deg, #022c22 0%, #059669 50%, #2563eb 100%);
   }
 
   .dark .text-gradient {
