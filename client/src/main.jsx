@@ -13,6 +13,9 @@ import RegisterScreen from './screens/RegisterScreen.jsx'
 import ForgotPasswordScreen from './screens/ForgotPasswordScreen.jsx';
 import ResetPasswordScreen from './screens/ResetPasswordScreen.jsx';
 import ProfileScreen from './screens/ProfileScreen.jsx'
+import Security from './screens/Security.jsx';
+import Careers from './screens/Careers.jsx';
+import Blog from './screens/Blog.jsx';
 
 // Static Pages (NEW)
 import Features from './screens/Features.jsx';
@@ -71,6 +74,9 @@ const router = createBrowserRouter(
       <Route path="/contact" element={<Contact />} />
       <Route path="/privacy" element={<Privacy />} />
       <Route path="/terms" element={<Terms />} />
+      <Route path="/security" element={<Security />} />
+      <Route path="/careers" element={<Careers />} />
+      <Route path="/blog" element={<Blog />} />
 
       {/* === Protected / General === */}
       <Route path="/dashboard" element={<DashboardScreen />} />

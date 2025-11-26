@@ -1,55 +1,76 @@
 import React from 'react';
-import { Shield, Lock, Eye } from 'lucide-react';
+import { Shield, Lock, Eye, Database, Globe, Server } from 'lucide-react';
+
+const Section = ({ icon: Icon, title, children }) => (
+  <div className="mb-10">
+    <h3 className="text-xl font-bold text-foreground mb-4 flex items-center gap-3">
+      <div className="p-2 bg-primary/10 rounded-lg text-primary">
+        <Icon size={20} />
+      </div>
+      {title}
+    </h3>
+    <div className="text-muted-foreground leading-relaxed space-y-3 pl-1">
+      {children}
+    </div>
+  </div>
+);
 
 const Privacy = () => {
   return (
     <div className="min-h-screen w-full bg-background bg-gradient-mesh dark:bg-gradient-mesh-dark p-4 md:p-8 pt-24 transition-colors duration-500">
-      <div className="max-w-3xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-700">
+      <div className="max-w-4xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-700">
         
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-display font-bold text-foreground mb-2">Privacy Policy</h1>
-          <p className="text-muted-foreground">We value your trust and data security.</p>
+        <div className="text-center mb-16">
+          <h1 className="text-4xl md:text-5xl font-display font-bold text-foreground mb-4">Privacy Policy</h1>
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            Your trust is our currency. Here is how we protect the data that powers the Verifi Network.
+          </p>
+          <p className="text-xs text-muted-foreground mt-4 uppercase tracking-widest">Last Updated: October 2025</p>
         </div>
 
         <div className="glass rounded-[2.5rem] p-8 md:p-12 shadow-xl">
-          <div className="prose dark:prose-invert max-w-none text-muted-foreground leading-relaxed">
-            <p className="mb-6">
-              At Verifi, we take your privacy seriously. This policy describes how we collect, use, and protect your data when you use our platform.
-            </p>
-
-            <h3 className="text-xl font-bold text-foreground mt-8 mb-4 flex items-center gap-2">
-              <Shield size={20} className="text-primary"/> 1. Data Collection
-            </h3>
-            <p>
-              We collect geolocation data during product scans to help identify counterfeit hotspots. This data is:
-            </p>
-            <ul className="list-disc pl-5 space-y-2 mt-2 marker:text-primary">
-              <li><strong>Anonymized:</strong> We do not link scan locations to specific user identities publicly.</li>
-              <li><strong>Aggregated:</strong> Data is used to generate heatmaps for regulators.</li>
+          
+          <Section icon={Database} title="1. Information We Collect">
+            <p>We collect information to ensure the integrity of the supply chain:</p>
+            <ul className="list-disc pl-5 space-y-2 marker:text-primary">
+              <li><strong>Account Data:</strong> Name, Email, Organization Details (RC Number, License) for Manufacturers/Distributors.</li>
+              <li><strong>Scan Data:</strong> GPS Coordinates, Device User-Agent, and Timestamp when you verify a product.</li>
+              <li><strong>Transaction Data:</strong> Payment history for subscription plans (processed securely via Flutterwave).</li>
             </ul>
+          </Section>
 
-            <h3 className="text-xl font-bold text-foreground mt-8 mb-4 flex items-center gap-2">
-              <Lock size={20} className="text-primary"/> 2. Account Information
-            </h3>
+          <Section icon={Globe} title="2. Location Data Usage">
             <p>
-              For Manufacturers and Regulators, we collect business verification documents (RC Numbers, Licenses) to validate legitimacy. This information is stored encrypted and is only accessible by authorized compliance officers.
+              Verifi relies on precise geolocation to detect counterfeit hotspots. 
             </p>
-
-            <h3 className="text-xl font-bold text-foreground mt-8 mb-4 flex items-center gap-2">
-              <Eye size={20} className="text-primary"/> 3. Data Sharing
-            </h3>
-            <p>
-              We do not sell your personal data to third parties. Information is shared only with:
-            </p>
-            <ul className="list-disc pl-5 space-y-2 mt-2 marker:text-primary">
-              <li><strong>Regulators:</strong> To assist in enforcement actions against counterfeiters.</li>
-              <li><strong>Manufacturers:</strong> Limited to aggregate scan data (e.g., "50 scans in Lagos") to help them track inventory flow.</li>
+            <ul className="list-disc pl-5 space-y-2 marker:text-primary">
+              <li><strong>For Consumers:</strong> Your scan location is anonymized and aggregated to build the "Safe Retailer Map". We never track your movement outside the app.</li>
+              <li><strong>For Regulators:</strong> Aggregated heatmaps identify regions with high failure rates for enforcement action.</li>
             </ul>
+          </Section>
 
-            <div className="mt-12 pt-8 border-t border-border/50 text-sm text-center">
-              <p>Last updated: {new Date().toLocaleDateString()}</p>
-            </div>
+          <Section icon={Eye} title="3. Data Sharing & Disclosure">
+            <p>We do not sell your personal data. We only share data in the following strict scenarios:</p>
+            <ul className="list-disc pl-5 space-y-2 marker:text-primary">
+              <li><strong>With Regulators:</strong> To report confirmed counterfeit incidents and evidence.</li>
+              <li><strong>With Manufacturers:</strong> They receive anonymized analytics (e.g., "500 scans in Lagos") to track inventory flow.</li>
+              <li><strong>Legal Requirements:</strong> If compelled by a court order or to prevent imminent physical harm.</li>
+            </ul>
+          </Section>
+
+          <Section icon={Lock} title="4. Data Security">
+            <p>
+              We employ military-grade AES-256 encryption for data at rest and TLS 1.3 for data in transit. 
+              Critical audit logs are cryptographically chained to prevent tampering.
+            </p>
+          </Section>
+
+          <div className="mt-12 pt-8 border-t border-border/50 text-center">
+            <p className="text-sm text-muted-foreground">
+              Questions about your data? Contact our Data Protection Officer at <a href="mailto:privacy@verifi.ng" className="text-primary hover:underline font-bold">privacy@verifi.ng</a>
+            </p>
           </div>
+
         </div>
       </div>
     </div>
