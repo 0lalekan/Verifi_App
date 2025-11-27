@@ -83,7 +83,19 @@ const ConsumerScanScreen = () => {
 
   const { ref: cameraRef } = useZxing({
     paused: !isScanning || !!verificationResult,
-    constraints: { video: { facingMode: 'environment' } },
+    // FIX: Optimized constraints to force Main Camera & Auto-focus
+    constraints: { 
+      video: { 
+        facingMode: 'environment',
+        // Requesting higher resolution forces the OS to pick the high-quality main lens
+        // instead of the low-res/fixed-focus ultra-wide lens.
+        width: { min: 640, ideal: 1280, max: 1920 },
+        height: { min: 480, ideal: 720, max: 1080 },
+        // Helps with focus on supported devices
+        advanced: [{ focusMode: "continuous" }] 
+      } 
+    },
+    timeBetweenDecodingAttempts: 300, // Slight delay to reduce CPU load/blur
     onDecodeResult: (result) => {
       if (isScanning && !verificationResult) {
         setIsScanning(false); 
