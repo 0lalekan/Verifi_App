@@ -7,7 +7,12 @@ export const validateRegistration = (req, res, next) => {
     lastName: Joi.string().min(2).max(30).required(),
     email: Joi.string().email().required(),
     password: Joi.string().min(6).required(),
-    role: Joi.string().valid('consumer', 'manufacturer', 'regulator').default('consumer'),
+    
+    // FIX: Added 'distributor' and 'retailer' to the allowed list
+    role: Joi.string()
+      .valid('consumer', 'manufacturer', 'regulator', 'distributor', 'retailer')
+      .default('consumer'),
+
     // Allow optional organization details only if they are provided
     organizationDetails: Joi.object({
       orgName: Joi.string().optional().allow(''),

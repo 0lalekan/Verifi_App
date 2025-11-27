@@ -19,27 +19,60 @@ const RegisterScreen = () => {
     role: 'consumer'
   });
 
-  const RoleCard = ({ id, title, desc, icon: Icon, color }) => (
-    <div 
-      onClick={() => setFormData({ ...formData, role: id })}
-      className={`relative flex flex-col gap-2 p-4 rounded-2xl border-2 cursor-pointer transition-all duration-200 ${
-        formData.role === id 
-          ? `border-${color} bg-${color.split('-')[0]}-50 dark:bg-${color.split('-')[0]}-900/20` 
-          : 'border-border bg-background/50 hover:border-foreground/20'
-      }`}
-    >
-      <div className="flex justify-between items-start">
-        <div className={`p-2 rounded-full ${formData.role === id ? `bg-${color} text-white` : 'bg-secondary text-muted-foreground'}`}>
-          <Icon size={18} />
+  // FIX: Define explicit style maps so Tailwind doesn't purge these classes
+  const roleThemes = {
+    consumer: {
+      border: 'border-emerald-500',
+      bg: 'bg-emerald-50 dark:bg-emerald-900/20',
+      iconBg: 'bg-emerald-500',
+      text: 'text-emerald-500'
+    },
+    manufacturer: {
+      border: 'border-blue-500',
+      bg: 'bg-blue-50 dark:bg-blue-900/20',
+      iconBg: 'bg-blue-500',
+      text: 'text-blue-500'
+    },
+    distributor: {
+      border: 'border-purple-500',
+      bg: 'bg-purple-50 dark:bg-purple-900/20',
+      iconBg: 'bg-purple-500',
+      text: 'text-purple-500'
+    },
+    retailer: {
+      border: 'border-orange-500',
+      bg: 'bg-orange-50 dark:bg-orange-900/20',
+      iconBg: 'bg-orange-500',
+      text: 'text-orange-500'
+    }
+  };
+
+  const RoleCard = ({ id, title, desc, icon: Icon }) => {
+    const isActive = formData.role === id;
+    const theme = roleThemes[id];
+
+    return (
+      <div 
+        onClick={() => setFormData({ ...formData, role: id })}
+        className={`relative flex flex-col gap-2 p-4 rounded-2xl border-2 cursor-pointer transition-all duration-200 ${
+          isActive 
+            ? `${theme.border} ${theme.bg}` 
+            : 'border-border bg-background/50 hover:border-foreground/20'
+        }`}
+      >
+        <div className="flex justify-between items-start">
+          <div className={`p-2 rounded-full ${isActive ? `${theme.iconBg} text-white` : 'bg-secondary text-muted-foreground'}`}>
+            <Icon size={18} />
+          </div>
+          {isActive && <CheckCircle2 size={18} className={theme.text} />}
         </div>
-        {formData.role === id && <CheckCircle2 size={18} className={`text-${color}`} />}
+        <div>
+          <h3 className={`font-bold text-sm ${isActive ? theme.text : 'text-foreground'}`}>{title}</h3>
+          <p className="text-[10px] text-muted-foreground leading-tight mt-1">{desc}</p>
+        </div>
       </div>
-      <div>
-        <h3 className={`font-bold text-sm ${formData.role === id ? `text-${color}` : 'text-foreground'}`}>{title}</h3>
-        <p className="text-[10px] text-muted-foreground leading-tight mt-1">{desc}</p>
-      </div>
-    </div>
-  );
+    );
+  };
 
   const getRedirectPath = (role) => {
     switch (role) {
@@ -96,11 +129,10 @@ const RegisterScreen = () => {
             <div className="space-y-3">
               <label className="text-sm font-bold text-foreground ml-1">I am a...</label>
               <div className="grid grid-cols-2 gap-3">
-                <RoleCard id="consumer" title="Consumer" desc="Verify products." icon={User} color="emerald-500" />
-                <RoleCard id="manufacturer" title="Manufacturer" desc="Register products." icon={Factory} color="blue-500" />
-                {/* UPDATED: Specific Distributor Role */}
-                <RoleCard id="distributor" title="Distributor" desc="Import & Wholesale." icon={Truck} color="purple-500" />
-                <RoleCard id="retailer" title="Retailer" desc="Sell to consumers." icon={Store} color="orange-500" />
+                <RoleCard id="consumer" title="Consumer" desc="Verify products." icon={User} />
+                <RoleCard id="manufacturer" title="Manufacturer" desc="Register products." icon={Factory} />
+                <RoleCard id="distributor" title="Distributor" desc="Import & Wholesale." icon={Truck} />
+                <RoleCard id="retailer" title="Retailer" desc="Sell to consumers." icon={Store} />
               </div>
             </div>
 
