@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@tanstack/react-query": "^5.90.10",
+    "@zxing/library": "^0.21.3",
     "autoprefixer": "^10.4.21",
     "axios": "^1.13.2",
     "chart.js": "^4.5.1",
@@ -28,7 +29,7 @@
     "react-router-dom": "^7.9.5",
     "react-toastify": "^11.0.5",
     "react-use-audio": "^0.1.5",
-    "react-zxing": "^2.1.0",
+    "react-zxing": "^2.0.1",
     "socket.io-client": "^4.8.1",
     "tailwind-merge": "^3.4.0",
     "tailwindcss": "^4.1.17",
