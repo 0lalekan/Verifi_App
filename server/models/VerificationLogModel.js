@@ -21,11 +21,13 @@ const verificationLogSchema = new Schema(
     },
     status: {
       type: String,
-      enum: ['Valid', 'Fake', 'Expired', 'Unknown'],
+      // FIX: Added 'Suspicious' to this list
+      enum: ['Valid', 'Fake', 'Expired', 'Unknown', 'Suspicious', 'Recalled'],
       required: true,
     },
     location: { type: locationSchema, required: true },
     deviceInfo: { type: String, required: true },
+    ipLocation: { type: String } // Added optional field for IP location we saw in controller
   },
   { timestamps: true }
 );

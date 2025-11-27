@@ -36,30 +36,26 @@ export const verifyProductBatch = asyncHandler(async (req, res) => {
   const clientIp = requestIp.getClientIp(req); 
   const geo = geoip.lookup(clientIp);
 
-  // 1. Start Session
-  const session = await mongoose.startSession();
-  session.startTransaction();
+  // --- 1. REMOVED TRANSACTION START ---
+  // In single-node MongoDB, transactions fail. We will run operations sequentially.
 
   try {
-    const productBatch = await ProductBatch.findOne({ batchNumber }).session(session);
+    const productBatch = await ProductBatch.findOne({ batchNumber });
     const now = new Date();
 
     let status;
     let warningMessage = null;
 
     // --- LOCATION SPOOFING CHECK ---
-    // We accept a margin of error (e.g., 500km) because Mobile IPs can be routed far away.
-    // But if IP is in London and GPS is in Lagos (~5000km), that's a spoof.
     let isSpoofed = false;
     if (geo && latitude && longitude) {
       const distance = getDistanceFromLatLonInKm(geo.ll[0], geo.ll[1], latitude, longitude);
-      if (distance > 1000) { // 1000km threshold (Conservative)
+      if (distance > 1000) { // 1000km threshold
         isSpoofed = true;
       }
     }
 
     // --- CORE VERIFICATION LOGIC ---
-    
     if (!productBatch) {
       status = 'Fake';
     } 
@@ -91,7 +87,7 @@ export const verifyProductBatch = asyncHandler(async (req, res) => {
       // Auto-flag
       if (productBatch.status === 'Active') {
         productBatch.status = 'Suspicious';
-        await productBatch.save({ session });
+        await productBatch.save(); // Removed session
       }
       
       if (req.io) {
@@ -102,9 +98,9 @@ export const verifyProductBatch = asyncHandler(async (req, res) => {
         });
       }
 
+      // Send Email Asynchronously
       (async () => {
         try {
-          // Find Manufacturer Email
           const manufacturer = await User.findById(productBatch.manufacturer);
           if (manufacturer) {
             await sendEmail({
@@ -116,9 +112,6 @@ export const verifyProductBatch = asyncHandler(async (req, res) => {
                 Product: ${productBatch.productName}
                 Batch: ${batchNumber}
                 Scan Count: ${productBatch.verificationCount + 1} / ${productBatch.maxScansAllowed}
-                
-                This batch has been automatically flagged as SUSPICIOUS. 
-                Please login to the Verifi Portal to review this incident.
               `
             });
           }
@@ -133,25 +126,22 @@ export const verifyProductBatch = asyncHandler(async (req, res) => {
     }
 
     // 2. Create Log
-    await VerificationLog.create([{
+    await VerificationLog.create({
       productBatch: batchNumber,
       scannedBy: req.user ? req.user._id : null,
       status,
       location: { latitude, longitude, locationAccuracy: accuracy },
       deviceInfo: req.headers['user-agent'] || 'Unknown Device',
-      // Optional: Save the inferred IP location for audit
       ipLocation: geo ? `${geo.city}, ${geo.country}` : 'Unknown' 
-    }], { session });
+    }); // Removed session
 
     // 3. Update Count
     if (productBatch) {
       await ProductBatch.updateOne(
           { _id: productBatch._id }, 
           { $inc: { verificationCount: 1 } }
-      ).session(session);
+      ); // Removed session
     }
-
-    await session.commitTransaction();
 
     // --- REWARD LOGIC ---
     let pointsEarned = 0;
@@ -180,10 +170,8 @@ export const verifyProductBatch = asyncHandler(async (req, res) => {
     });
 
   } catch (error) {
-    await session.abortTransaction();
+    // No transaction to abort
     throw error;
-  } finally {
-    session.endSession();
   }
 });
 
@@ -431,10 +419,6 @@ export const transferCustody = asyncHandler(async (req, res) => {
     res.status(404);
     throw new Error('Batch not found');
   }
-
-  // 2. Validation: Only allowed if you are the CURRENT owner?
-  // For MVP, we trust any authorized "Distributor" account to scan it in.
-  // In V2, we would check if req.user._id matches the last "recipient".
 
   // 3. Log the Event
   batch.custodyChain.push({
