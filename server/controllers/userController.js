@@ -222,8 +222,26 @@ const toggleUserStatus = asyncHandler(async (req, res) => {
   }
 });
 
+// @desc    Get verified suppliers (Manufacturers & Distributors)
+// @route   GET /api/users/directory
+// @access  Protected (B2B)
+const getPublicManufacturers = asyncHandler(async (req, res) => {
+  const suppliers = await User.find({ 
+    // FIX: Only fetch Manufacturers and Distributors
+    role: { $in: ['manufacturer', 'distributor'] }, 
+    // FIX: Only Verified accounts
+    'organizationDetails.isVerified': true,
+    // FIX: Exclude the user making the request (don't show myself)
+    _id: { $ne: req.user._id }
+  })
+  .select('firstName lastName email role organizationDetails.orgName organizationDetails.orgAddress')
+  .sort({ 'organizationDetails.orgName': 1 });
+
+  res.json(suppliers);
+});
+
 export { 
   registerUser, authUser, getUserProfile, updateUserProfile, forgotPassword, resetPassword, 
   getDashboardStats, getPendingVerifications, verifyManufacturer, getAllManufacturers, 
-  revokeManufacturer, toggleUserStatus 
+  revokeManufacturer, toggleUserStatus, getPublicManufacturers
 };

@@ -12,6 +12,7 @@ import {
   getAllManufacturers,
   revokeManufacturer,
   toggleUserStatus,
+  getPublicManufacturers,
 } from '../controllers/userController.js';
 import { protect, restrictTo } from '../middleware/authMiddleware.js';
 import { validateRegistration } from '../middleware/validationMiddleware.js';
@@ -38,5 +39,13 @@ router.put('/verify/:id', protect, restrictTo('regulator'), verifyManufacturer);
 router.get('/manufacturers', protect, restrictTo('regulator'), getAllManufacturers);
 router.put('/revoke/:id', protect, restrictTo('regulator'), revokeManufacturer);
 router.put('/toggle-status/:id', protect, restrictTo('regulator'), toggleUserStatus);
+
+// NEW: Allow B2B users to find partners
+router.get(
+  '/directory', 
+  protect, 
+  restrictTo('manufacturer', 'distributor', 'retailer'), 
+  getPublicManufacturers
+);
 
 export default router;
