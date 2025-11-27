@@ -1,4 +1,4 @@
-import React, { useState, useRef, useMemo } from 'react';
+import React, { useState, useRef, useMemo, useEffect } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '../api';
 import { toast } from 'react-toastify';
@@ -15,7 +15,9 @@ import {
   CheckCircle2, 
   CameraOff,
   ScanLine,
-  Loader2
+  Loader2,
+  ZoomIn, 
+  ZoomOut
 } from 'lucide-react';
 
 const ConsumerScanScreen = () => {
@@ -24,6 +26,11 @@ const ConsumerScanScreen = () => {
   const [isScanning, setIsScanning] = useState(true);
   const [isProcessingImage, setIsProcessingImage] = useState(false);
   const [cameraError, setCameraError] = useState(null);
+  
+  // --- ZOOM STATE ---
+  const [zoom, setZoom] = useState(1);
+  const [maxZoom, setMaxZoom] = useState(5); // Default to 5 if caps fail
+  const [showZoom, setShowZoom] = useState(false);
   
   const fileInputRef = useRef(null);
   const queryClient = useQueryClient();
@@ -34,11 +41,10 @@ const ConsumerScanScreen = () => {
     [DecodeHintType.POSSIBLE_FORMATS, [
       BarcodeFormat.QR_CODE, 
       BarcodeFormat.CODE_128, 
-      BarcodeFormat.EAN_13,
+      BarcodeFormat.EAN_13, 
       BarcodeFormat.UPC_A,
       BarcodeFormat.DATA_MATRIX
     ]],
-    [DecodeHintType.ASSUME_GS1, true]
   ]), []);
 
   const mutation = useMutation({
@@ -65,7 +71,8 @@ const ConsumerScanScreen = () => {
   const handleVerify = (code) => {
     if (!code) return;
     setBatchNumber(code);
-    
+    setIsScanning(false);
+
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (pos) => mutation.mutate({ 
@@ -83,22 +90,16 @@ const ConsumerScanScreen = () => {
 
   const { ref: cameraRef } = useZxing({
     paused: !isScanning || !!verificationResult,
-    // FIX: Optimized constraints to force Main Camera & Auto-focus
     constraints: { 
       video: { 
         facingMode: 'environment',
-        // Requesting higher resolution forces the OS to pick the high-quality main lens
-        // instead of the low-res/fixed-focus ultra-wide lens.
-        width: { min: 640, ideal: 1280, max: 1920 },
-        height: { min: 480, ideal: 720, max: 1080 },
-        // Helps with focus on supported devices
-        advanced: [{ focusMode: "continuous" }] 
+        width: { ideal: 1920 }, 
+        height: { ideal: 1080 } 
       } 
     },
-    timeBetweenDecodingAttempts: 300, // Slight delay to reduce CPU load/blur
+    timeBetweenDecodingAttempts: 300,
     onDecodeResult: (result) => {
       if (isScanning && !verificationResult) {
-        setIsScanning(false); 
         handleVerify(result.getText());
       }
     },
@@ -111,6 +112,59 @@ const ConsumerScanScreen = () => {
     hints: scanHints
   });
 
+  // --- CAMERA CAPABILITIES (ZOOM & FOCUS) ---
+  useEffect(() => {
+    const checkCapabilities = () => {
+      const video = cameraRef.current;
+      if (!video || !video.srcObject) return;
+
+      const track = video.srcObject.getVideoTracks()[0];
+      if (!track) return;
+
+      // Check if we can apply constraints (required for zoom)
+      if (typeof track.applyConstraints !== 'function') return;
+
+      // Try to get actual capabilities
+      const capabilities = track.getCapabilities ? track.getCapabilities() : {};
+      
+      // 1. Setup Zoom
+      if (capabilities.zoom) {
+        // If the browser honestly reports zoom support
+        setMaxZoom(capabilities.zoom.max);
+        setShowZoom(true);
+      } else {
+        // FALLBACK: Force show slider if applyConstraints exists
+        // Many phones support zoom but don't report it via getCapabilities
+        setShowZoom(true); 
+      }
+
+      // 2. Force Focus Mode
+      if (capabilities.focusMode && capabilities.focusMode.includes('continuous')) {
+        track.applyConstraints({ advanced: [{ focusMode: 'continuous' }] })
+          .catch(() => {});
+      }
+    };
+
+    // Delay check to ensure stream is fully active
+    const timeoutId = setTimeout(checkCapabilities, 500);
+    return () => clearTimeout(timeoutId);
+
+  }, [isScanning, cameraRef.current?.srcObject]);
+
+  const handleZoomChange = (e) => {
+    const newZoom = Number(e.target.value);
+    setZoom(newZoom);
+    
+    const video = cameraRef.current;
+    if (video && video.srcObject) {
+      const track = video.srcObject.getVideoTracks()[0];
+      if (track && track.applyConstraints) {
+        track.applyConstraints({ advanced: [{ zoom: newZoom }] })
+          .catch(err => console.log("Zoom failed", err));
+      }
+    }
+  };
+
   const handleImageUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -120,10 +174,13 @@ const ConsumerScanScreen = () => {
     try {
       const reader = new BrowserMultiFormatReader();
       const imageUrl = URL.createObjectURL(file);
-      const result = await reader.decodeFromImage(undefined, imageUrl, scanHints);
+      const hints = new Map();
+      hints.set(DecodeHintType.TRY_HARDER, true);
+      
+      const result = await reader.decodeFromImage(undefined, imageUrl, hints);
       if (result) handleVerify(result.getText());
     } catch (error) {
-      toast.error('No valid code found.');
+      toast.error('No valid code found in image.');
       setIsScanning(true);
     } finally {
       setIsProcessingImage(false);
@@ -154,7 +211,12 @@ const ConsumerScanScreen = () => {
         <div className="relative w-full aspect-square rounded-[2.5rem] overflow-hidden shadow-2xl border-[4px] border-white/20 dark:border-white/10 bg-black/90 flex items-center justify-center shrink-0">
           
           {!cameraError && !verificationResult && (
-            <video ref={cameraRef} className="w-full h-full object-cover" playsInline />
+            <video 
+              ref={cameraRef} 
+              className="w-full h-full object-cover" 
+              playsInline 
+              muted 
+            />
           )}
 
           {cameraError && (
@@ -167,22 +229,36 @@ const ConsumerScanScreen = () => {
 
           {/* Overlay UI */}
           {isScanning && !cameraError && !verificationResult && !isProcessingImage && (
-            <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
-              <div className="w-64 h-64 relative">
-                 <motion.div 
-                   className="absolute w-full h-1 bg-brand-500/80 shadow-[0_0_20px_rgba(16,185,129,1)] rounded-full"
-                   animate={{ top: ["10%", "90%", "10%"] }}
-                   transition={{ duration: 3, ease: "easeInOut", repeat: Infinity }}
-                 />
-                 <div className="absolute top-0 left-0 w-10 h-10 border-t-4 border-l-4 border-brand-500 rounded-tl-3xl" />
-                 <div className="absolute top-0 right-0 w-10 h-10 border-t-4 border-r-4 border-brand-500 rounded-tr-3xl" />
-                 <div className="absolute bottom-0 left-0 w-10 h-10 border-b-4 border-l-4 border-brand-500 rounded-bl-3xl" />
-                 <div className="absolute bottom-0 right-0 w-10 h-10 border-b-4 border-r-4 border-brand-500 rounded-br-3xl" />
+            <>
+              <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
+                <div className="w-64 h-64 relative">
+                   {/* REMOVED: Moving Green Line Animation */}
+                   
+                   {/* Corners */}
+                   <div className="absolute top-0 left-0 w-10 h-10 border-t-4 border-l-4 border-brand-500 rounded-tl-3xl" />
+                   <div className="absolute top-0 right-0 w-10 h-10 border-t-4 border-r-4 border-brand-500 rounded-tr-3xl" />
+                   <div className="absolute bottom-0 left-0 w-10 h-10 border-b-4 border-l-4 border-brand-500 rounded-bl-3xl" />
+                   <div className="absolute bottom-0 right-0 w-10 h-10 border-b-4 border-r-4 border-brand-500 rounded-br-3xl" />
+                </div>
               </div>
-              <div className="absolute bottom-8 bg-black/50 backdrop-blur-md px-4 py-1.5 rounded-full border border-white/10">
-                <span className="text-white text-xs font-bold tracking-widest uppercase">Align Code</span>
-              </div>
-            </div>
+
+              {/* Zoom Controls */}
+              {showZoom && (
+                <div className="absolute bottom-6 left-1/2 -translate-x-1/2 w-48 flex items-center gap-3 bg-black/40 backdrop-blur-md px-4 py-2 rounded-full border border-white/10 z-20">
+                  <ZoomOut size={16} className="text-white/80" />
+                  <input 
+                    type="range" 
+                    min="1" 
+                    max={Math.min(maxZoom, 5)} 
+                    step="0.1" 
+                    value={zoom}
+                    onChange={handleZoomChange}
+                    className="w-full h-1 bg-white/30 rounded-lg appearance-none cursor-pointer accent-brand-500"
+                  />
+                  <ZoomIn size={16} className="text-white/80" />
+                </div>
+              )}
+            </>
           )}
 
           {isProcessingImage && (
@@ -259,7 +335,6 @@ const ConsumerScanScreen = () => {
                   </>
                 ) : (
                   <>
-                    {/* DYNAMIC ERROR STATE */}
                     <div className={`w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 ring-8 animate-pulse ${
                       verificationResult.status === 'Expired' ? 'bg-amber-500/10 text-amber-600 ring-amber-500/5' : 'bg-red-500/10 text-red-600 ring-red-500/5'
                     }`}>
@@ -273,7 +348,6 @@ const ConsumerScanScreen = () => {
                     </h2>
                     
                     <p className="text-muted-foreground mb-8 leading-relaxed">
-                      {/* Display the specific warning message from backend, or a default fallback */}
                       {verificationResult.message || "This code is not recognized. It may be a counterfeit product."}
                     </p>
                     
