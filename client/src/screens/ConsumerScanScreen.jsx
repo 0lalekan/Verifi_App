@@ -21,6 +21,7 @@ import {
   RefreshCw,
   ScanLine,
   Keyboard,
+  Aperture
 } from 'lucide-react';
 
 const ConsumerScanScreen = () => {
@@ -93,7 +94,13 @@ const ConsumerScanScreen = () => {
 
   const { ref: cameraRef } = useZxing({
     paused: !!capturedImage || !!verificationResult,
-    constraints,
+    constraints: { 
+      video: { 
+        facingMode: 'environment',
+        width: { ideal: 1920 }, 
+        height: { ideal: 1080 } 
+      } 
+    },
     onDecodeResult: () => {}, 
     onError: (err) => {
       if (err.name === 'NotAllowedError' || err.name === 'NotFoundError') {
@@ -108,7 +115,6 @@ const ConsumerScanScreen = () => {
     const video = cameraRef.current;
     if (video && video.srcObject) {
       const track = video.srcObject.getVideoTracks()[0];
-      // Try Hardware Zoom first
       if (track.getCapabilities && track.getCapabilities().zoom) {
         track.applyConstraints({ advanced: [{ zoom: newZoom }] }).catch(() => {});
       }
@@ -196,7 +202,7 @@ const ConsumerScanScreen = () => {
             <video 
               ref={cameraRef} 
               className="w-full h-full object-cover transition-transform duration-200"
-              style={{ transform: `scale(${zoom})` }} // Software zoom fallback works if hardware fails
+              style={{ transform: `scale(${zoom})` }} 
               playsInline 
               muted 
             />

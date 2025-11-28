@@ -12,7 +12,7 @@ import {
   getAllManufacturers,
   revokeManufacturer,
   toggleUserStatus,
-  getPublicManufacturers,
+  getPublicManufacturers // <--- Import the new function
 } from '../controllers/userController.js';
 import { protect, restrictTo } from '../middleware/authMiddleware.js';
 import { validateRegistration } from '../middleware/validationMiddleware.js';
@@ -31,21 +31,20 @@ router.get('/stats', protect, getDashboardStats);
 router.post('/forgot-password', forgotPassword);
 router.post('/reset-password/:token', resetPassword);
 
-// --- New Regulator Routes ---
-router.get('/pending-verifications', protect, restrictTo('regulator'), getPendingVerifications);
-router.put('/verify/:id', protect, restrictTo('regulator'), verifyManufacturer);
-
-// --- REGULATOR: Manufacturer Management ---
-router.get('/manufacturers', protect, restrictTo('regulator'), getAllManufacturers);
-router.put('/revoke/:id', protect, restrictTo('regulator'), revokeManufacturer);
-router.put('/toggle-status/:id', protect, restrictTo('regulator'), toggleUserStatus);
-
-// NEW: Allow B2B users to find partners
+// --- NEW ROUTE START ---
 router.get(
   '/directory', 
   protect, 
   restrictTo('manufacturer', 'distributor', 'retailer'), 
   getPublicManufacturers
 );
+// --- NEW ROUTE END ---
+
+// --- Regulator Routes ---
+router.get('/pending-verifications', protect, restrictTo('regulator'), getPendingVerifications);
+router.put('/verify/:id', protect, restrictTo('regulator'), verifyManufacturer);
+router.get('/manufacturers', protect, restrictTo('regulator'), getAllManufacturers);
+router.put('/revoke/:id', protect, restrictTo('regulator'), revokeManufacturer);
+router.put('/toggle-status/:id', protect, restrictTo('regulator'), toggleUserStatus);
 
 export default router;
