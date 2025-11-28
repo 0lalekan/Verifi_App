@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion'; // Added Hooks
+import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
 import { 
   ShieldCheck, 
   Zap, 
@@ -13,53 +13,51 @@ import {
   Play,
   Truck,
   Layers,
-  ShoppingBag
+  ShoppingBag,
+  Box
 } from 'lucide-react';
 
-// --- ANIMATED COUNTER COMPONENT ---
-const AnimatedCounter = ({ value, duration = 2 }) => {
-  // Simple logic to animate number counting would go here
-  // For brevity, we render the static value with a fade-in
-  return (
-    <motion.span 
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ duration: 0.8, ease: "easeOut" }}
-    >
-      {value}
-    </motion.span>
-  );
-};
+// --- ANIMATED COUNTER ---
+// Simple fade-in implementation to keep it lightweight
+const AnimatedCounter = ({ value }) => (
+  <motion.span 
+    initial={{ opacity: 0, y: 10 }}
+    whileInView={{ opacity: 1, y: 0 }}
+    viewport={{ once: true }}
+    transition={{ duration: 0.6, ease: "easeOut" }}
+  >
+    {value}
+  </motion.span>
+);
 
+// --- FEATURE PILL ---
 const FeaturePill = ({ icon: Icon, text }) => (
   <motion.div 
-    initial={{ opacity: 0, scale: 0.8 }}
-    animate={{ opacity: 1, scale: 1 }}
-    transition={{ duration: 0.5 }}
-    className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-secondary/50 border border-border/50 text-xs font-bold text-muted-foreground backdrop-blur-md uppercase tracking-wider hover:bg-secondary transition-colors cursor-default"
+    whileHover={{ scale: 1.05 }}
+    className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-secondary/50 border border-border/50 text-xs font-bold text-muted-foreground backdrop-blur-md uppercase tracking-wider cursor-default"
   >
     <Icon size={12} className="text-primary" /> {text}
   </motion.div>
 );
 
-const StepCard = ({ number, title, description }) => (
+// --- STEP CARD ---
+const StepCard = ({ number, title, description, delay }) => (
   <motion.div 
     initial={{ opacity: 0, y: 20 }}
     whileInView={{ opacity: 1, y: 0 }}
     viewport={{ once: true }}
-    transition={{ duration: 0.5, delay: number * 0.1 }}
-    className="relative p-6 rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm hover:bg-white/10 transition-colors group"
+    transition={{ duration: 0.5, delay }}
+    className="relative p-6 rounded-[2rem] border border-border/50 bg-background/40 backdrop-blur-md hover:bg-background/60 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group"
   >
-    <div className="absolute -top-4 -left-4 w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-blue-600 flex items-center justify-center text-white font-bold shadow-lg group-hover:scale-110 transition-transform">
+    <div className="absolute -top-4 -left-4 w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-500 to-blue-600 flex items-center justify-center text-white font-bold text-lg shadow-lg group-hover:scale-110 transition-transform">
       {number}
     </div>
-    <h3 className="text-xl font-bold text-foreground mt-2 mb-2">{title}</h3>
+    <h3 className="text-xl font-display font-bold text-foreground mt-4 mb-2">{title}</h3>
     <p className="text-muted-foreground text-sm leading-relaxed">{description}</p>
   </motion.div>
 );
 
-// --- VIDEO SHOWCASE COMPONENT ---
+// --- VIDEO SHOWCASE ---
 const VideoShowcase = () => {
   const [activeTab, setActiveTab] = useState('consumer'); 
 
@@ -67,14 +65,14 @@ const VideoShowcase = () => {
     consumer: {
       title: "Scan. Verify. Earn.",
       description: "See how easy it is for a shopper to verify a product in seconds using the Verifi mobile app.",
-      videoPlaceholder: "bg-gradient-to-br from-emerald-900 to-black", 
+      videoPlaceholder: "bg-gradient-to-br from-emerald-900/80 to-black", 
       icon: <Smartphone size={20} />,
       color: "text-emerald-500"
     },
     business: {
       title: "Track. Manage. Secure.",
       description: "Watch how Manufacturers and Distributors track inventory movement and spot counterfeits in real-time.",
-      videoPlaceholder: "bg-gradient-to-br from-blue-900 to-black",
+      videoPlaceholder: "bg-gradient-to-br from-blue-900/80 to-black",
       icon: <Factory size={20} />,
       color: "text-blue-500"
     }
@@ -83,7 +81,6 @@ const VideoShowcase = () => {
   return (
     <section className="py-24 px-6 relative overflow-hidden">
       <div className="max-w-7xl mx-auto">
-        
         <div className="text-center mb-12">
           <motion.h2 
             initial={{ opacity: 0, y: 20 }}
@@ -93,28 +90,27 @@ const VideoShowcase = () => {
           >
             See Verifi in Action
           </motion.h2>
-          <p className="text-muted-foreground">Experience the platform from every angle.</p>
           
-          <div className="inline-flex items-center bg-secondary/50 p-1.5 rounded-full border border-border/50 mt-8 backdrop-blur-md">
+          <div className="inline-flex items-center bg-secondary p-1 rounded-full border border-border mt-6">
             <button 
               onClick={() => setActiveTab('consumer')}
               className={`flex items-center gap-2 px-6 py-2.5 rounded-full text-sm font-bold transition-all duration-300 ${
                 activeTab === 'consumer' 
-                  ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/25 scale-105' 
-                  : 'text-muted-foreground hover:text-foreground hover:bg-background/50'
+                  ? 'bg-background text-foreground shadow-sm' 
+                  : 'text-muted-foreground hover:text-foreground'
               }`}
             >
-              <Smartphone size={16} /> For Consumers
+              <Smartphone size={16} /> Consumer
             </button>
             <button 
               onClick={() => setActiveTab('business')}
               className={`flex items-center gap-2 px-6 py-2.5 rounded-full text-sm font-bold transition-all duration-300 ${
                 activeTab === 'business' 
-                  ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/25 scale-105' 
-                  : 'text-muted-foreground hover:text-foreground hover:bg-background/50'
+                  ? 'bg-background text-foreground shadow-sm' 
+                  : 'text-muted-foreground hover:text-foreground'
               }`}
             >
-              <Layers size={16} /> For Partners
+              <Layers size={16} /> Partners
             </button>
           </div>
         </div>
@@ -123,42 +119,38 @@ const VideoShowcase = () => {
           <AnimatePresence mode="wait">
             <motion.div
               key={activeTab}
-              initial={{ opacity: 0, y: 20, scale: 0.95 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -20, scale: 0.95 }}
-              transition={{ duration: 0.4, ease: "easeOut" }}
-              className="glass p-2 rounded-[2.5rem] border-white/10 shadow-2xl"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.3 }}
+              className="p-2 rounded-[2.5rem] bg-white/5 border border-border/50 shadow-2xl backdrop-blur-sm"
             >
               <div className={`aspect-video rounded-[2rem] overflow-hidden relative flex items-center justify-center group cursor-pointer ${content[activeTab].videoPlaceholder}`}>
-                <div className="absolute inset-0 opacity-30 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
+                {/* Background Pattern */}
+                <div className="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] mix-blend-overlay"></div>
                 
                 <motion.div 
                   whileHover={{ scale: 1.1 }}
-                  className="w-20 h-20 bg-white/10 backdrop-blur-md border border-white/20 rounded-full flex items-center justify-center z-10"
+                  className="w-20 h-20 bg-white/20 backdrop-blur-md border border-white/30 rounded-full flex items-center justify-center z-10"
                 >
-                  <div className="w-14 h-14 bg-white rounded-full flex items-center justify-center shadow-lg">
-                    <Play size={24} className="fill-current text-black ml-1" />
+                  <div className="w-14 h-14 bg-white rounded-full flex items-center justify-center shadow-lg text-black pl-1">
+                    <Play size={24} fill="currentColor" />
                   </div>
                 </motion.div>
 
-                <div className="absolute bottom-8 left-8 right-8 flex justify-between items-end">
+                <div className="absolute bottom-0 left-0 right-0 p-8 bg-gradient-to-t from-black/80 to-transparent flex justify-between items-end">
                   <div className="text-white max-w-md">
                     <div className={`flex items-center gap-2 mb-2 font-bold ${content[activeTab].color}`}>
                       {content[activeTab].icon} {activeTab === 'consumer' ? 'Consumer App' : 'Logistics Portal'}
                     </div>
                     <h3 className="text-2xl font-bold mb-2">{content[activeTab].title}</h3>
-                    <p className="text-white/70 text-sm leading-relaxed">{content[activeTab].description}</p>
+                    <p className="text-white/80 text-sm leading-relaxed">{content[activeTab].description}</p>
                   </div>
                 </div>
               </div>
             </motion.div>
           </AnimatePresence>
-          
-          <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full max-w-3xl blur-[120px] -z-10 transition-colors duration-700 ${
-            activeTab === 'consumer' ? 'bg-emerald-500/20' : 'bg-blue-500/20'
-          }`} />
         </div>
-
       </div>
     </section>
   );
@@ -166,39 +158,45 @@ const VideoShowcase = () => {
 
 const HomeScreen = () => {
   const { scrollY } = useScroll();
-  const y1 = useTransform(scrollY, [0, 500], [0, 100]); // Parallax effect for background blobs
+  const y1 = useTransform(scrollY, [0, 1000], [0, 200]);
+  const y2 = useTransform(scrollY, [0, 1000], [0, -150]);
 
   return (
-    <div className="min-h-screen w-full bg-background dark:bg-gradient-mesh-dark transition-colors duration-500 overflow-x-hidden relative">
+    <div className="min-h-screen w-full bg-background transition-colors duration-500 overflow-x-hidden relative">
       
-      {/* --- ANIMATED BACKGROUND --- */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+      {/* --- DYNAMIC BACKGROUND BLOBS (Fixed for Light Mode) --- */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
         <motion.div 
-          style={{ y: y1, x: -100 }}
-          className="absolute top-[-10%] left-[-10%] w-[50vw] h-[50vw] bg-emerald-500/10 rounded-full blur-[100px]" 
+          style={{ y: y1, x: -50 }}
+          className="absolute top-[-10%] left-[-10%] w-[50vw] h-[50vw] bg-emerald-500/10 rounded-full blur-[100px] dark:bg-emerald-500/5" 
         />
         <motion.div 
-          style={{ y: y1, x: 100 }}
-          className="absolute top-[20%] right-[-10%] w-[40vw] h-[40vw] bg-blue-500/10 rounded-full blur-[100px]" 
+          style={{ y: y2, x: 50 }}
+          className="absolute top-[20%] right-[-10%] w-[45vw] h-[45vw] bg-blue-500/10 rounded-full blur-[100px] dark:bg-blue-500/5" 
         />
       </div>
 
       {/* --- HERO SECTION --- */}
-      <section className="relative pt-32 pb-20 px-6 md:pt-40 md:pb-32 max-w-7xl mx-auto">
+      <section className="relative pt-32 pb-20 px-6 md:pt-40 md:pb-32 max-w-7xl mx-auto z-10">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           
           {/* Left: Copy & CTA */}
-          <div className="text-left z-10">
-            <div className="flex flex-wrap gap-3 mb-6">
+          <div className="text-left">
+            <motion.div 
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="flex flex-wrap gap-3 mb-6"
+            >
               <FeaturePill icon={ShieldCheck} text="Bank-Grade Security" />
               <FeaturePill icon={Globe} text="Global Tracking" />
-            </div>
+            </motion.div>
 
             <motion.h1 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.7, delay: 0.2 }}
-              className="text-5xl md:text-7xl font-display font-extrabold tracking-tight mb-6 leading-[1.1]"
+              className="text-5xl md:text-7xl font-display font-extrabold tracking-tight mb-6 leading-[1.1] text-foreground"
             >
               Trust is <br/>
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 via-teal-500 to-blue-600">
@@ -223,45 +221,45 @@ const HomeScreen = () => {
             >
               <Link
                 to="/register"
-                className="group flex items-center justify-center gap-2 px-8 py-4 bg-primary text-primary-foreground rounded-2xl text-lg font-bold hover:scale-105 hover:shadow-xl hover:shadow-primary/20 transition-all"
+                className="group flex items-center justify-center gap-2 px-8 py-4 bg-primary text-primary-foreground rounded-2xl text-lg font-bold shadow-lg shadow-primary/25 hover:scale-105 hover:shadow-xl transition-all"
               >
                 Start Free 
                 <ChevronRight size={20} className="group-hover:translate-x-1 transition-transform" />
               </Link>
               <Link
                 to="/login"
-                className="flex items-center justify-center gap-2 px-8 py-4 bg-background/50 backdrop-blur-md border border-border text-foreground rounded-2xl text-lg font-bold hover:bg-secondary transition-all group"
+                className="flex items-center justify-center gap-2 px-8 py-4 bg-background border border-border text-foreground rounded-2xl text-lg font-bold hover:bg-secondary transition-all group"
               >
                 <Play size={18} className="fill-current opacity-50 group-hover:opacity-100 transition-opacity" />
                 Live Demo
               </Link>
             </motion.div>
 
-            {/* Trusted By Strip */}
             <motion.div 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 1, duration: 1 }}
-              className="border-t border-border/50 pt-6"
+              className="border-t border-border pt-6"
             >
               <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-4">Trusted by industry leaders</p>
-              <div className="flex gap-6 opacity-50 grayscale mix-blend-luminosity">
+              <div className="flex gap-6 opacity-40 grayscale mix-blend-multiply dark:mix-blend-screen">
+                {/* Simulated Logos */}
                 {[1,2,3,4].map(i => (
-                   <div key={i} className="h-8 w-20 bg-foreground/10 rounded animate-pulse"></div>
+                   <div key={i} className="h-8 w-24 bg-foreground/20 rounded animate-pulse"></div>
                 ))}
               </div>
             </motion.div>
           </div>
 
-          {/* Right: Dynamic 3D Visual */}
-          <div className="relative z-10 lg:h-[600px] flex items-center justify-center">
+          {/* Right: The Original 3D Visual (Restored & Enhanced) */}
+          <div className="relative z-10 lg:h-[600px] flex items-center justify-center perspective-1000">
             <motion.div 
               animate={{ 
                 scale: [1, 1.05, 1],
                 opacity: [0.5, 0.8, 0.5] 
               }}
               transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-              className="absolute inset-0 bg-gradient-to-tr from-emerald-500/20 to-blue-500/20 rounded-full blur-[100px]" 
+              className="absolute inset-0 bg-gradient-to-tr from-emerald-500/20 to-blue-500/20 rounded-full blur-[80px]" 
             />
             
             <motion.div 
@@ -269,14 +267,13 @@ const HomeScreen = () => {
               animate={{ y: 0, opacity: 1, rotateX: 0 }}
               transition={{ duration: 1, type: "spring", bounce: 0.4 }}
               className="relative w-full max-w-md"
-              style={{ perspective: 1000 }}
             >
               {/* MAIN CARD */}
               <motion.div 
                 whileHover={{ rotateY: 5, rotateX: 5 }}
-                className="glass p-6 rounded-[2.5rem] border-white/20 shadow-2xl relative overflow-hidden transform transition-transform"
+                className="bg-background/60 backdrop-blur-xl p-6 rounded-[2.5rem] border border-border shadow-2xl relative overflow-hidden transform transition-transform"
               >
-                
+                {/* Card Header */}
                 <div className="flex justify-between items-center mb-8 opacity-50">
                   <div className="w-12 h-4 bg-foreground/20 rounded-full" />
                   <div className="flex gap-2">
@@ -285,20 +282,23 @@ const HomeScreen = () => {
                   </div>
                 </div>
 
+                {/* Scan Area */}
                 <div className="relative aspect-square bg-black/5 dark:bg-black/40 rounded-[2rem] border-2 border-dashed border-border mb-6 overflow-hidden flex items-center justify-center">
-                  <ScanLine size={64} className="text-muted-foreground/20" />
+                  <ScanLine size={64} className="text-muted-foreground/30" />
                   
+                  {/* Moving Laser Line */}
                   <motion.div 
-                    className="absolute top-0 left-0 right-0 h-1 bg-emerald-500 shadow-[0_0_20px_rgba(16,185,129,0.8)]"
+                    className="absolute top-0 left-0 right-0 h-0.5 bg-emerald-500 shadow-[0_0_20px_rgba(16,185,129,0.8)]"
                     animate={{ top: ["10%", "90%", "10%"] }}
                     transition={{ duration: 3, ease: "easeInOut", repeat: Infinity }}
                   />
 
+                  {/* Success Overlay */}
                   <motion.div
                     initial={{ scale: 0.8, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
                     transition={{ delay: 1.5, duration: 0.5 }}
-                    className="absolute inset-0 bg-background/80 backdrop-blur-sm flex flex-col items-center justify-center p-6 text-center"
+                    className="absolute inset-0 bg-background/90 backdrop-blur-sm flex flex-col items-center justify-center p-6 text-center"
                   >
                     <motion.div 
                       initial={{ scale: 0 }}
@@ -313,13 +313,14 @@ const HomeScreen = () => {
                   </motion.div>
                 </div>
 
+                {/* Card Footer Lines */}
                 <div className="space-y-3">
-                  <div className="h-12 w-full bg-primary/10 rounded-xl animate-pulse" />
-                  <div className="h-12 w-full bg-secondary/50 rounded-xl" />
+                  <div className="h-3 w-full bg-secondary rounded-full" />
+                  <div className="h-3 w-2/3 bg-secondary rounded-full" />
                 </div>
               </motion.div>
 
-              {/* Floating Stats Cards (Animated) */}
+              {/* Floating Stat Cards (Original Style) */}
               <motion.div 
                 initial={{ x: 50, opacity: 0 }}
                 animate={{ x: 0, opacity: 1, y: [0, -15, 0] }}
@@ -327,7 +328,7 @@ const HomeScreen = () => {
                   x: { duration: 0.8, delay: 0.8 },
                   y: { duration: 6, repeat: Infinity, ease: "easeInOut" }
                 }}
-                className="absolute -right-8 top-20 glass p-4 rounded-2xl shadow-xl border border-white/20 hidden md:block"
+                className="absolute -right-4 top-20 bg-background/80 backdrop-blur-md p-4 rounded-2xl shadow-xl border border-border hidden md:block"
               >
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-blue-500/10 rounded-lg text-blue-500">
@@ -347,7 +348,7 @@ const HomeScreen = () => {
                   x: { duration: 0.8, delay: 1 },
                   y: { duration: 7, repeat: Infinity, ease: "easeInOut", delay: 0.5 }
                 }}
-                className="absolute -left-8 bottom-32 glass p-4 rounded-2xl shadow-xl border border-white/20 hidden md:block"
+                className="absolute -left-8 bottom-32 bg-background/80 backdrop-blur-md p-4 rounded-2xl shadow-xl border border-border hidden md:block"
               >
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-emerald-500/10 rounded-lg text-emerald-500">
@@ -366,7 +367,7 @@ const HomeScreen = () => {
       </section>
 
       {/* --- STATS BANNER --- */}
-      <div className="border-y border-border/40 bg-background/50 backdrop-blur-md">
+      <div className="border-y border-border bg-secondary/30 backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-6 py-12 grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
           {[
             { label: 'Products Secured', value: '10M+' },
@@ -374,7 +375,7 @@ const HomeScreen = () => {
             { label: 'Partner Brands', value: '200+' },
             { label: 'System Uptime', value: '99.9%' },
           ].map((stat, i) => (
-            <div key={i}>
+            <div key={i} className="flex flex-col items-center">
               <div className="text-3xl md:text-4xl font-display font-black text-foreground mb-1">
                 <AnimatedCounter value={stat.value} />
               </div>
@@ -388,7 +389,7 @@ const HomeScreen = () => {
       <VideoShowcase />
 
       {/* --- HOW IT WORKS --- */}
-      <section className="py-24 relative bg-secondary/30 border-y border-border/50">
+      <section className="py-24 relative bg-secondary/20">
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-5xl font-display font-bold text-foreground mb-4">Simple Integration.</h2>
@@ -401,17 +402,20 @@ const HomeScreen = () => {
             <StepCard 
               number="1"
               title="Register Batch"
-              description="Manufacturers upload batch data via CSV or API. Verifi generates cryptographically unique IDs for every single item."
+              description="Manufacturers upload production data. Verifi generates cryptographically unique IDs for every single item."
+              delay={0.1}
             />
             <StepCard 
               number="2"
               title="Label Products"
-              description="Apply our secure QR codes to your packaging. These codes link the physical product to its digital twin on the verified ledger."
+              description="Apply our secure QR codes to your packaging. These codes link the physical product to its digital twin."
+              delay={0.2}
             />
             <StepCard 
               number="3"
               title="Verify Instantly"
-              description="Consumers and regulators scan products using any smartphone camera. No app download required for basic verification."
+              description="Consumers and regulators scan products using any smartphone camera to view the immutable chain of custody."
+              delay={0.3}
             />
           </div>
         </div>
@@ -422,42 +426,32 @@ const HomeScreen = () => {
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-display font-bold text-foreground">A Unified Ecosystem</h2>
-            <p className="text-muted-foreground">Connecting every stakeholder in the supply chain.</p>
+            <p className="text-muted-foreground mt-2">Connecting every stakeholder in the supply chain.</p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             
-            {/* Manufacturers */}
-            <div className="glass-card p-8 rounded-[2rem] hover:border-blue-500/30 transition-colors group">
-              <div className="w-12 h-12 bg-blue-500/10 text-blue-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                <Factory size={24} />
-              </div>
-              <h3 className="text-xl font-bold text-foreground mb-2">Manufacturers</h3>
-              <p className="text-sm text-muted-foreground mb-4">Protect revenue and brand equity with anti-clone technology.</p>
-              <Link to="/register" className="text-blue-600 text-sm font-bold hover:underline flex items-center gap-1">Brand Access <ChevronRight size={14}/></Link>
-            </div>
-
-            {/* Distributors */}
-            <div className="glass-card p-8 rounded-[2rem] hover:border-purple-500/30 transition-colors group">
-              <div className="w-12 h-12 bg-purple-500/10 text-purple-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                <Truck size={24} />
-              </div>
-              <h3 className="text-xl font-bold text-foreground mb-2">Distributors & Retail</h3>
-              <p className="text-sm text-muted-foreground mb-4">
-                Secure your imports. Verify incoming stock via the Chain of Custody and source authentic goods from the Trade Hub.
-              </p>
-              <Link to="/register" className="text-purple-600 text-sm font-bold hover:underline flex items-center gap-1">Partner Access <ChevronRight size={14}/></Link>
-            </div>
-
-            {/* Consumers */}
-            <div className="glass-card p-8 rounded-[2rem] hover:border-emerald-500/30 transition-colors group">
-              <div className="w-12 h-12 bg-emerald-500/10 text-emerald-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                <Smartphone size={24} />
-              </div>
-              <h3 className="text-xl font-bold text-foreground mb-2">Consumers</h3>
-              <p className="text-sm text-muted-foreground mb-4">Verify goods instantly, find safe pharmacies nearby, and earn rewards.</p>
-              <Link to="/register" className="text-emerald-600 text-sm font-bold hover:underline flex items-center gap-1">Join Free <ChevronRight size={14}/></Link>
-            </div>
+            {[
+              { icon: Factory, title: "Manufacturers", desc: "Protect revenue.", color: "blue" },
+              { icon: Truck, title: "Distributors", desc: "Secure inventory.", color: "purple" },
+              { icon: ShoppingBag, title: "Retailers", desc: "Source verified stock.", color: "orange" },
+              { icon: Smartphone, title: "Consumers", desc: "Earn rewards.", color: "emerald" },
+            ].map((card, i) => (
+              <Link 
+                key={i} 
+                to="/register" 
+                className="group relative overflow-hidden p-8 rounded-[2rem] border border-border bg-background/50 hover:border-primary/50 transition-all duration-300 hover:-translate-y-2 hover:shadow-xl"
+              >
+                <div className={`w-14 h-14 rounded-2xl bg-${card.color}-500/10 text-${card.color}-600 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform`}>
+                  <card.icon size={28} />
+                </div>
+                <h3 className="text-xl font-bold text-foreground mb-2">{card.title}</h3>
+                <p className="text-sm text-muted-foreground mb-6">{card.desc}</p>
+                <div className="flex items-center gap-1 text-sm font-bold text-primary opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all">
+                  Get Started <ChevronRight size={16} />
+                </div>
+              </Link>
+            ))}
 
           </div>
         </div>
@@ -465,16 +459,13 @@ const HomeScreen = () => {
 
       {/* --- FINAL CTA --- */}
       <section className="py-32 px-6 text-center relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-primary/5 to-transparent pointer-events-none" />
+        {/* Simple Glow Effect */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-primary/20 rounded-full blur-[100px] pointer-events-none" />
         
-        <div className="max-w-4xl mx-auto glass p-12 rounded-[3rem] shadow-2xl relative z-10 border-t-2 border-white/20">
-          <h2 className="text-4xl md:text-5xl font-display font-bold text-foreground mb-6">
+        <div className="max-w-4xl mx-auto relative z-10">
+          <h2 className="text-4xl md:text-6xl font-display font-bold text-foreground mb-8">
             Ready to secure the future?
           </h2>
-          <p className="text-xl text-muted-foreground mb-10 max-w-2xl mx-auto">
-            Join the network of verified manufacturers and empowered consumers today.
-          </p>
-          
           <div className="flex flex-col sm:flex-row justify-center gap-4">
             <Link
               to="/register"
@@ -484,7 +475,7 @@ const HomeScreen = () => {
             </Link>
             <Link
               to="/contact"
-              className="px-10 py-4 bg-transparent border-2 border-foreground/10 hover:border-foreground/30 text-foreground rounded-2xl font-bold transition-all"
+              className="px-10 py-4 bg-transparent border-2 border-border hover:border-foreground/50 text-foreground rounded-2xl font-bold transition-all"
             >
               Contact Sales
             </Link>
