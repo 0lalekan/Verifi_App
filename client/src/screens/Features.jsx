@@ -14,7 +14,8 @@ import {
   Truck,
   Play,
   Layers,
-  Factory
+  Factory,
+  Building2 // New Icon
 } from 'lucide-react';
 
 const FeatureCard = ({ icon: Icon, title, description, className }) => (
@@ -206,25 +207,25 @@ const Features = () => {
             </div>
           </div>
 
-          {/* Card 4 */}
+          {/* Card 4: Mobile First */}
           <FeatureCard 
             icon={Smartphone}
             title="Mobile First"
             description="No specialized hardware required. Works on any smartphone with a camera via our lightweight Progressive Web App (PWA)."
           />
 
-          {/* Card 5 */}
+          {/* Card 5: Alerts */}
           <FeatureCard 
             icon={BarChart3}
             title="Instant Alerts"
             description="When a fake is detected, the manufacturer and regulator are notified immediately with the GPS location of the incident."
           />
 
-          {/* Card 6 */}
+          {/* Card 6: Partner Directory (NEW) */}
           <FeatureCard 
-            icon={Lock}
-            title="Batch Serialization"
-            description="Cryptographically secure batch IDs. Manage millions of SKUs with bulk CSV uploads and instant ledger registration."
+            icon={Building2}
+            title="Partner Directory"
+            description="Discover verified manufacturers and distributors. Connect via WhatsApp to initiate partnerships and secure supply."
           />
 
         </div>
