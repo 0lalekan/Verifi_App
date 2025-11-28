@@ -8,25 +8,35 @@ const organizationDetailsSchema = new Schema(
     orgName: { type: String, default: '' },
     orgAddress: { type: String, default: '' },
     orgLicense: { type: String, default: '' },
+    phoneNumber: { type: String, default: '' },
+    
+    // --- NEW FIELDS ---
+    orgDescription: { type: String, default: '', maxlength: 150 }, // Short bio
+    orgCategory: { 
+      type: String, 
+      default: 'Other',
+      enum: ['Pharmaceuticals', 'FMCG', 'Electronics', 'Luxury', 'Agriculture', 'Automotive', 'Other'] 
+    },
+    // ------------------
+
     isVerified: { type: Boolean, default: false },
     licenseStatus: { 
       type: String, 
       enum: ['Pending', 'Verified', 'Revoked'], 
       default: 'Pending' 
     },
-    // --- NEW SUBSCRIPTION FIELDS ---
     plan: { 
       type: String, 
       enum: ['Starter', 'Growth', 'Scale'], 
       default: 'Starter' 
     },
     planExpiresAt: { type: Date, default: null }, 
-    paymentReference: { type: String } // Transaction ID from Flutterwave
-    // -------------------------------
+    paymentReference: { type: String }
   },
   { _id: false }
 );
 
+// ... (Rest of the file userSchema etc. remains exactly the same)
 const userSchema = new Schema(
   {
     firstName: { type: String, required: true },
@@ -47,8 +57,6 @@ const userSchema = new Schema(
   },
   { timestamps: true }
 );
-
-// ... (methods matchPassword etc. remain the same)
 
 userSchema.pre('save', async function (next) {
   if (!this.isModified('password')) return next();

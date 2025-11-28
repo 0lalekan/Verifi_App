@@ -69,3 +69,23 @@ export const getMyListings = asyncHandler(async (req, res) => {
   const listings = await MarketListing.find({ seller: req.user._id }).sort({ createdAt: -1 });
   res.json(listings);
 });
+
+// @desc    Delete a listing
+// @route   DELETE /api/market/:id
+export const deleteListing = asyncHandler(async (req, res) => {
+  const listing = await MarketListing.findById(req.params.id);
+
+  if (!listing) {
+    res.status(404);
+    throw new Error('Listing not found');
+  }
+
+  // Ensure only the owner can delete
+  if (listing.seller.toString() !== req.user._id.toString()) {
+    res.status(401);
+    throw new Error('Not authorized to delete this listing');
+  }
+
+  await listing.deleteOne();
+  res.json({ message: 'Listing removed' });
+});

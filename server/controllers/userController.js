@@ -179,14 +179,12 @@ const getPendingVerifications = asyncHandler(async (req, res) => {
 // @access  Protected (Distributor, Retailer, Manufacturer)
 const getPublicManufacturers = asyncHandler(async (req, res) => {
   const suppliers = await User.find({ 
-    // FIX: Only fetch Manufacturers and Distributors
     role: { $in: ['manufacturer', 'distributor'] }, 
-    // FIX: Only Verified accounts
     'organizationDetails.isVerified': true,
-    // FIX: Exclude the user making the request (don't show myself)
     _id: { $ne: req.user._id }
   })
-  .select('firstName lastName email role organizationDetails.orgName organizationDetails.orgAddress')
+  // FIX: Add orgDescription and orgCategory to selection
+  .select('firstName lastName email role organizationDetails') 
   .sort({ 'organizationDetails.orgName': 1 });
 
   res.json(suppliers);
