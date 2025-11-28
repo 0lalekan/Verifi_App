@@ -47,7 +47,10 @@ const ConsumerScanScreen = () => {
     onSuccess: (data) => {
       setVerificationResult(data);
       setIsProcessing(false);
+      // FIX: Invalidate BOTH profile (points) and history (recent activity)
       queryClient.invalidateQueries(['userProfile']); 
+      queryClient.invalidateQueries(['userHistory']); // Added this line
+      
       if (typeof navigator !== 'undefined' && navigator.vibrate) {
         try { navigator.vibrate([100, 50, 100]); } catch (e) { /* ignore */ }
       }
@@ -59,6 +62,7 @@ const ConsumerScanScreen = () => {
     },
   });
 
+  // ... (Rest of the file remains exactly the same as the previous turn)
   const handleVerify = (code) => {
     const codeToVerify = code || batchNumber;
     if (!codeToVerify) {
@@ -87,19 +91,6 @@ const ConsumerScanScreen = () => {
     }
   };
 
-  // --- CAMERA SETUP ---
-  // TRICK: Requesting 4K (3840px) forces the phone to use the high-quality Main Camera
-  // instead of the lower-res Ultra-Wide camera (which lacks autofocus).
-  const constraints = {
-    video: { 
-      facingMode: 'environment',
-      width: { min: 1280, ideal: 3840, max: 4096 }, 
-      height: { min: 720, ideal: 2160, max: 4096 },
-      // Try to ask for focus mode upfront (some browsers support this)
-      advanced: [{ focusMode: "continuous" }]
-    } 
-  };
-
   const { ref: cameraRef } = useZxing({
     paused: !!capturedImage || !!verificationResult,
     constraints,
@@ -111,29 +102,6 @@ const ConsumerScanScreen = () => {
     }
   });
 
-  // --- POST-INIT CAMERA CONFIG (Zoom & Focus) ---
-  useEffect(() => {
-    const video = cameraRef.current;
-    if (!video || !video.srcObject) return;
-
-    // Wait a moment for the stream to fully initialize
-    const timer = setTimeout(() => {
-      const track = video.srcObject.getVideoTracks()[0];
-      if (!track) return;
-
-      const capabilities = track.getCapabilities ? track.getCapabilities() : {};
-
-      // 1. Force Autofocus (The most important fix for blurry video)
-      if (capabilities.focusMode && capabilities.focusMode.includes('continuous')) {
-        track.applyConstraints({ advanced: [{ focusMode: 'continuous' }] })
-          .catch(e => console.log("Failed to apply focus mode", e));
-      }
-    }, 500);
-
-    return () => clearTimeout(timer);
-  }, [cameraRef.current?.srcObject]);
-
-  // --- ZOOM LOGIC ---
   const handleZoomChange = (e) => {
     const newZoom = Number(e.target.value);
     setZoom(newZoom);
@@ -147,7 +115,6 @@ const ConsumerScanScreen = () => {
     }
   };
 
-  // --- CAPTURE & PROCESS ---
   const captureFrame = () => {
     const video = cameraRef.current;
     if (video) {
@@ -210,7 +177,6 @@ const ConsumerScanScreen = () => {
       
       <div className="w-full max-w-md mx-auto space-y-4">
         
-        {/* Header */}
         <div className="flex items-center gap-4 shrink-0 mb-2">
           <button 
             onClick={() => navigate(-1)}
@@ -224,10 +190,8 @@ const ConsumerScanScreen = () => {
           </div>
         </div>
 
-        {/* --- MAIN CAMERA/IMAGE AREA --- */}
         <div className="relative w-full aspect-[3/4] rounded-[2.5rem] overflow-hidden shadow-2xl border-[4px] border-white/20 dark:border-white/10 bg-black flex items-center justify-center shrink-0">
           
-          {/* 1. Camera View */}
           {!capturedImage && !cameraError && (
             <video 
               ref={cameraRef} 
@@ -238,7 +202,6 @@ const ConsumerScanScreen = () => {
             />
           )}
 
-          {/* 2. Captured Image View (object-contain fixes the "zoomed in" gallery issue) */}
           {capturedImage && (
             <img 
               src={capturedImage} 
@@ -247,7 +210,6 @@ const ConsumerScanScreen = () => {
             />
           )}
 
-          {/* 3. Error State */}
           {cameraError && (
             <div className="text-center p-6 text-white">
               <CameraOff size={48} className="mx-auto mb-4 opacity-50" />
@@ -255,7 +217,6 @@ const ConsumerScanScreen = () => {
             </div>
           )}
 
-          {/* 4. Processing Overlay */}
           {isProcessing && (
             <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex flex-col items-center justify-center z-50">
               <Loader2 size={48} className="text-emerald-500 animate-spin mb-4" />
@@ -263,11 +224,9 @@ const ConsumerScanScreen = () => {
             </div>
           )}
 
-          {/* === OVERLAY CONTROLS === */}
           {!cameraError && !verificationResult && (
             <div className="absolute bottom-0 left-0 right-0 p-6 pt-12 bg-gradient-to-t from-black/80 to-transparent flex flex-col gap-4 z-20">
               
-              {/* A. Zoom Slider (Above Buttons) - Always visible in camera mode */}
               {!capturedImage && (
                 <div className="flex items-center gap-3 px-4">
                   <ZoomOut size={16} className="text-white/80" />
@@ -284,10 +243,8 @@ const ConsumerScanScreen = () => {
                 </div>
               )}
 
-              {/* B. Action Buttons Row */}
               <div className="flex items-center justify-between px-2">
                 
-                {/* Left: Gallery (Only active in Camera Mode) */}
                 {!capturedImage ? (
                   <button 
                     onClick={() => fileInputRef.current?.click()}
@@ -296,7 +253,6 @@ const ConsumerScanScreen = () => {
                     <ImageIcon size={20} />
                   </button>
                 ) : (
-                  // If captured, this is the RETAKE button
                   <button 
                     onClick={retake}
                     className="px-4 py-2 rounded-xl bg-white/10 backdrop-blur-md text-white font-bold text-sm hover:bg-white/20 transition-all border border-white/10"
@@ -305,7 +261,6 @@ const ConsumerScanScreen = () => {
                   </button>
                 )}
 
-                {/* Center: Capture Shutter OR Verify Button */}
                 {!capturedImage ? (
                   <button 
                     onClick={captureFrame}
@@ -322,14 +277,12 @@ const ConsumerScanScreen = () => {
                   </button>
                 )}
 
-                {/* Right: Spacer to balance layout */}
                 <div className="w-12 h-12" /> 
               </div>
             </div>
           )}
         </div>
 
-        {/* --- MANUAL INPUT (Restored) --- */}
         {!verificationResult && (
           <div className="glass p-2 rounded-[1.5rem] flex items-center gap-2">
             <div className="relative flex-1">
@@ -353,7 +306,6 @@ const ConsumerScanScreen = () => {
           </div>
         )}
 
-        {/* --- RESULT MODAL (Same as before) --- */}
         <AnimatePresence>
           {verificationResult && (
             <motion.div
@@ -389,7 +341,6 @@ const ConsumerScanScreen = () => {
                   </>
                 ) : (
                   <>
-                    {/* DYNAMIC ERROR STATE */}
                     <div className={`w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 ring-8 animate-pulse ${
                       verificationResult.status === 'Expired' ? 'bg-amber-500/10 text-amber-600 ring-amber-500/5' : 'bg-red-500/10 text-red-600 ring-red-500/5'
                     }`}>

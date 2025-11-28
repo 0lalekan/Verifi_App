@@ -1,5 +1,5 @@
 import express from 'express';
-import { rateLimit } from 'express-rate-limit'; // Import Rate Limit
+import { rateLimit } from 'express-rate-limit'; 
 import { 
   verifyProductBatch, 
   createProductBatch, 
@@ -11,14 +11,12 @@ import {
   bulkUpdateProductBatches,
   transferCustody,
 } from '../controllers/productBatchController.js';
-import { protect, restrictTo } from '../middleware/authMiddleware.js';
+import { protect, restrictTo, optionalAuth } from '../middleware/authMiddleware.js'; // <--- IMPORT optionalAuth
 import { validateProductBatch } from '../middleware/validationMiddleware.js';
 import { localUpload } from '../multerConfig.js';
 
 const router = express.Router();
 
-// --- 1. DEFINE RATE LIMITER ---
-// Allow max 50 verification attempts per IP per 15 minutes
 const verifyLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, 
   limit: 50, 
@@ -28,8 +26,8 @@ const verifyLimiter = rateLimit({
 });
 
 // --- 2. PUBLIC ROUTES ---
-// Apply limiter specifically to the verify endpoint
-router.route('/verify').post(verifyLimiter, verifyProductBatch);
+// FIX: Added optionalAuth so logged-in users get identified (Points/History)
+router.route('/verify').post(verifyLimiter, optionalAuth, verifyProductBatch);
 
 // --- 3. PROTECTED ROUTES ---
 router.post('/', protect, restrictTo('manufacturer', 'regulator'), validateProductBatch, createProductBatch);

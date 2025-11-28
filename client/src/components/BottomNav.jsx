@@ -16,7 +16,8 @@ import {
   LogIn,
   Download,
   Map,
-  Store
+  Store,
+  ListChecks
 } from 'lucide-react';
 
 const BottomNav = () => {
