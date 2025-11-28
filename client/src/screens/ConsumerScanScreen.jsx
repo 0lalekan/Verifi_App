@@ -21,7 +21,6 @@ import {
   RefreshCw,
   ScanLine,
   Keyboard,
-  Aperture
 } from 'lucide-react';
 
 const ConsumerScanScreen = () => {
@@ -54,7 +53,6 @@ const ConsumerScanScreen = () => {
       }
     },
     onError: (error) => {
-      // Display the actual error from backend if available
       const msg = error.response?.data?.message || 'Verification failed. Connection error.';
       toast.error(msg);
       setIsProcessing(false);
@@ -81,7 +79,6 @@ const ConsumerScanScreen = () => {
         }),
         (err) => {
            console.warn("GPS Error:", err);
-           // Fallback if GPS fails
            mutation.mutate({ batchNumber: codeToVerify });
         }
       );
@@ -91,15 +88,21 @@ const ConsumerScanScreen = () => {
   };
 
   // --- CAMERA SETUP ---
+  // TRICK: Requesting 4K (3840px) forces the phone to use the high-quality Main Camera
+  // instead of the lower-res Ultra-Wide camera (which lacks autofocus).
+  const constraints = {
+    video: { 
+      facingMode: 'environment',
+      width: { min: 1280, ideal: 3840, max: 4096 }, 
+      height: { min: 720, ideal: 2160, max: 4096 },
+      // Try to ask for focus mode upfront (some browsers support this)
+      advanced: [{ focusMode: "continuous" }]
+    } 
+  };
+
   const { ref: cameraRef } = useZxing({
     paused: !!capturedImage || !!verificationResult,
-    constraints: { 
-      video: { 
-        facingMode: 'environment',
-        width: { ideal: 1920 }, 
-        height: { ideal: 1080 } 
-      } 
-    },
+    constraints,
     onDecodeResult: () => {}, 
     onError: (err) => {
       if (err.name === 'NotAllowedError' || err.name === 'NotFoundError') {
@@ -108,6 +111,28 @@ const ConsumerScanScreen = () => {
     }
   });
 
+  // --- POST-INIT CAMERA CONFIG (Zoom & Focus) ---
+  useEffect(() => {
+    const video = cameraRef.current;
+    if (!video || !video.srcObject) return;
+
+    // Wait a moment for the stream to fully initialize
+    const timer = setTimeout(() => {
+      const track = video.srcObject.getVideoTracks()[0];
+      if (!track) return;
+
+      const capabilities = track.getCapabilities ? track.getCapabilities() : {};
+
+      // 1. Force Autofocus (The most important fix for blurry video)
+      if (capabilities.focusMode && capabilities.focusMode.includes('continuous')) {
+        track.applyConstraints({ advanced: [{ focusMode: 'continuous' }] })
+          .catch(e => console.log("Failed to apply focus mode", e));
+      }
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [cameraRef.current?.srcObject]);
+
   // --- ZOOM LOGIC ---
   const handleZoomChange = (e) => {
     const newZoom = Number(e.target.value);
@@ -115,6 +140,7 @@ const ConsumerScanScreen = () => {
     const video = cameraRef.current;
     if (video && video.srcObject) {
       const track = video.srcObject.getVideoTracks()[0];
+      // Try Hardware Zoom first
       if (track.getCapabilities && track.getCapabilities().zoom) {
         track.applyConstraints({ advanced: [{ zoom: newZoom }] }).catch(() => {});
       }
@@ -134,7 +160,6 @@ const ConsumerScanScreen = () => {
     }
   };
 
-  // FIX: Robust Image Processing
   const processCapturedImage = async () => {
     if (!capturedImage) return;
     setIsProcessing(true);
@@ -150,7 +175,6 @@ const ConsumerScanScreen = () => {
         BarcodeFormat.DATA_MATRIX
       ]);
 
-      // Create an actual image element to ensure it's loaded
       const img = new Image();
       img.src = capturedImage;
       
@@ -208,13 +232,13 @@ const ConsumerScanScreen = () => {
             <video 
               ref={cameraRef} 
               className="w-full h-full object-cover transition-transform duration-200"
-              style={{ transform: `scale(${zoom})` }} 
+              style={{ transform: `scale(${zoom})` }} // Software zoom fallback works if hardware fails
               playsInline 
               muted 
             />
           )}
 
-          {/* 2. Captured Image View */}
+          {/* 2. Captured Image View (object-contain fixes the "zoomed in" gallery issue) */}
           {capturedImage && (
             <img 
               src={capturedImage} 
@@ -243,7 +267,7 @@ const ConsumerScanScreen = () => {
           {!cameraError && !verificationResult && (
             <div className="absolute bottom-0 left-0 right-0 p-6 pt-12 bg-gradient-to-t from-black/80 to-transparent flex flex-col gap-4 z-20">
               
-              {/* A. Zoom Slider (Above Buttons) */}
+              {/* A. Zoom Slider (Above Buttons) - Always visible in camera mode */}
               {!capturedImage && (
                 <div className="flex items-center gap-3 px-4">
                   <ZoomOut size={16} className="text-white/80" />
@@ -305,7 +329,7 @@ const ConsumerScanScreen = () => {
           )}
         </div>
 
-        {/* --- MANUAL INPUT (Outside Camera) --- */}
+        {/* --- MANUAL INPUT (Restored) --- */}
         {!verificationResult && (
           <div className="glass p-2 rounded-[1.5rem] flex items-center gap-2">
             <div className="relative flex-1">
@@ -329,7 +353,7 @@ const ConsumerScanScreen = () => {
           </div>
         )}
 
-        {/* --- RESULT MODAL --- */}
+        {/* --- RESULT MODAL (Same as before) --- */}
         <AnimatePresence>
           {verificationResult && (
             <motion.div
@@ -365,7 +389,7 @@ const ConsumerScanScreen = () => {
                   </>
                 ) : (
                   <>
-                    {/* SUSPICIOUS / FAKE / RECALLED */}
+                    {/* DYNAMIC ERROR STATE */}
                     <div className={`w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 ring-8 animate-pulse ${
                       verificationResult.status === 'Expired' ? 'bg-amber-500/10 text-amber-600 ring-amber-500/5' : 'bg-red-500/10 text-red-600 ring-red-500/5'
                     }`}>
@@ -407,4 +431,4 @@ const ConsumerScanScreen = () => {
   );
 };
 
-export default ConsumerScanScreen;  
+export default ConsumerScanScreen;

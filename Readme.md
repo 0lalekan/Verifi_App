@@ -1,171 +1,143 @@
-# Verifi - Product Verification and Tracking System
+Verifi - Supply Chain Verification & Intelligence Platform
 
-Verifi is a comprehensive product verification and tracking platform designed to combat counterfeit products in the global supply chain. By combining cryptographic product serialization with a decentralized verification network, Verifi empowers consumers, manufacturers, and regulators to ensure product authenticity in real-time.
+Verifi is a decentralized supply chain transparency platform designed to combat counterfeit products. It creates a digital "chain of custody" for products, allowing Manufacturers to serialize inventory, Regulators to oversee the market, and Consumers to verify authenticity instantly using their smartphones.
 
-## 🚀 Live Demo
+🚀 Live Demo
+URL: https://verifi-five.vercel.app/
 
-**Live URL:** [https://verifi-five.vercel.app/](https://verifi-five.vercel.app/)
+🔑 Test Credentials
+Use these accounts to explore the different dashboards:
 
-### Test Credentials
-Use the following credentials to explore the different user roles and dashboards:
+Role | Email | Password | Access Level
+-----|--------|----------|-------------
+Consumer | consumertest@verifi.com | password123 | Scan products, Earn Points, View Safe Map
+Manufacturer | manufacturertest@verifi.com | password123 | Create Batches, Print Labels, Analytics
+Regulator | regulatortest@verifi.com | password123 | Audit Logs, Revoke Licenses, Global Search
+Distributor | distributortest@verifi.com | password123 | B2B Market, Chain of Custody Scans
 
-| Role | Email | Password | Capability Focus |
-| :--- | :--- | :--- | :--- |
-| **Consumer** | `consumertest@verifi.com` | `password123` | Product scanning, reporting, loyalty points |
-| **Manufacturer** | `manufacturertest@verifi.com` | `password123` | Batch registration, inventory, analytics |
-| **Regulator** | `regulatortest@verifi.com` | `password123` | Oversight, enforcement, entity management |
+✨ Key Features
 
----
+🛡️ For Consumers
+Capture & Verify: A robust camera interface that allows users to snap a photo of a barcode for verification, solving focus issues on diverse devices.
+Manual Fallback: Ability to manually type batch numbers if the barcode is damaged or unreadable.
+Safe Map: An interactive heatmap showing nearby retailers with a high history of authentic scans.
+Trust Points: Gamified rewards system for verifying products.
+Report Issues: Direct channel to report suspicious goods with GPS tagging and photo evidence.
 
-## Features
+🏭 For Manufacturers
+Batch Serialization: Generate cryptographically unique identities for production runs.
+Bulk Operations: Upload CSV manifests to register thousands of items instantly.
+Label Printing: Generate QR code labels directly from the portal.
+Anti-Clone Alerts: Automated warnings if a single batch ID exceeds its "Maximum Scan Velocity" (indicating cloning).
+B2B Trade Hub: List products for verified distributors to purchase.
 
-#### 🛡️ Consumer Features
-* **Instant Verification**: Scan QR codes via the PWA interface to instantly verify product authenticity, expiration date, and recall status.
-* **Real-time Feedback**: Receive immediate visual feedback (Valid/Fake/Expired) with confetti animations for authentic products.
-* **Report Issues**: Flag suspicious products directly to regulators with GPS location tagging and photo evidence.
-* **Trust Points**: Earn loyalty rewards for every valid scan, incentivizing community vigilance.
-* **Mobile Experience**: Optimized mobile-first design with a native-style bottom navigation bar for easy one-handed use.
+🏛️ For Regulators
+God-Mode Dashboard: Real-time overview of national verification stats (Valid vs. Fake).
+Entity Management: Approve or Revoke manufacturer licenses. Revoking a license automatically flags all their products as "Suspicious".
+Audit Trail: Searchable, immutable logs of every verification attempt in the system.
+Case Management: Triage and resolve whistleblower reports submitted by consumers.
 
-### 🏭 Manufacturer Features
-* **Secure Onboarding**: Business verification workflow (RC Number/License) required before accessing the network.
-* **Batch Management**: Register product batches with metadata (manufacturing date, expiry, SKU) and define scan velocity limits.
-* **Bulk Operations**: 
-    * Upload large inventories via CSV templates for mass serialization.
-    * **Bulk Actions**: Select multiple batches to instantly Activate, Recall, or Delete (unused) items.
-* **Anti-Clone Alerts**: Receive automated warnings when specific batch numbers exceed their maximum scan threshold.
+🚚 For Distributors & Retailers
+Chain of Custody: Scan inventory upon receipt to log its movement (Factory → Warehouse → Retailer).
+Stock Management: Mark batches as "Shipped" or "Received" to maintain the digital thread.
 
-### 🏛️ Regulator Features
-* **God-Mode Dashboard**: A "control tower" view of national supply chain activity with real-time statistics.
-* **Global Registry**: A searchable master database of every product batch in the system across all manufacturers.
-* **Advanced Entity Management**: 
-    * View a complete list of all registered manufacturers.
-    * **Suspend Accounts**: Instantly block login access for non-compliant entities.
-    * **Revoke Licenses**: Revoking a manufacturer's license automatically flags all their existing products as "Suspicious" in the database.
-* **Audit Log Explorer**: A searchable history of every verification event, filtered by batch number or status (Valid/Fake).
-* **Bulk Enforcement**: Select and flag/recall multiple product batches simultaneously from the global registry.
-* **Heatmap Visualization**: Interactive maps pinpointing hotspots for counterfeit reports and failed scans.
+🛠️ Tech Stack
 
----
+Frontend
+Framework: React 19 (Vite)
+Styling: Tailwind CSS (with custom "Glassmorphism" UI)
+State Management: Zustand & React Query (TanStack)
+Maps: React Leaflet
+Scanning: ZXing Library (Browser Multi-Format Reader)
+Animations: Framer Motion
 
-## Tech Stack
+Backend
+Runtime: Node.js & Express
+Database: MongoDB (Mongoose)
+Security: JWT Authentication, Helmet, Rate Limiting
+Real-time: Socket.io (for Admin Alerts)
+Media: Cloudinary (for evidence/profile uploads)
+Email: Nodemailer (SMTP)
 
-### Frontend
-* **React 19** - Modern UI with hooks and functional components.
-* **Vite** - Next-generation frontend tooling.
-* **Tailwind CSS** - Utility-first styling with custom brand configurations.
-* **React Query** - Efficient server state management and caching.
-* **Zustand** - Lightweight global client state management.
-* **Framer Motion** - Smooth UI transitions and animations.
-* **React Leaflet** - Interactive maps for geospatial data.
-* **ZXing** - Browser-based multi-format barcode/QR scanner.
+⚙️ Installation & Setup
 
-### Backend
-* **Node.js & Express** - Robust RESTful API architecture.
-* **MongoDB & Mongoose** - Flexible NoSQL database for storing user profiles, logs, and batch data.
-* **Socket.io** - Real-time bidirectional communication for immediate fraud alerts.
-* **JWT (JSON Web Tokens)** - Secure, stateless authentication via HTTP-only cookies.
-* **Multer & Cloudinary** - Handling file uploads for evidence images.
+Prerequisites
+Node.js (v18+)
+MongoDB Instance (Local or Atlas)
+Cloudinary Account (for image uploads)
 
----
-
-## Project Structure
-
+1. Clone Repository
 ```bash
-verifi/
-├── client/                 # React Frontend
-│   ├── src/
-│   │   ├── components/     # Reusable UI (Header, Footer, Maps, etc.)
-│   │   ├── screens/        # Page views (Dashboards, Scanning, Reporting)
-│   │   ├── hooks/          # Custom hooks (useUserProfile, useTheme)
-│   │   └── store.js        # State management
-│   ├── public/             # Static assets (Logos, manifest.json)
-│   └── package.json
-├── server/                 # Express Backend
-│   ├── controllers/        # Business logic (Auth, Products, Logs)
-│   ├── models/             # Mongoose schemas
-│   ├── routes/             # API endpoints
-│   ├── middleware/         # Auth & Validation middleware
-│   ├── config/             # DB & Cloudinary config
-│   └── server.js           # Entry point
-└── README.md
+git clone https://github.com/yourusername/verifi-app.git
+cd verifi-app
 ```
 
-## Installation & Setup
-
-To run this project locally:
-
-### 1. Clone the repository
-
-```bash
-git clone https://github.com/0lalekan/Verifi_App.git
-cd Verifi_App
-```
-
-### 2. Backend Setup
-
-Navigate to the server directory, install dependencies, and configure the environment.
+2. Backend Setup
+Navigate to the server folder and install dependencies:
 
 ```bash
 cd server
 npm install
 ```
 
-Create a `.env` file in the server root:
-
+Create a .env file in the server/ directory:
 ```env
 PORT=5000
 MONGO_URI=your_mongodb_connection_string
 JWT_SECRET=your_super_secret_key
 CLIENT_URL=http://localhost:5173
+
+# Cloudinary (Images)
 CLOUDINARY_CLOUD_NAME=your_cloud_name
 CLOUDINARY_API_KEY=your_api_key
 CLOUDINARY_API_SECRET=your_api_secret
-SMTP_EMAIL=your_email_service
-SMTP_PASSWORD=your_email_password
+
+# Email (Optional)
+SMTP_EMAIL=your_email@gmail.com
+SMTP_PASSWORD=your_app_password
 ```
 
 Start the server:
-
 ```bash
 npm run dev
 ```
 
-### 3. Frontend Setup
-
-Navigate to the client directory and install dependencies.
+3. Frontend Setup
+Open a new terminal and navigate to the client folder:
 
 ```bash
-cd ../client
+cd client
 npm install
 ```
 
-Start the development server:
-
+Start the React development server:
 ```bash
 npm run dev
 ```
 
-The app will be available at http://localhost:5173.
+Access the app at http://localhost:5173.
 
-## Usage Guide
+📖 Usage Guide
 
-### Verification
-Access the `/verify-product` route (or "Scan" on mobile) to test the scanner. If on desktop, you can manually enter a Batch Number.
+How to Verify a Product
+Open the Scanner: Click "Scan" on the bottom navigation or Dashboard.
+Capture: Point your camera at the QR/Barcode. Wait for focus, then tap "Capture Photo".
+Verify: Once the image is frozen and clear, tap "Verify Code".
+Result: You will receive an instant "Valid", "Fake", or "Expired" status with confetti for authentic items.
 
-### Simulate a Fake
-Try scanning a random QR code or entering a non-existent batch number to see the error handling.
+How to Simulate a "Fake"
+Go to the manual entry screen.
+Type a random string (e.g., FAKE-123).
+The system will return a "Fake" status because the ID does not exist in the ledger.
 
-### Simulate Cloning
-Manufacturers can set a "Max Scan Limit" for a batch. If that limit is exceeded by consumers, the system flags the batch as "Suspicious."
+How to Simulate a "Clone" Alert
+Login as a Manufacturer and create a batch with a Max Scans limit of 1.
+Login as a Consumer and scan that batch twice.
+The second scan will trigger a "Suspicious" warning (Clone Detected).
+The Manufacturer and Regulator will receive a real-time alert.
 
-### Regulator Actions
-Log in as a Regulator to access the Entities tab. Try "Suspending" a manufacturer or "Revoking" a license to see how it immediately impacts their access and product status.
-
-## Contributing
-
+🤝 Contributing
 Contributions are welcome! Please fork the repository and create a pull request for any feature enhancements or bug fixes.
 
-## License
-
+📄 License
 This project is licensed under the ISC License.
-

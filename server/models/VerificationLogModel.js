@@ -22,7 +22,7 @@ const verificationLogSchema = new Schema(
     status: {
       type: String,
       // FIX: Added 'Suspicious' to this list
-      enum: ['Valid', 'Fake', 'Expired', 'Unknown', 'Suspicious', 'Recalled'],
+      enum: ['Valid', 'Fake', 'Expired', 'Unknown', 'Suspicious', 'Recalled', 'Investigating'],
       required: true,
     },
     location: { type: locationSchema, required: true },
